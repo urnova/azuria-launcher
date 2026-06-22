@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Download, RefreshCw, X, ArrowRight } from 'lucide-react'
+import { Download, RefreshCw, X } from 'lucide-react'
 
 const S = {
   bg: '#0a0a0f', surface: '#111118', surface2: '#16161f',
@@ -22,6 +22,7 @@ export default function UpdateModal({ onClose }: { onClose?: () => void }) {
   const [downloading, setDownloading] = useState(false)
   const [downloadProgress, setDownloadProgress] = useState(0)
   const [downloaded, setDownloaded] = useState(false)
+  const [timer, setTimer] = useState(3)
 
   useEffect(() => {
     window.ipcRenderer.invoke('check-for-updates').then((res: UpdateInfo) => {
@@ -41,7 +42,18 @@ export default function UpdateModal({ onClose }: { onClose?: () => void }) {
     if (!info?.assetId) return
     setDownloading(true)
     const res = await window.ipcRenderer.invoke('download-update', info.assetId)
-    if (res?.done) setDownloaded(true)
+    if (res?.done) {
+      setDownloaded(true)
+      let t = 3
+      const intv = setInterval(() => {
+        t -= 1
+        setTimer(t)
+        if (t <= 0) {
+          clearInterval(intv)
+          handleInstall()
+        }
+      }, 1000)
+    }
     setDownloading(false)
   }
 
@@ -108,27 +120,20 @@ export default function UpdateModal({ onClose }: { onClose?: () => void }) {
 
         {downloaded && (
           <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: 'rgba(68,204,102,0.08)', border: '1px solid rgba(68,204,102,0.25)' }}>
-            <span style={{ fontSize: 12, color: S.green }}>✓ Téléchargé ! Le launcher va redémarrer.</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: S.green }}>✓ Téléchargé ! Installation dans {timer}s...</span>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex gap-2 mt-1">
-          <button onClick={handleDismiss}
-            className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all hover:bg-white/5"
-            style={{ border: `1px solid ${S.border2}`, color: S.text2 }}
-          >
-            Quitter
-          </button>
-
-          {downloaded ? (
-            <button onClick={handleInstall}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5"
-              style={{ background: `linear-gradient(135deg, ${S.green}, #22aa44)`, boxShadow: '0 4px 15px rgba(68,204,102,0.35)' }}
+        {!downloaded && (
+          <div className="flex gap-2 mt-1">
+            <button onClick={handleDismiss}
+              className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all hover:bg-white/5"
+              style={{ border: `1px solid ${S.border2}`, color: S.text2 }}
             >
-              Redémarrer <ArrowRight size={14} />
+              Quitter
             </button>
-          ) : (
+
             <button onClick={handleDownload} disabled={downloading}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
               style={{ background: `linear-gradient(135deg, ${S.accent}, #6ba3ff)`, boxShadow: '0 4px 15px rgba(79,142,247,0.35)' }}
@@ -136,8 +141,8 @@ export default function UpdateModal({ onClose }: { onClose?: () => void }) {
               {downloading ? <RefreshCw size={14} className="animate-spin" /> : <Download size={14} />}
               Mettre à jour
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

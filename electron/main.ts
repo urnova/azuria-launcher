@@ -253,6 +253,67 @@ function createWindow() {
       })
     }
 
+    async function downloadAndExtractJava(destDir: string, window: any): Promise<string> {
+      return new Promise((resolve, reject) => {
+        const https = require('https')
+        const fs = require('fs')
+        const cp = require('node:child_process')
+        const tmpZip = path.join(app.getPath('temp'), 'azuria_java21.zip')
+
+        function doRequest(url: string, redirects = 0) {
+          https.get(url, (res: any) => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+              if (redirects > 5) return reject(new Error('Trop de redirections'))
+              return doRequest(res.headers.location, redirects + 1)
+            }
+            if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`))
+            
+            const total = parseInt(res.headers['content-length'] || '0')
+            let received = 0
+            const file = fs.createWriteStream(tmpZip)
+            res.on('data', (chunk: any) => {
+              received += chunk.length
+              if (total > 0 && window) {
+                const pct = Math.round((received / total) * 100)
+                window.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: pct, task: `Installation de Java 21 (${pct}%)` })
+              }
+            })
+            res.pipe(file)
+            res.on('end', () => {
+              file.close(() => {
+                window?.webContents.send('launch-progress', { state: 'SYNCING', percent: 100, task: 'Extraction de Java...' })
+                if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true })
+                try {
+                  cp.execSync(`tar -xf "${tmpZip}" -C "${destDir}"`, { stdio: 'ignore' })
+                  try { fs.unlinkSync(tmpZip) } catch {}
+                  const findJava = (dir: string): string | null => {
+                    for (const f of fs.readdirSync(dir)) {
+                      const full = path.join(dir, f)
+                      if (fs.statSync(full).isDirectory()) {
+                        const res = findJava(full)
+                        if (res) return res
+                      } else if (f.toLowerCase() === 'javaw.exe') {
+                        return full
+                      }
+                    }
+                    return null
+                  }
+                  const javaExe = findJava(destDir)
+                  if (javaExe) resolve(javaExe)
+                  else reject(new Error('javaw.exe introuvable après extraction'))
+                } catch (e: any) {
+                  reject(new Error('Erreur extraction: ' + e.message))
+                }
+              })
+            })
+            res.on('error', reject)
+          }).on('error', reject)
+        }
+        
+        doRequest('https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse?project=jdk')
+      })
+    }
+
     ipcMain.handle('check-for-updates', async () => {
       try {
         const data = await ghApiGet(`/repos/${GH_OWNER}/${GH_REPO}/releases/latest`)
@@ -489,13 +550,35 @@ function createWindow() {
       if (!javaPath) {
         try {
           const { status, error } = cp.spawnSync('java', ['-version'])
-          if (error || status !== 0) {
-            win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur' })
-            return { error: 'no_java', message: 'Java 21 n\'est pas installé sur cet ordinateur.\nLe jeu officiel Minecraft installe Java automatiquement. Si vous ne l\'avez pas, installez Java 21.' }
-          }
+          if (error || status !== 0) throw new Error('No system java')
+          // System java is valid, set to undefined so minecraft-launcher-core uses 'java'
+          javaPath = undefined
         } catch {
-          win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur' })
-          return { error: 'no_java', message: 'Java 21 n\'est pas installé sur cet ordinateur.\nInstallez Java 21 ou le jeu officiel Minecraft.' }
+          // System java missing, we need to download it
+          const localJavaDir = path.join(rootPath, 'runtime', 'java-21')
+          const findJava = (dir: string): string | null => {
+            if (!fs.existsSync(dir)) return null
+            for (const f of fs.readdirSync(dir)) {
+              const full = path.join(dir, f)
+              if (fs.statSync(full).isDirectory()) {
+                const res = findJava(full)
+                if (res) return res
+              } else if (f.toLowerCase() === 'javaw.exe') return full
+            }
+            return null
+          }
+          
+          let localJava = findJava(localJavaDir)
+          if (!localJava) {
+            try {
+              win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: 0, task: 'Préparation téléchargement Java...' })
+              localJava = await downloadAndExtractJava(localJavaDir, win)
+            } catch (je: any) {
+              win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur Java' })
+              return { error: 'no_java', message: 'Impossible d\'installer Java 21 automatiquement.\nErreur : ' + je.message }
+            }
+          }
+          javaPath = localJava
         }
       }
 
