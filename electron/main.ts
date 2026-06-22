@@ -311,9 +311,21 @@ function createWindow() {
             })
             res.pipe(file)
             res.on('end', () => {
-              file.close(() => {
-                require('child_process').spawn(tmpPath, [], { detached: true, stdio: 'ignore' }).unref()
-                resolve({ done: true })
+              file.close(async () => {
+                try {
+                  // Use Electron's shell.openPath — the correct way to launch an installer on Windows
+                  const { shell } = await import('electron')
+                  await shell.openPath(tmpPath)
+                  resolve({ done: true })
+                } catch (spawnErr: any) {
+                  // Fallback: try with cmd /c start
+                  try {
+                    require('child_process').spawn('cmd', ['/c', 'start', '', tmpPath], { detached: true, stdio: 'ignore', shell: false }).unref()
+                    resolve({ done: true })
+                  } catch (e2: any) {
+                    resolve({ done: false, error: e2.message })
+                  }
+                }
               })
             })
             res.on('error', (e: any) => resolve({ done: false, error: e.message }))
