@@ -206,9 +206,9 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
       {/* MAIN */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {tab === 'home' && (
-          <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto overflow-x-hidden">
+          <div className="flex-1 flex flex-col items-center p-4 pt-12 overflow-y-auto overflow-x-hidden">
             <img src={logo} alt="Azuria" className="w-28 h-28 object-contain mb-4" style={{ filter: 'drop-shadow(0 0 28px rgba(79,142,247,0.5))', animation: 'float 4s ease-in-out infinite' }} />
-            <h1 className="font-black mb-1" style={{ fontSize: 40, letterSpacing: -2, background: 'linear-gradient(135deg, #fff 0%, #4f8ef7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AZURIA V3</h1>
+            <h1 className="font-black mb-1" style={{ fontSize: 40, letterSpacing: -2, background: 'linear-gradient(135deg, #fff 0%, #4f8ef7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AZURIA</h1>
             <p className="mb-8" style={{ color: S.text2, fontSize: 14 }}>Prêt à rejoindre l'aventure ?</p>
 
             {/* Server selector with ping */}
