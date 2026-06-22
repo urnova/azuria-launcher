@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Download, Gamepad2, Zap, Shield, ChevronRight, Loader2, Coins, ScrollText, Pickaxe, Users, Laptop } from 'lucide-react'
+import { Download, Gamepad2, Shield, ChevronRight, Loader2, Coins, ScrollText, Pickaxe, Users, Laptop } from 'lucide-react'
 
 function App() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
