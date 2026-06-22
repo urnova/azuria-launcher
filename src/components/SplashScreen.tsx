@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import logo from '../assets/logo.png'
 
-interface Props { onReady: () => void }
+interface Props { onReady: (hasUpdate?: boolean) => void }
 
 const steps = [
   { label: 'Initialisation du launcher...', duration: 600 },
-  { label: 'Vérification des mises à jour...', duration: 1000 },
+  { label: 'Vérification des mises à jour...', duration: 0 },
   { label: 'Chargement des profils...', duration: 500 },
   { label: 'Ping des serveurs...', duration: 900 },
   { label: 'Prêt !', duration: 300 },
@@ -19,19 +19,35 @@ export default function SplashScreen({ onReady }: Props) {
   useEffect(() => {
     let current = 0
     let elapsed = 0
-    const total = steps.reduce((s, x) => s + x.duration, 0)
+    let updateResult: boolean | undefined = undefined
+    const total = steps.reduce((s, x) => s + x.duration, 0) + 1500 // estimate for update check
 
     const run = () => {
       if (current >= steps.length) {
         setFadeOut(true)
-        setTimeout(onReady, 400)
+        setTimeout(() => onReady(updateResult), 400)
         return
       }
       setStepIdx(current)
       const step = steps[current]
+
+      if (step.duration === 0) {
+        // Real update check step — fire the IPC and wait for it
+        window.ipcRenderer.invoke('check-for-updates').then((res: any) => {
+          updateResult = res?.hasUpdate === true
+          elapsed += 1500
+          current++
+          run()
+        }).catch(() => {
+          current++
+          run()
+        })
+        return
+      }
+
+      const startProgress = (elapsed / (total)) * 100
+      const endProgress = ((elapsed + step.duration) / (total)) * 100
       const start = Date.now()
-      const startProgress = (elapsed / total) * 100
-      const endProgress = ((elapsed + step.duration) / total) * 100
 
       const anim = setInterval(() => {
         const frac = Math.min(1, (Date.now() - start) / step.duration)

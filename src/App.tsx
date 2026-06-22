@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import LoginScreen from './components/LoginScreen'
 import Dashboard from './components/Dashboard'
 import SplashScreen from './components/SplashScreen'
+import UpdateModal from './components/UpdateModal'
 import { Minus, X } from 'lucide-react'
 import logo from './assets/logo.png'
 
 export default function App() {
   const [activeProfile, setActiveProfile] = useState<any>(null)
   const [splashDone, setSplashDone] = useState(false)
+  const [showUpdate, setShowUpdate] = useState(false)
 
   useEffect(() => {
     window.ipcRenderer.invoke('get-active-profile').then(saved => {
@@ -18,7 +20,9 @@ export default function App() {
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden" style={{ background: '#0a0a0f', color: '#e8e8f0', border: '1px solid #1c1c28' }}>
       {/* Splash screen */}
-      {!splashDone && <SplashScreen onReady={() => setSplashDone(true)} />}
+      {!splashDone && <SplashScreen onReady={(hasUpdate) => { setSplashDone(true); if (hasUpdate) setShowUpdate(true) }} />}
+      {/* Update modal — shown at app level after splash */}
+      {splashDone && showUpdate && <UpdateModal onClose={() => setShowUpdate(false)} />}
 
       {/* Titlebar */}
       <div className="h-9 w-full flex items-center justify-between px-3 shrink-0 drag-region" style={{ background: '#0d0d14', borderBottom: '1px solid #1c1c28' }}>
