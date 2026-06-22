@@ -333,7 +333,8 @@ function createWindow() {
 
       const optionalMods = [
         { file: isV2 ? 'controlify-3.0.0+lts+1.21.4-neoforge.jar' : 'controlify-3.0.0+lts+1.21.1-neoforge.jar', enabled: settings.controllable === true },
-        { file: isV2 ? 'yet_another_config_lib_v3-3.8.2+1.21.4-neoforge.jar' : 'yet_another_config_lib_v3-3.8.2+1.21.1-neoforge.jar', enabled: settings.controllable === true }
+        { file: isV2 ? 'yet_another_config_lib_v3-3.8.2+1.21.4-neoforge.jar' : 'yet_another_config_lib_v3-3.8.2+1.21.1-neoforge.jar', enabled: settings.controllable === true },
+        { file: isV2 ? 'embeddium-1.0.12-beta.9999+mc1.21.4.jar' : 'embeddium-0.3.31+mc1.21.1.jar', enabled: settings.embeddium !== false }
       ]
       for (const { file, enabled } of optionalMods) {
         const ep = path.join(modsDir, file), dp = path.join(modsDisabledDir, file)

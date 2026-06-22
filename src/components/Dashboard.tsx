@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Play, LogOut, ChevronDown, Gamepad2, CheckCircle2, Circle, AlertTriangle, Server, RefreshCw, StopCircle } from 'lucide-react'
+import { Play, LogOut, ChevronDown, Gamepad2, CheckCircle2, Circle, AlertTriangle, Server, RefreshCw, StopCircle, Zap } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { SkinViewer, IdleAnimation, WalkingAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
@@ -299,6 +299,11 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                   <Gamepad2 size={26} style={{ color: controllable ? S.accent : S.text3 }} />
                   <div className="flex-1"><div className="font-bold text-sm" style={{ color: S.text }}>Support Manette (Controlify)</div><div className="text-xs" style={{ color: S.text3 }}>PS4 / Xbox / Switch Pro</div></div>
                   {controllable ? <CheckCircle2 size={20} style={{ color: S.green }} /> : <Circle size={20} style={{ color: S.text3 }} />}
+                </button>
+                <button onClick={() => toggleSetting('embeddium')} className="p-4 rounded-xl flex items-center gap-4 text-left transition-all" style={{ background: S.surface, border: `1px solid ${embeddium ? S.accent : S.border}` }}>
+                  <Zap size={26} style={{ color: embeddium ? S.accent : S.text3 }} />
+                  <div className="flex-1"><div className="font-bold text-sm" style={{ color: S.text }}>Optimisation FPS (Embeddium)</div><div className="text-xs" style={{ color: S.text3 }}>Améliore drastiquement les performances</div></div>
+                  {embeddium ? <CheckCircle2 size={20} style={{ color: S.green }} /> : <Circle size={20} style={{ color: S.text3 }} />}
                 </button>
 
               </div>
