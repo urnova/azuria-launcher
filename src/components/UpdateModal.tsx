@@ -15,7 +15,7 @@ interface UpdateInfo {
   releaseNotes?: string
 }
 
-export default function UpdateModal({ onClose }: { onClose: () => void }) {
+export default function UpdateModal() {
   const [info, setInfo] = useState<UpdateInfo | null>(null)
   const [checking, setChecking] = useState(true)
   const [downloading, setDownloading] = useState(false)
@@ -47,6 +47,10 @@ export default function UpdateModal({ onClose }: { onClose: () => void }) {
     window.ipcRenderer.invoke('install-update')
   }
 
+  const forceClose = () => {
+    window.ipcRenderer.send('window-close')
+  }
+
   if (checking) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
@@ -75,7 +79,7 @@ export default function UpdateModal({ onClose }: { onClose: () => void }) {
               <div style={{ fontSize: 12, color: S.text3 }}>v{info.currentVersion} → v{info.latestVersion}</div>
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors" style={{ color: S.text3 }}>
+          <button onClick={forceClose} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors" style={{ color: S.text3 }} title="Fermer le launcher">
             <X size={16} />
           </button>
         </div>
@@ -108,11 +112,11 @@ export default function UpdateModal({ onClose }: { onClose: () => void }) {
 
         {/* Actions */}
         <div className="flex gap-2 mt-1">
-          <button onClick={onClose}
+          <button onClick={forceClose}
             className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all hover:bg-white/5"
             style={{ border: `1px solid ${S.border2}`, color: S.text2 }}
           >
-            Plus tard
+            Quitter
           </button>
 
           {downloaded ? (

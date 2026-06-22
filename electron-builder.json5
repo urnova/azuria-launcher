@@ -21,6 +21,7 @@
     }
   ],
   "win": {
+    "icon": "build/icon.ico",
     "target": [
       {
         "target": "nsis",
@@ -32,6 +33,8 @@
   "nsis": {
     "oneClick": false,
     "perMachine": false,
+    "installerIcon": "build/installerIcon.ico",
+    "uninstallerIcon": "build/icon.ico",
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false,
     "createDesktopShortcut": true,
