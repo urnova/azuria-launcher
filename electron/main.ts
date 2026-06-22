@@ -553,14 +553,9 @@ function createWindow() {
       
       const cp = require('node:child_process')
       
-      // Verification if java is available on system
+      // We ALWAYS use our own portable Java 21 if Official Minecraft Launcher Java is not found.
+      // We do NOT trust the system 'java' command, because it might be Java 8 (causes instant crash).
       if (!javaPath) {
-        try {
-          const { status, error } = cp.spawnSync('java', ['-version'])
-          if (error || status !== 0) throw new Error('No system java')
-          // System java is valid, set to undefined so minecraft-launcher-core uses 'java'
-          javaPath = undefined
-        } catch {
           // System java missing, we need to download it
           const localJavaDir = path.join(rootPath, 'runtime', 'java-21')
           const findJava = (dir: string): string | null => {
@@ -586,7 +581,6 @@ function createWindow() {
             }
           }
           javaPath = localJava
-        }
       }
 
       console.log(`[Azuria] Using Java: ${javaPath || 'system java'}`)
@@ -715,10 +709,18 @@ function createWindow() {
       })
 
       try {
-        gameProcess = await launcher.launch(opts)
+        const spawnedProcess: any = await launcher.launch(opts)
         cp.spawn = originalSpawn // restore spawn
-        win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Jeu en cours !' })
-        // Launcher stays visible when game launches (like official Minecraft launcher)
+        
+        // Fix for instant crashes: if the process died before the promise resolved, do NOT set state to RUNNING.
+        if (spawnedProcess && spawnedProcess.exitCode !== null) {
+           console.log('[Azuria] Process died immediately with code', spawnedProcess.exitCode)
+           gameProcess = null
+           win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Le jeu a planté au démarrage.' })
+        } else {
+           gameProcess = spawnedProcess
+           win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Jeu en cours !' })
+        }
       } catch (error: any) {
         cp.spawn = originalSpawn // restore spawn
 
