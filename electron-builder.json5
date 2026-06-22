@@ -27,8 +27,7 @@
         "arch": ["x64"]
       }
     ],
-    "artifactName": "AzuriaSetup-${version}.${ext}",
-    "icon": "public/icon.ico"
+    "artifactName": "AzuriaSetup-${version}.${ext}"
   },
   "nsis": {
     "oneClick": false,
@@ -37,9 +36,6 @@
     "deleteAppDataOnUninstall": false,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "shortcutName": "Azuria Launcher",
-    "installerIcon": "public/icon.ico",
-    "uninstallerIcon": "public/icon.ico",
-    "installerHeaderIcon": "public/icon.ico"
+    "shortcutName": "Azuria Launcher"
   }
 }

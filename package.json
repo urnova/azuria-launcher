@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "electron-store": "^11.0.2",
-    "electron-updater": "^6.3.9",
+    "electron-updater": "^6.8.9",
     "minecraft-launcher-core": "^3.18.2",
     "msal-node": "^0.0.1-security",
     "msmc": "^5.0.5",

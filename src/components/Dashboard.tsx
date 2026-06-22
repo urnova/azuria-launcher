@@ -34,7 +34,6 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
   const [profiles, setProfiles] = useState<any[]>([])
   const [serverStatuses, setServerStatuses] = useState<Record<string, ServerStatus>>({})
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const skinFileRef = useRef<HTMLInputElement>(null)
 
   const pingAllServers = useCallback(async () => {
     const results: Record<string, ServerStatus> = {}
