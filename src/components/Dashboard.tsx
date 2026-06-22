@@ -5,7 +5,7 @@ import { SkinViewer, IdleAnimation, WalkingAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
 
 const SERVERS = [
-  { id: 'v2', category: 'V2 ACTUELLE', name: 'Azuria V2', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Serveur actuel (1.21.4)', mcVersion: '1.21.4', statusOverride: 'INDISPONIBLE' as string | null },
+  { id: 'v2', category: 'V2 ACTUELLE', name: 'Azuria V2', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Serveur actuel (1.21.4)', mcVersion: '1.21.4', statusOverride: null as string | null },
   { id: 'v3test', category: 'V3 EARLY ACCESS', name: 'Azuria V3 — Serveur de test', host: '91.197.6.19', port: 25854, desc: '⚠️ Serveur de test — attention', mcVersion: '1.21.1', statusOverride: null as string | null },
   { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Serveur principal V3', mcVersion: '1.21.1', statusOverride: 'INDISPONIBLE' as string | null },
 ]
