@@ -104,15 +104,14 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1100, height: 650, minWidth: 900, minHeight: 550,
     frame: false, resizable: true, transparent: true,
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       contextIsolation: true, nodeIntegration: false
     },
   })
 
-  win.on('maximize', () => win?.webContents.send('window-maximized'))
-  win.on('unmaximize', () => win?.webContents.send('window-unmaximized'))
+  // Maximize events removed (maximize button disabled)
 
   import('electron').then(({ ipcMain }) => {
     ipcMain.removeAllListeners()
@@ -433,7 +432,6 @@ function createWindow() {
         setTimeout(() => {
           if (gameProcess) { try { gameProcess.kill() } catch {} ; gameProcess = null }
           win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Jeu fermé — Prêt à relancer !' })
-          win?.restore()
         }, 5000)
       }
 
@@ -471,7 +469,7 @@ function createWindow() {
         if (!killPending) {
           gameProcess = null
           win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Jeu fermé — Prêt à relancer !' })
-          win?.restore()
+          // Launcher stays open (like official Minecraft launcher)
         }
       })
 
@@ -479,7 +477,7 @@ function createWindow() {
         gameProcess = await launcher.launch(opts)
         cp.spawn = originalSpawn // restore spawn
         win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Jeu en cours !' })
-        setTimeout(() => win?.minimize(), 8000)
+        // Launcher stays visible when game launches (like official Minecraft launcher)
       } catch (error: any) {
         cp.spawn = originalSpawn // restore spawn
 
