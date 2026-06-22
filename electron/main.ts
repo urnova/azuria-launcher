@@ -101,7 +101,7 @@ function pingServer(host: string, port: number): Promise<any> {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 1100, height: 650, minWidth: 900, minHeight: 550,
+    width: 950, height: 580, minWidth: 800, minHeight: 500,
     frame: false, resizable: true, transparent: true,
     icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
     webPreferences: {
@@ -523,9 +523,20 @@ function createWindow() {
       launcher.removeAllListeners('debug')
       launcher.removeAllListeners('data')
       launcher.removeAllListeners('progress')
+      launcher.removeAllListeners('download-status')
       launcher.removeAllListeners('close')
 
       launcher.on('debug', (e: any) => console.log('[MC Debug]', e))
+      
+      const onProgress = (e: any) => {
+        if (!e || typeof e.task !== 'number' || typeof e.total !== 'number') return
+        const types: any = { assets: 'Ressources', natives: 'Natives', classes: 'Librairies' }
+        const typeStr = types[e.type] || 'Fichiers'
+        const pct = Math.min(100, Math.round((e.task / Math.max(e.total, 1)) * 100))
+        win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: pct, task: `Installation : ${typeStr} (${pct}%)` })
+      }
+      launcher.on('download-status', onProgress)
+      launcher.on('progress', onProgress)
 
       // Monitor stdout to detect disconnects and close game automatically
       let hasConnected = false
