@@ -12,6 +12,7 @@ interface UpdateInfo {
   hasUpdate: boolean
   currentVersion?: string
   latestVersion?: string
+  downloadUrl?: string
   releaseNotes?: string
 }
 
@@ -37,8 +38,9 @@ export default function UpdateModal({ onClose }: { onClose?: () => void }) {
   }, [])
 
   const handleDownload = async () => {
+    if (!info?.downloadUrl) return
     setDownloading(true)
-    const res = await window.ipcRenderer.invoke('download-update')
+    const res = await window.ipcRenderer.invoke('download-update', info.downloadUrl)
     if (res?.done) setDownloaded(true)
     setDownloading(false)
   }

@@ -152,7 +152,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 30% 0%, rgba(79,142,247,0.08) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 100%, rgba(170,68,255,0.06) 0%, transparent 60%)' }} />
 
       {/* UPDATE MODAL */}
-      {showUpdateModal && <UpdateModal />}
+      {showUpdateModal && <UpdateModal onClose={() => setShowUpdateModal(false)} />}
 
       {/* SIDEBAR */}
       <div className="w-64 shrink-0 flex flex-col relative z-20" style={{ background: 'rgba(17,17,24,0.95)', borderRight: `1px solid ${S.border}`, backdropFilter: 'blur(20px)' }}>
