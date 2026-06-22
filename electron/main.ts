@@ -265,6 +265,7 @@ function createWindow() {
       const profile = profiles.find(p => p.id === profileId)
       if (!profile) return
 
+      const settings = store.get('settings') as any
       const v = mcVersion || '1.21.1'
       const isV2 = v === '1.21.4'
       const rootPath = path.join(app.getPath('appData'), isV2 ? '.azuria-v2' : '.azuria')
