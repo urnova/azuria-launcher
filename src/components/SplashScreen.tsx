@@ -34,11 +34,15 @@ export default function SplashScreen({ onReady }: Props) {
       if (step.duration === 0) {
         // Real update check step — fire the IPC and wait for it
         window.ipcRenderer.invoke('check-for-updates').then((res: any) => {
+          if (res?.error) {
+            alert("Erreur de mise à jour :\n" + res.error)
+          }
           updateResult = res?.hasUpdate === true
           elapsed += 1500
           current++
           run()
-        }).catch(() => {
+        }).catch((e) => {
+          alert("Erreur critique de mise à jour :\n" + String(e))
           current++
           run()
         })
@@ -93,7 +97,7 @@ export default function SplashScreen({ onReady }: Props) {
         AZURIA
       </div>
       <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase', color: '#5a5a7a', marginBottom: 48 }}>
-        Launcher V3
+        Launcher
       </div>
 
       {/* Progress bar */}

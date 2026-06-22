@@ -228,6 +228,7 @@ function createWindow() {
     ipcMain.handle('check-for-updates', async () => {
       try {
         process.env.GH_TOKEN = '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'
+        autoUpdater.requestHeaders = { "Authorization": `token ${process.env.GH_TOKEN}` }
         const result = await autoUpdater.checkForUpdates()
         if (!result) return { hasUpdate: false }
         const currentVersion = app.getVersion()
