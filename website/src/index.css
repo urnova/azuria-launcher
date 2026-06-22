@@ -1,12 +1,8 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  font-family: 'Outfit', system-ui, sans-serif;
-  color-scheme: dark;
+@theme {
+  --font-sans: 'Outfit', system-ui, sans-serif;
 }
 
 body {
