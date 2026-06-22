@@ -13,6 +13,24 @@ export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
+import fs from 'node:fs'
+
+const logPath = path.join(app.getPath('userData'), 'azuria-launcher.log')
+const logStream = fs.createWriteStream(logPath, { flags: 'a' })
+const originalConsoleLog = console.log
+const originalConsoleError = console.error
+
+console.log = (...args) => {
+  const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')
+  logStream.write(`[${new Date().toISOString()}] [INFO] ${msg}\n`)
+  originalConsoleLog(...args)
+}
+console.error = (...args) => {
+  const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')
+  logStream.write(`[${new Date().toISOString()}] [ERROR] ${msg}\n`)
+  originalConsoleError(...args)
+}
+
 let win: BrowserWindow | null
 
 import Store from 'electron-store'
@@ -663,7 +681,7 @@ function createWindow() {
         setTimeout(() => {
           if (gameProcess) { try { gameProcess.kill() } catch {} ; gameProcess = null }
           win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Jeu fermé — Prêt à relancer !' })
-        }, 5000)
+        }, 500) // Fermeture très rapide (0.5s) pour éviter l'affichage du menu principal
       }
 
       launcher.on('data', (e: any) => {
@@ -716,6 +734,7 @@ function createWindow() {
             line.includes('disconnect.lost') ||
             // NeoForge 1.21.x: retour au title screen
             (line.includes('Render thread') && line.includes('Stopping!')) ||
+            line.includes('Saved the game just in case') || // Sauvegarde à la déconnexion
             (line.includes('[minecraft/TitleScreen]') && hasConnected)
           ) {
             killGame('disconnect detected')
