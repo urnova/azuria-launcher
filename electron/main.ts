@@ -356,7 +356,7 @@ function createWindow() {
 
       const sourceModsDir = isV2 ? 'F:\\code\\azuria\\azuriav3\\mods-client-1.21.4' : 'F:\\code\\azuria\\azuriav3\\mods-client'
       if (fs.existsSync(sourceModsDir)) {
-        const sourceFiles = fs.readdirSync(sourceModsDir).filter((f: string) => f.endsWith('.jar'))
+        const sourceFiles = fs.readdirSync(sourceModsDir).filter((f: string) => f.endsWith('.jar') && !f.includes('neoforge-installer'))
         
         // Supprimer les vieux mods qui ne sont plus dans le dossier source
         const destFiles = fs.readdirSync(modsDir).filter((f: string) => f.endsWith('.jar'))
@@ -407,7 +407,7 @@ function createWindow() {
       const optionalMods = [
         { file: isV2 ? 'controlify-3.0.0+lts+1.21.4-neoforge.jar' : 'controlify-3.0.0+lts+1.21.1-neoforge.jar', enabled: settings.controllable === true },
         { file: isV2 ? 'yet_another_config_lib_v3-3.8.2+1.21.4-neoforge.jar' : 'yet_another_config_lib_v3-3.8.2+1.21.1-neoforge.jar', enabled: settings.controllable === true },
-        { file: isV2 ? 'embeddium-1.0.12-beta.9999+mc1.21.4.jar' : 'embeddium-0.3.31+mc1.21.1.jar', enabled: settings.embeddium !== false }
+        { file: isV2 ? 'embeddium-1.0.12-beta.9999+mc1.21.4.jar' : 'embeddium-0.3.31+mc1.21.1.jar', enabled: isV2 ? false : settings.embeddium !== false }
       ]
       for (const { file, enabled } of optionalMods) {
         const ep = path.join(modsDir, file), dp = path.join(modsDisabledDir, file)
@@ -524,11 +524,13 @@ function createWindow() {
         console.log('[MC]', line)
         // Track when we actually connect to a server
         if (line.includes('ConnectScreen]: Connecting to')) hasConnected = true
-        // Detect disconnect from server (Netty channel closed after connecting)
+        // Detect disconnect from server
         if (hasConnected && !killPending) {
           if (
             line.includes('Client UDP channel inactive') ||
             line.includes('disconnect.loginFailed') ||
+            line.includes('Connection lost') ||
+            line.includes('Disconnected') ||
             (line.includes('[Netty Client IO') && line.includes('channel inactive'))
           ) {
             killGame('disconnect detected')
