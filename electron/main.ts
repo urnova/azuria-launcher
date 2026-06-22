@@ -3,7 +3,6 @@ import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import * as net from 'node:net'
-import { autoUpdater } from 'electron-updater'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -221,39 +220,112 @@ function createWindow() {
     // Server Ping
     ipcMain.handle('ping-server', async (_e, host: string, port: number) => pingServer(host, port))
 
-    // Auto-Updater
-    autoUpdater.autoDownload = false
-    autoUpdater.autoInstallOnAppQuit = true
+    // Auto-Updater — direct GitHub API (works with private repos)
+    const GH_TOKEN = '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'
+    const GH_OWNER = 'urnova'
+    const GH_REPO  = 'azuria-launcher'
+
+    async function ghApiGet(path: string): Promise<any> {
+      return new Promise((resolve, reject) => {
+        const https = require('https')
+        const opts = {
+          hostname: 'api.github.com',
+          path,
+          method: 'GET',
+          headers: {
+            'Authorization': `token ${GH_TOKEN}`,
+            'User-Agent': 'azuria-launcher-updater',
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        }
+        const req = https.request(opts, (res: any) => {
+          let body = ''
+          res.on('data', (c: any) => body += c)
+          res.on('end', () => {
+            try { resolve(JSON.parse(body)) } catch (e) { reject(e) }
+          })
+        })
+        req.on('error', reject)
+        req.setTimeout(10000, () => { req.destroy(); reject(new Error('Timeout')) })
+        req.end()
+      })
+    }
 
     ipcMain.handle('check-for-updates', async () => {
       try {
-        process.env.GH_TOKEN = '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'
-        autoUpdater.requestHeaders = { "Authorization": `token ${process.env.GH_TOKEN}` }
-        const result = await autoUpdater.checkForUpdates()
-        if (!result) return { hasUpdate: false }
+        const data = await ghApiGet(`/repos/${GH_OWNER}/${GH_REPO}/releases/latest`)
+        if (data.message) {
+          console.warn('[Updater] GitHub API error:', data.message)
+          return { hasUpdate: false, error: data.message }
+        }
         const currentVersion = app.getVersion()
-        const latestVersion = result.updateInfo.version
-        const hasUpdate = latestVersion !== currentVersion
-        return { hasUpdate, currentVersion, latestVersion, releaseNotes: result.updateInfo.releaseNotes }
+        const latestVersion  = (data.tag_name || '').replace(/^v/, '')
+        const hasUpdate = latestVersion !== '' && latestVersion !== currentVersion
+        // Find the exe asset download URL
+        const exeAsset = (data.assets || []).find((a: any) => a.name.endsWith('.exe') && a.name.startsWith('AzuriaSetup'))
+        const downloadUrl = exeAsset ? exeAsset.browser_download_url : null
+        console.log(`[Updater] current=${currentVersion} latest=${latestVersion} hasUpdate=${hasUpdate}`)
+        return { hasUpdate, currentVersion, latestVersion, downloadUrl, releaseNotes: data.body }
       } catch (e: any) {
         console.warn('[Updater] check failed:', e?.message)
         return { hasUpdate: false, error: e?.message }
       }
     })
 
-    ipcMain.handle('download-update', async () => {
+    ipcMain.handle('download-update', async (_e, downloadUrl: string) => {
+      // Download the new installer into temp dir and launch it
       return new Promise((resolve) => {
-        autoUpdater.downloadUpdate()
-        autoUpdater.once('update-downloaded', () => resolve({ done: true }))
-        autoUpdater.once('error', (e) => resolve({ done: false, error: e.message }))
-        autoUpdater.on('download-progress', (p) => {
-          win?.webContents.send('update-progress', Math.round(p.percent))
-        })
+        const https = require('https')
+        const tmpPath = path.join(app.getPath('temp'), 'AzuriaSetup-update.exe')
+        const file = require('fs').createWriteStream(tmpPath)
+        const opts = {
+          hostname: 'objects.githubusercontent.com',
+          path: new URL(downloadUrl).pathname + new URL(downloadUrl).search,
+          method: 'GET',
+          headers: {
+            'Authorization': `token ${GH_TOKEN}`,
+            'User-Agent': 'azuria-launcher-updater',
+            'Accept': 'application/octet-stream'
+          }
+        }
+
+        function doRequest(url: string, redirects = 0) {
+          const parsedUrl = new URL(url)
+          const reqOpts = {
+            hostname: parsedUrl.hostname,
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: 'GET',
+            headers: redirects === 0 ? opts.headers : { 'User-Agent': 'azuria-launcher-updater' }
+          }
+          https.request(reqOpts, (res: any) => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+              if (redirects > 5) { resolve({ done: false, error: 'Too many redirects' }); return }
+              doRequest(res.headers.location, redirects + 1)
+              return
+            }
+            const total = parseInt(res.headers['content-length'] || '0')
+            let received = 0
+            res.on('data', (chunk: any) => {
+              received += chunk.length
+              if (total > 0) win?.webContents.send('update-progress', Math.round(received / total * 100))
+            })
+            res.pipe(file)
+            res.on('end', () => {
+              file.close(() => {
+                require('child_process').spawn(tmpPath, [], { detached: true, stdio: 'ignore' }).unref()
+                resolve({ done: true })
+              })
+            })
+            res.on('error', (e: any) => resolve({ done: false, error: e.message }))
+          }).on('error', (e: any) => resolve({ done: false, error: e.message })).end()
+        }
+
+        doRequest(downloadUrl)
       })
     })
 
     ipcMain.handle('install-update', () => {
-      autoUpdater.quitAndInstall(false, true)
+      app.quit()
     })
 
     // Launch Game

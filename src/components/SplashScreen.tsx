@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import logo from '../assets/logo.png'
 
-interface Props { onReady: (hasUpdate?: boolean) => void }
+interface Props { onReady: (hasUpdate?: boolean, downloadUrl?: string) => void }
 
 const steps = [
   { label: 'Initialisation du launcher...', duration: 600 },
@@ -20,29 +20,26 @@ export default function SplashScreen({ onReady }: Props) {
     let current = 0
     let elapsed = 0
     let updateResult: boolean | undefined = undefined
-    const total = steps.reduce((s, x) => s + x.duration, 0) + 1500 // estimate for update check
+    let updateDownloadUrl: string | undefined = undefined
+    const total = steps.reduce((s, x) => s + x.duration, 0) + 1500
 
     const run = () => {
       if (current >= steps.length) {
         setFadeOut(true)
-        setTimeout(() => onReady(updateResult), 400)
+        setTimeout(() => onReady(updateResult, updateDownloadUrl), 400)
         return
       }
       setStepIdx(current)
       const step = steps[current]
 
       if (step.duration === 0) {
-        // Real update check step — fire the IPC and wait for it
         window.ipcRenderer.invoke('check-for-updates').then((res: any) => {
-          if (res?.error) {
-            alert("Erreur de mise à jour :\n" + res.error)
-          }
           updateResult = res?.hasUpdate === true
+          if (res?.downloadUrl) updateDownloadUrl = res.downloadUrl
           elapsed += 1500
           current++
           run()
-        }).catch((e) => {
-          alert("Erreur critique de mise à jour :\n" + String(e))
+        }).catch(() => {
           current++
           run()
         })
