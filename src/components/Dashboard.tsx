@@ -5,8 +5,9 @@ import { SkinViewer, IdleAnimation, WalkingAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
 
 const SERVERS = [
-  { id: 'v2', category: 'V2 ACTUELLE', name: 'Azuria V2', host: '91.197.6.19', port: 25854, desc: 'Serveur actuel', mcVersion: '1.21.4', statusOverride: null },
-  { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Nouveau serveur', mcVersion: '1.21.1', statusOverride: 'INDISPONIBLE' },
+  { id: 'v2', category: 'V2 ACTUELLE', name: 'Azuria V2', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Serveur actuel (1.21.4)', mcVersion: '1.21.4', statusOverride: 'INDISPONIBLE' as string | null },
+  { id: 'v3test', category: 'V3 EARLY ACCESS', name: 'Azuria V3 — Serveur de test', host: '91.197.6.19', port: 25854, desc: '⚠️ Serveur de test — attention', mcVersion: '1.21.1', statusOverride: null as string | null },
+  { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Serveur principal V3', mcVersion: '1.21.1', statusOverride: 'INDISPONIBLE' as string | null },
 ]
 
 type Tab = 'home' | 'settings'
@@ -24,7 +25,7 @@ const S = {
 
 export default function Dashboard({ profile, onLogout }: { profile: any; onLogout: () => void }) {
   const [tab, setTab] = useState<Tab>('home')
-  const [selectedServer, setSelectedServer] = useState('v2')
+  const [selectedServer, setSelectedServer] = useState('v3test')
   const [showAccounts, setShowAccounts] = useState(false)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [controllable, setControllable] = useState(false)
@@ -203,15 +204,15 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
       </div>
 
       {/* MAIN */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {tab === 'home' && (
-          <div className="flex-1 flex flex-col items-center justify-center p-8">
+          <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto overflow-x-hidden">
             <img src={logo} alt="Azuria" className="w-28 h-28 object-contain mb-4" style={{ filter: 'drop-shadow(0 0 28px rgba(79,142,247,0.5))', animation: 'float 4s ease-in-out infinite' }} />
             <h1 className="font-black mb-1" style={{ fontSize: 40, letterSpacing: -2, background: 'linear-gradient(135deg, #fff 0%, #4f8ef7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AZURIA V3</h1>
             <p className="mb-8" style={{ color: S.text2, fontSize: 14 }}>Prêt à rejoindre l'aventure ?</p>
 
             {/* Server selector with ping */}
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md min-w-0">
               <div className="flex items-center justify-between mb-2">
                 <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.text3 }}>Choisir le serveur</div>
                 <button onClick={pingAllServers} className="flex items-center gap-1 px-2 py-1 rounded transition-colors hover:bg-white/5" style={{ fontSize: 10, color: S.text3 }}>
@@ -228,7 +229,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                       const bars = getPingBars(st?.ping)
                       return (
                         <button key={srv.id} onClick={() => !isBusy && !isRunning && setSelectedServer(srv.id)}
-                          className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all"
+                          className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all w-full min-w-0 overflow-hidden"
                           style={{ background: selectedServer === srv.id ? 'rgba(79,142,247,0.12)' : S.surface, border: `1px solid ${selectedServer === srv.id ? 'rgba(79,142,247,0.4)' : S.border}`, boxShadow: selectedServer === srv.id ? '0 0 20px rgba(79,142,247,0.15)' : 'none', opacity: isBusy && selectedServer !== srv.id ? 0.5 : 1 }}>
                           
                           {/* Server icon / status dot */}
@@ -240,7 +241,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                             </div>
                           )}
 
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 overflow-hidden">
                             <div className="flex items-center gap-2 mb-0.5">
                               <span style={{ fontWeight: 700, fontSize: 14, color: S.text }}>{srv.name}</span>
                               {srv.statusOverride ? (
@@ -253,7 +254,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                                 <span style={{ fontSize: 9, color: S.red, border: `1px solid rgba(255,68,68,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>HORS LIGNE</span>
                               )}
                             </div>
-                            <div style={{ fontSize: 11, color: S.text3, marginBottom: 2 }}>{srv.host}{srv.port === 25565 ? '' : `:${srv.port}`}</div>
+                            <div className="truncate" style={{ fontSize: 11, color: S.text3, marginBottom: 2 }}>{srv.host}{srv.port === 25565 ? '' : `:${srv.port}`}</div>
                             {isOnline && st?.motd && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text2 }} className="truncate">{st.motd.replace(/§[0-9a-fk-or]/gi, '')}</div>}
                             {isOnline && st?.players && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text3 }}>{st.players.online}/{st.players.max} joueurs · {srv.mcVersion}</div>}
                           </div>
