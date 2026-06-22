@@ -150,9 +150,10 @@ function createWindow() {
         const code = await new Promise<string>((resolve, reject) => {
           const loginWin = new BrowserWindow({ width: 500, height: 650, resizable: false, title: "Connexion Microsoft", autoHideMenuBar: true, webPreferences: { nodeIntegration: false, contextIsolation: true } })
           loginWin.setMenu(null)
+          loginWin.webContents.session.clearStorageData()
           loginWin.loadURL(authManager.createLink())
           let loading = false
-          loginWin.on("close", () => { if (!loading) reject(new Error("FenÃªtre fermÃ©e")) })
+          loginWin.on("close", () => { if (!loading) reject(new Error("Fenêtre fermée")) })
           loginWin.webContents.on("did-finish-load", () => {
             const loc = loginWin.webContents.getURL()
             if (loc.startsWith(authManager.token.redirect)) {
@@ -164,14 +165,14 @@ function createWindow() {
         })
         const xboxManager = await authManager.login(code)
 
-        // Try to get Minecraft token â€” fails if account doesn't own the game
+        // Try to get Minecraft token
         let token: any
         try {
           token = await xboxManager.getMinecraft()
         } catch (_mcErr: any) {
           return {
             error: "no_game",
-            message: "Ce compte Microsoft ne possÃ¨de pas Minecraft Java Edition.\nAchetez-le sur minecraft.net, connectez-vous avec un autre compte,\nou utilisez l'accÃ¨s Azuria (mode sans compte)."
+            message: "Ce compte Microsoft ne possède pas Minecraft Java Edition.\nAchetez-le sur minecraft.net, connectez-vous avec un autre compte,\nou utilisez le mode Hors-Ligne."
           }
         }
 
@@ -353,7 +354,7 @@ function createWindow() {
     // Launch Game
     ipcMain.handle('launch-game', async (_e, profileId, serverHost?: string, serverPort?: number, mcVersion?: string) => {
       if (gameProcess) {
-        win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Le jeu est dÃ©jÃ  en cours...' })
+        win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Le jeu est déjà en cours...' })
         return
       }
 
@@ -480,10 +481,26 @@ function createWindow() {
         meta: profile.type === 'crack' ? { type: 'legacy', demo: false } : { type: 'msa', demo: false }
       }
 
-      const javaPath = fs.existsSync(MC_JAVA_PATH) ? MC_JAVA_PATH : undefined
+      let javaPath = fs.existsSync(MC_JAVA_PATH) ? MC_JAVA_PATH : undefined
+      
+      const cp = require('node:child_process')
+      
+      // Verification if java is available on system
+      if (!javaPath) {
+        try {
+          const { status, error } = cp.spawnSync('java', ['-version'])
+          if (error || status !== 0) {
+            win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur' })
+            return { error: 'no_java', message: 'Java 21 n\'est pas installé sur cet ordinateur.\nLe jeu officiel Minecraft installe Java automatiquement. Si vous ne l\'avez pas, installez Java 21.' }
+          }
+        } catch {
+          win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur' })
+          return { error: 'no_java', message: 'Java 21 n\'est pas installé sur cet ordinateur.\nInstallez Java 21 ou le jeu officiel Minecraft.' }
+        }
+      }
+
       console.log(`[Azuria] Using Java: ${javaPath || 'system java'}`)
 
-      const cp = require('node:child_process')
       const originalSpawn = cp.spawn
       cp.spawn = function(command: string, args: string[], options: any) {
         if (command.includes('java')) {

@@ -39,7 +39,7 @@
     "installerIcon": "build/installerIcon.ico",
     "uninstallerIcon": "build/icon.ico",
     "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false,
+    "deleteAppDataOnUninstall": true,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
     "shortcutName": "Azuria Launcher"

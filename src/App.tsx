@@ -12,9 +12,9 @@ export default function App() {
   const [showUpdate, setShowUpdate] = useState(false)
 
   useEffect(() => {
-    window.ipcRenderer.invoke('get-active-profile').then(saved => {
-      if (saved) setActiveProfile(saved)
-    })
+    // window.ipcRenderer.invoke('get-active-profile').then(saved => {
+    //   if (saved) setActiveProfile(saved)
+    // })
   }, [])
 
   return (

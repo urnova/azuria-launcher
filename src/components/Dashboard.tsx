@@ -112,6 +112,8 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
         }
       } else if (res.error === 'no_game') {
         alert(res.message)
+      } else if (res.error === 'no_java') {
+        alert(res.message)
       }
     }
   }
