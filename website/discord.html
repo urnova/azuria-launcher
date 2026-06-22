@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Rejoindre le Discord — Azuria</title>
+        <meta
+            name="description"
+            content="Avant de rejoindre le Discord d'Azuria, quelques mots sur qui on est et l'ambiance qui vous attend."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="style.css" />
+        <style>
+            /* ── Page-specific ── */
+            .discord-page {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 100px 24px 60px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .discord-bg {
+                position: absolute;
+                inset: 0;
+                background:
+                    radial-gradient(
+                        ellipse 70% 50% at 30% 30%,
+                        rgba(88, 101, 242, 0.12) 0%,
+                        transparent 65%
+                    ),
+                    radial-gradient(
+                        ellipse 50% 40% at 75% 75%,
+                        rgba(79, 142, 247, 0.08) 0%,
+                        transparent 60%
+                    );
+                pointer-events: none;
+            }
+
+            .discord-grid {
+                position: absolute;
+                inset: 0;
+                background-image:
+                    linear-gradient(
+                        rgba(255, 255, 255, 0.02) 1px,
+                        transparent 1px
+                    ),
+                    linear-gradient(
+                        90deg,
+                        rgba(255, 255, 255, 0.02) 1px,
+                        transparent 1px
+                    );
+                background-size: 60px 60px;
+                pointer-events: none;
+                opacity: 0.5;
+            }
+
+            .discord-card-wrap {
+                position: relative;
+                z-index: 1;
+                width: 100%;
+                max-width: 680px;
+            }
+
+            /* Back link */
+            .back-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.85rem;
+                color: var(--text3);
+                margin-bottom: 32px;
+                transition: color var(--trans);
+            }
+            .back-link:hover {
+                color: var(--text2);
+            }
+
+            /* Main card */
+            .discord-main-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
+            }
+
+            /* Header band */
+            .dc-header {
+                background: linear-gradient(
+                    135deg,
+                    #3a3f8f 0%,
+                    #5865f2 50%,
+                    #4752c4 100%
+                );
+                padding: 36px 40px 32px;
+                position: relative;
+                overflow: hidden;
+            }
+            .dc-header::before {
+                content: "";
+                position: absolute;
+                top: -40px;
+                right: -40px;
+                width: 180px;
+                height: 180px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.06);
+            }
+            .dc-header::after {
+                content: "";
+                position: absolute;
+                bottom: -60px;
+                left: -20px;
+                width: 220px;
+                height: 220px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.04);
+            }
+
+            .dc-logo-row {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                position: relative;
+                z-index: 1;
+            }
+            .dc-discord-icon {
+                width: 52px;
+                height: 52px;
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.6rem;
+                flex-shrink: 0;
+            }
+            .dc-header-text h1 {
+                font-size: 1.4rem;
+                font-weight: 800;
+                color: #fff;
+                margin-bottom: 2px;
+            }
+            .dc-header-text p {
+                font-size: 0.82rem;
+                color: rgba(255, 255, 255, 0.7);
+            }
+
+            /* Body */
+            .dc-body {
+                padding: 36px 40px;
+            }
+
+            /* Section label */
+            .dc-section-label {
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                color: var(--text3);
+                margin-bottom: 12px;
+            }
+
+            /* Warning box */
+            .dc-not-official {
+                display: flex;
+                gap: 14px;
+                align-items: flex-start;
+                background: rgba(255, 184, 0, 0.06);
+                border: 1px solid rgba(255, 184, 0, 0.2);
+                border-radius: var(--radius);
+                padding: 16px 18px;
+                margin-bottom: 28px;
+            }
+            .dc-not-official .notif-icon {
+                font-size: 1.3rem;
+                flex-shrink: 0;
+                margin-top: 2px;
+            }
+            .dc-not-official p {
+                font-size: 0.88rem;
+                line-height: 1.65;
+                color: var(--text2);
+            }
+            .dc-not-official strong {
+                color: var(--gold);
+            }
+
+            /* Streamers block */
+            .dc-streamers {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-bottom: 28px;
+            }
+            .dc-streamer-card {
+                background: var(--surface2);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                padding: 16px;
+                text-align: center;
+                transition:
+                    border-color var(--trans),
+                    transform var(--trans);
+            }
+            .dc-streamer-card:hover {
+                border-color: rgba(88, 101, 242, 0.4);
+                transform: translateY(-2px);
+            }
+            .dc-streamer-avatar {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: linear-gradient(
+                    135deg,
+                    rgba(88, 101, 242, 0.3),
+                    rgba(79, 142, 247, 0.3)
+                );
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.4rem;
+                margin: 0 auto 8px;
+                border: 2px solid rgba(88, 101, 242, 0.35);
+            }
+            .dc-streamer-name {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: var(--text);
+                margin-bottom: 2px;
+            }
+            .dc-streamer-role {
+                font-size: 0.72rem;
+                color: var(--text3);
+            }
+
+            /* Vibe description */
+            .dc-vibe {
+                margin-bottom: 28px;
+            }
+            .dc-vibe-text {
+                font-size: 0.9rem;
+                line-height: 1.75;
+                color: var(--text2);
+            }
+            .dc-vibe-text strong {
+                color: var(--text);
+            }
+
+            /* Mood tags */
+            .dc-mood-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 14px;
+            }
+            .dc-mood-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 5px 12px;
+                border-radius: 999px;
+                font-size: 0.78rem;
+                font-weight: 600;
+                border: 1px solid var(--border2);
+                background: var(--surface2);
+                color: var(--text2);
+            }
+
+            /* CTA */
+            .dc-cta {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .dc-join-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                width: 100%;
+                padding: 15px 28px;
+                border-radius: var(--radius);
+                background: #5865f2;
+                color: #fff;
+                font-size: 1rem;
+                font-weight: 700;
+                transition: all var(--trans);
+                box-shadow: 0 4px 20px rgba(88, 101, 242, 0.35);
+            }
+            .dc-join-btn:hover {
+                background: #4752c4;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 30px rgba(88, 101, 242, 0.5);
+            }
+            .dc-join-btn .btn-icon {
+                font-size: 1.1rem;
+            }
+            .dc-back-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                width: 100%;
+                padding: 12px 28px;
+                border-radius: var(--radius);
+                background: transparent;
+                border: 1px solid var(--border2);
+                color: var(--text2);
+                font-size: 0.9rem;
+                font-weight: 600;
+                transition: all var(--trans);
+            }
+            .dc-back-btn:hover {
+                background: var(--surface2);
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+
+            /* Footer note */
+            .dc-footer-note {
+                text-align: center;
+                margin-top: 16px;
+                font-size: 0.72rem;
+                color: var(--text3);
+            }
+            .dc-footer-note a {
+                color: #5865f2;
+                text-decoration: underline;
+                text-underline-offset: 2px;
+            }
+
+            /* Divider */
+            .dc-divider {
+                height: 1px;
+                background: var(--border);
+                margin: 24px 0;
+            }
+
+            /* Responsive */
+            @media (max-width: 540px) {
+                .dc-header {
+                    padding: 28px 24px;
+                }
+                .dc-body {
+                    padding: 28px 24px;
+                }
+                .dc-streamers {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- ══ NAVBAR ══ -->
+        <header class="navbar" id="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-logo">
+                    <img src="assets/logo.png" alt="Azuria" />
+                    <span>
+                        <span class="logo-name">Azuria</span>
+                        <span class="logo-tag">Discord</span>
+                    </span>
+                </a>
+                <nav class="nav-links" id="nav-links">
+                    <a href="index.html" class="nav-link">Accueil</a>
+                    <a href="grimoire.html" class="nav-link">📖 Grimoire</a>
+                    <a href="discord.html" class="nav-link active">Discord</a>
+                    <a href="download.html" class="nav-cta">⬇ Télécharger →</a>
+                </nav>
+                <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ══ PAGE ══ -->
+        <main class="discord-page">
+            <div class="discord-bg"></div>
+            <div class="discord-grid"></div>
+
+            <div class="discord-card-wrap">
+                <!-- Retour -->
+                <a href="index.html" class="back-link">
+                    ← Retour à l'accueil
+                </a>
+
+                <!-- Carte principale -->
+                <div class="discord-main-card">
+
+                    <!-- Header Discord -->
+                    <div class="dc-header">
+                        <div class="dc-logo-row">
+                            <div class="dc-discord-icon">💬</div>
+                            <div class="dc-header-text">
+                                <h1>Discord Azuria</h1>
+                                <p>Deux potes, un serveur, beaucoup de rires.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Corps -->
+                    <div class="dc-body">
+
+                        <!-- Avertissement non-officiel -->
+                        <div class="dc-not-official">
+                            <span class="notif-icon">⚠️</span>
+                            <p>
+                                <strong>Ce n'est pas un Discord officiel</strong>
+                                d'une licence ou d'un jeu existant. Azuria est
+                                le projet perso de deux streamers qui ont décidé
+                                de créer leur propre univers Minecraft — de zéro,
+                                juste pour le fun.
+                            </p>
+                        </div>
+
+                        <!-- Les créateurs -->
+                        <div class="dc-section-label">Qui sommes-nous ?</div>
+                        <div class="dc-streamers">
+                            <div class="dc-streamer-card">
+                                <div class="dc-streamer-avatar">🎮</div>
+                                <div class="dc-streamer-name">Streamer #1</div>
+                                <div class="dc-streamer-role">Co-fondateur · Dev & Idées</div>
+                            </div>
+                            <div class="dc-streamer-card">
+                                <div class="dc-streamer-avatar">🎙️</div>
+                                <div class="dc-streamer-name">Streamer #2</div>
+                                <div class="dc-streamer-role">Co-fondateur · Ambiance & Contenu</div>
+                            </div>
+                        </div>
+
+                        <div class="dc-divider"></div>
+
+                        <!-- L'ambiance -->
+                        <div class="dc-section-label">L'ambiance du Discord</div>
+                        <div class="dc-vibe">
+                            <p class="dc-vibe-text">
+                                On ne va pas se mentir — notre humour est
+                                <strong>parfois un peu bancal</strong>, les blagues
+                                partent dans tous les sens et personne ne sait
+                                vraiment où ça va finir. Mais c'est exactement
+                                ce qu'on aime.
+                            </p>
+                            <p class="dc-vibe-text" style="margin-top: 10px">
+                                Ce Discord c'est avant tout un espace pour
+                                <strong>s'amuser</strong>, discuter, débugger des
+                                trucs incompréhensibles à 2h du mat, et partager
+                                les moments épiques ou catastrophiques du serveur.
+                                Avec nous, <strong>c'est rire assuré</strong> —
+                                ou au moins on essaie très fort.
+                            </p>
+
+                            <div class="dc-mood-tags">
+                                <span class="dc-mood-tag">😂 Humour douteux</span>
+                                <span class="dc-mood-tag">🎮 Passionnés</span>
+                                <span class="dc-mood-tag">☕ Bonne ambiance</span>
+                                <span class="dc-mood-tag">🔧 Actifs</span>
+                                <span class="dc-mood-tag">💬 Communauté proche</span>
+                                <span class="dc-mood-tag">🚀 Toujours en dev</span>
+                            </div>
+                        </div>
+
+                        <div class="dc-divider"></div>
+
+                        <!-- CTA -->
+                        <div class="dc-cta">
+                            <a
+                                href="https://discord.gg/fyVdHD8CtM"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="dc-join-btn"
+                            >
+                                <span class="btn-icon">💬</span>
+                                Rejoindre le Discord Azuria
+                            </a>
+                            <a href="index.html" class="dc-back-btn">
+                                ← Retour au site
+                            </a>
+                        </div>
+
+                        <!-- Note bas de page -->
+                        <p class="dc-footer-note">
+                            En rejoignant, vous acceptez les règles du serveur Discord.
+                            Lien direct :
+                            <a href="https://discord.gg/fyVdHD8CtM" target="_blank" rel="noopener">
+                                discord.gg/fyVdHD8CtM
+                            </a>
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ══ FOOTER ══ -->
+        <footer class="footer">
+            <div class="footer-inner">
+                <div class="footer-links">
+                    <a href="index.html" class="footer-link">Accueil</a>
+                    <a href="grimoire.html" class="footer-link">Grimoire</a>
+                    <a href="discord.html" class="footer-link">Discord</a>
+                    <a href="download.html" class="footer-link">Télécharger</a>
+                </div>
+                <p class="footer-copy">
+                    © 2026 Astral Technologie — Azuria V3 • playazuria.astraltechnologie.fr
+                </p>
+            </div>
+        </footer>
+
+        <div class="toast" role="status"></div>
+        <script src="script.js"></script>
+    </body>
+</html>
