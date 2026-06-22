@@ -324,19 +324,8 @@ function createWindow() {
                   resolve({ done: false, error: 'Validation fichier échouée: ' + ve.message })
                   return
                 }
-                // Launch installer
-                try {
-                  const { shell } = await import('electron')
-                  await shell.openPath(tmpPath)
-                  resolve({ done: true })
-                } catch {
-                  try {
-                    require('child_process').spawn('cmd', ['/c', 'start', '', tmpPath], { detached: true, stdio: 'ignore', shell: false }).unref()
-                    resolve({ done: true })
-                  } catch (e2: any) {
-                    resolve({ done: false, error: e2.message })
-                  }
-                }
+                // Ne PAS lancer l'installateur ici ! On attend que l'utilisateur clique sur "Redémarrer".
+                resolve({ done: true })
               })
             })
             res.on('error', (e: any) => resolve({ done: false, error: e.message }))
@@ -348,8 +337,16 @@ function createWindow() {
       })
     })
 
-    ipcMain.handle('install-update', () => {
-      app.quit()
+    ipcMain.handle('install-update', async () => {
+      const tmpPath = path.join(app.getPath('temp'), 'AzuriaSetup-update.exe')
+      try {
+        const { shell } = await import('electron')
+        await shell.openPath(tmpPath)
+      } catch {
+        require('child_process').spawn('cmd', ['/c', 'start', '', tmpPath], { detached: true, stdio: 'ignore', shell: false }).unref()
+      }
+      // Quitter l'application pour que l'installateur puisse écraser les fichiers
+      setTimeout(() => app.quit(), 500)
     })
 
     // Launch Game
