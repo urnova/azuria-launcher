@@ -5,9 +5,9 @@ import { SkinViewer, IdleAnimation, WalkingAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
 
 const SERVERS = [
-  { id: 'v2', category: 'V2 ACTUELLE', name: 'Azuria V2', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Serveur actuel (1.21.4)', mcVersion: '1.21.4', statusOverride: null as string | null },
-  { id: 'v3test', category: 'V3 EARLY ACCESS', name: 'Azuria V3 — Serveur de test', host: '91.197.6.19', port: 25854, desc: '⚠️ Serveur de test — attention', mcVersion: '1.21.1', statusOverride: null as string | null },
-  { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Serveur principal V3', mcVersion: '1.21.1', statusOverride: 'INDISPONIBLE' as string | null },
+  { id: 'v2', category: 'V2 ACTUELLE', name: 'Azuria V2', host: 'game2.northhost.fr', port: 26130, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur actuel (1.21.4)', mcVersion: '1.21.4', statusOverride: null as string | null },
+  { id: 'v3test', category: 'V3 EARLY ACCESS', name: 'Azuria V3 — Serveur de test', host: '91.197.6.19', port: 25854, displayHost: '91.197.6.19:25854', desc: '⚠️ Serveur de test — attention', mcVersion: '1.21.1', statusOverride: null as string | null },
+  { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'game2.northhost.fr', port: 26130, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.21.1', statusOverride: null as string | null },
 ]
 
 type Tab = 'home' | 'settings'
@@ -254,7 +254,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                                 <span style={{ fontSize: 9, color: S.red, border: `1px solid rgba(255,68,68,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>HORS LIGNE</span>
                               )}
                             </div>
-                            <div className="truncate" style={{ fontSize: 11, color: S.text3, marginBottom: 2 }}>{srv.host}{srv.port === 25565 ? '' : `:${srv.port}`}</div>
+                            <div className="truncate" style={{ fontSize: 11, color: S.text3, marginBottom: 2 }}>{srv.displayHost}</div>
                             {isOnline && st?.motd && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text2 }} className="truncate">{st.motd.replace(/§[0-9a-fk-or]/gi, '')}</div>}
                             {isOnline && st?.players && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text3 }}>{st.players.online}/{st.players.max} joueurs · {srv.mcVersion}</div>}
                           </div>
@@ -336,7 +336,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
             ) : (
               <div>
                 <span style={{ fontSize: 12, fontWeight: 700, color: S.text }}>{server.name}</span>
-                <span style={{ fontSize: 11, color: S.text3 }}> · {server.host}{server.port === 25565 ? '' : `:${server.port}`}</span>
+                <span style={{ fontSize: 11, color: S.text3 }}> · {server.displayHost}</span>
                 {server.statusOverride ? (
                   <span style={{ fontSize: 10, color: S.text3, marginLeft: 8 }}>● {server.statusOverride}</span>
                 ) : status?.online ? (
