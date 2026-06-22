@@ -154,6 +154,11 @@ function createWindow() {
           loginWin.loadURL(authManager.createLink())
           let loading = false
           loginWin.on("close", () => { if (!loading) reject(new Error("Fenêtre fermée")) })
+          loginWin.webContents.on("did-fail-load", (_e, errorCode, errorDescription) => {
+            if (loading) return
+            reject(new Error(`La page Microsoft n'a pas pu s'afficher (Erreur ${errorCode}: ${errorDescription}). Vérifiez que l'heure de votre PC est correcte !`))
+            try { loginWin.close() } catch {}
+          })
           loginWin.webContents.on("did-finish-load", () => {
             const loc = loginWin.webContents.getURL()
             if (loc.startsWith(authManager.token.redirect)) {
@@ -261,7 +266,9 @@ function createWindow() {
         const tmpZip = path.join(app.getPath('temp'), 'azuria_java21.zip')
 
         function doRequest(url: string, redirects = 0) {
-          https.get(url, (res: any) => {
+          const opts = new URL(url) as any
+          opts.rejectUnauthorized = false // Bypass certificate errors for old PCs with wrong clock
+          https.get(opts, (res: any) => {
             if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
               if (redirects > 5) return reject(new Error('Trop de redirections'))
               return doRequest(res.headers.location, redirects + 1)
