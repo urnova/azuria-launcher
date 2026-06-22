@@ -650,6 +650,12 @@ function createWindow() {
       // Monitor stdout to detect disconnects and close game automatically
       let hasConnected = false
       let killPending = false
+      let gameIsRunning = false  // Flag: once RUNNING, stop sending SYNCING progress from logs
+      function setRunning() {
+        if (gameIsRunning) return
+        gameIsRunning = true
+        win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Jeu en cours !' })
+      }
       function killGame(reason: string) {
         if (killPending) return
         killPending = true
@@ -664,21 +670,26 @@ function createWindow() {
         const line = String(e)
         console.log('[MC]', line)
 
-        // --- Live status messages from Minecraft/NeoForge stdout ---
-        if (line.includes('Loading Minecraft')) {
-          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 50, task: 'Chargement de Minecraft...' })
-        } else if (line.includes('ModLauncher running') || line.includes('FML marker')) {
-          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 55, task: 'Initialisation de NeoForge...' })
-        } else if (line.includes('Loading mods') || line.includes('Discovering mods') || line.includes('ModDiscoveryCompleted')) {
-          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 65, task: 'Chargement des mods...' })
-        } else if (line.includes('Performing pre-initialization') || line.includes('PreInitialization')) {
-          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 70, task: 'Pré-initialisation des mods...' })
-        } else if (line.includes('Performing initialization') || line.includes('FMLModIdMapping')) {
-          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 80, task: 'Initialisation des mods...' })
-        } else if (line.includes('Performing post-initialization') || line.includes('InterModComms')) {
-          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 90, task: 'Finalisation des mods...' })
-        } else if (line.includes('Minecraft finished loading') || line.includes('Setting user:') || line.includes('[Worker-Main-')) {
-          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 99, task: 'Lancement du jeu... Presque prêt !' })
+        // --- Live status messages from Minecraft/NeoForge stdout (only before RUNNING) ---
+        if (!gameIsRunning) {
+          if (line.includes('Loading Minecraft')) {
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 50, task: 'Chargement de Minecraft...' })
+          } else if (line.includes('ModLauncher running') || line.includes('FML marker')) {
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 55, task: 'Initialisation de NeoForge...' })
+          } else if (line.includes('Loading mods') || line.includes('Discovering mods') || line.includes('ModDiscoveryCompleted')) {
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 65, task: 'Chargement des mods...' })
+          } else if (line.includes('Performing pre-initialization') || line.includes('PreInitialization')) {
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 70, task: 'Pré-initialisation des mods...' })
+          } else if (line.includes('Performing initialization') || line.includes('FMLModIdMapping')) {
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 80, task: 'Initialisation des mods...' })
+          } else if (line.includes('Performing post-initialization') || line.includes('InterModComms')) {
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 90, task: 'Finalisation des mods...' })
+          } else if (line.includes('Minecraft finished loading') || line.includes('Setting user:')) {
+            // Game fully loaded — switch to RUNNING immediately
+            setRunning()
+          } else if (line.includes('[Worker-Main-') || line.includes('sound engine')) {
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 99, task: 'Lancement du jeu... Presque prêt !' })
+          }
         }
 
         // Track when we actually connect to a server (multiple patterns for NeoForge 1.21.x)
@@ -743,7 +754,8 @@ function createWindow() {
            win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Le jeu a planté au démarrage.' })
         } else {
            gameProcess = spawnedProcess
-           win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Jeu en cours !' })
+           // Only set RUNNING here if not already set by the data listener
+           setRunning()
         }
       } catch (error: any) {
         cp.spawn = originalSpawn // restore spawn
