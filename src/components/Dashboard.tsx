@@ -7,7 +7,7 @@ import UpdateModal from './UpdateModal'
 const SERVERS = [
   { id: 'v2', category: 'V2 ACTUELLE', name: 'Azuria V2', host: 'game2.northhost.fr', port: 26130, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur actuel (1.21.4)', mcVersion: '1.21.4', statusOverride: null as string | null },
   { id: 'v3test', category: 'V3 EARLY ACCESS', name: 'Azuria V3 — Serveur de test', host: '91.197.6.19', port: 25854, displayHost: '91.197.6.19:25854', desc: '⚠️ Serveur de test — attention', mcVersion: '1.21.1', statusOverride: null as string | null },
-  { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'game2.northhost.fr', port: 26130, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.21.1', statusOverride: null as string | null },
+  { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'game2.northhost.fr', port: 26130, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.21.1', statusOverride: 'INDISPONIBLE' as string | null },
 ]
 
 type Tab = 'home' | 'settings'
