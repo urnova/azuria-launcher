@@ -5,8 +5,8 @@ import { SkinViewer, IdleAnimation, WalkingAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
 
 const SERVERS = [
-  { id: 'main', name: 'Azuria', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Serveur principal' },
-  { id: 'dts', name: 'Serveur de Test', host: '91.197.6.19', port: 25854, desc: 'Développement' },
+  { id: 'v2', category: 'V2 ACTUELLE', name: 'Azuria V2', host: '91.197.6.19', port: 25854, desc: 'Serveur actuel', mcVersion: '1.21.4', statusOverride: null },
+  { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'playazuria.astraltechnologie.fr', port: 25565, desc: 'Nouveau serveur', mcVersion: '1.21.1', statusOverride: 'INDISPONIBLE' },
 ]
 
 type Tab = 'home' | 'settings'
@@ -24,7 +24,7 @@ const S = {
 
 export default function Dashboard({ profile, onLogout }: { profile: any; onLogout: () => void }) {
   const [tab, setTab] = useState<Tab>('home')
-  const [selectedServer, setSelectedServer] = useState('dts')
+  const [selectedServer, setSelectedServer] = useState('v2')
   const [showAccounts, setShowAccounts] = useState(false)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [controllable, setControllable] = useState(false)
@@ -40,6 +40,10 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
     await Promise.all(SERVERS.map(async (srv) => {
       const t0 = Date.now()
       try {
+        if (srv.statusOverride) {
+          results[srv.id] = { online: false }
+          return
+        }
         const res = await window.ipcRenderer.invoke('ping-server', srv.host, srv.port)
         results[srv.id] = { ...res, ping: Date.now() - t0 }
       } catch {
@@ -88,7 +92,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
 
   const handleLaunch = async () => {
     setProgress({ state: 'SYNCING', percent: 0, task: 'Initialisation...' })
-    const res = await window.ipcRenderer.invoke('launch-game', profile.id, server.host, server.port)
+    const res = await window.ipcRenderer.invoke('launch-game', profile.id, server.host, server.port, server.mcVersion)
     if (res && res.error) {
       setProgress({ state: 'CLOSED', percent: 0, task: res.message || 'Erreur de connexion' })
       if (res.error === 'session_expired') {
@@ -214,51 +218,60 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                   <RefreshCw size={10} />Actualiser
                 </button>
               </div>
-              <div className="flex flex-col gap-2">
-                {SERVERS.map(srv => {
-                  const st = serverStatuses[srv.id]
-                  const isOnline = st?.online === true
-                  const bars = getPingBars(st?.ping)
-                  return (
-                    <button key={srv.id} onClick={() => !isBusy && !isRunning && setSelectedServer(srv.id)}
-                      className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all"
-                      style={{ background: selectedServer === srv.id ? 'rgba(79,142,247,0.12)' : S.surface, border: `1px solid ${selectedServer === srv.id ? 'rgba(79,142,247,0.4)' : S.border}`, boxShadow: selectedServer === srv.id ? '0 0 20px rgba(79,142,247,0.15)' : 'none', opacity: isBusy && selectedServer !== srv.id ? 0.5 : 1 }}>
-                      
-                      {/* Server icon / status dot */}
-                      {st?.favicon ? (
-                        <img src={st.favicon} alt="" className="w-10 h-10 rounded" style={{ imageRendering: 'pixelated' }} />
-                      ) : (
-                        <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: S.surface3 }}>
-                          <Server size={18} style={{ color: isOnline ? S.accent : S.text3 }} />
-                        </div>
-                      )}
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span style={{ fontWeight: 700, fontSize: 14, color: S.text }}>{srv.name}</span>
-                          {st === undefined ? (
-                            <span style={{ fontSize: 9, color: S.text3, border: `1px solid ${S.border2}`, padding: '1px 6px', borderRadius: 4 }}>…</span>
-                          ) : isOnline ? (
-                            <span style={{ fontSize: 9, color: S.green, border: `1px solid rgba(68,204,102,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>EN LIGNE</span>
+              <div className="flex flex-col gap-4">
+                {['V2 ACTUELLE', 'V3 EARLY ACCESS'].map(cat => (
+                  <div key={cat} className="flex flex-col gap-2">
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.text3 }}>{cat}</div>
+                    {SERVERS.filter(s => s.category === cat).map(srv => {
+                      const st = serverStatuses[srv.id]
+                      const isOnline = srv.statusOverride ? false : st?.online === true
+                      const bars = getPingBars(st?.ping)
+                      return (
+                        <button key={srv.id} onClick={() => !isBusy && !isRunning && setSelectedServer(srv.id)}
+                          className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all"
+                          style={{ background: selectedServer === srv.id ? 'rgba(79,142,247,0.12)' : S.surface, border: `1px solid ${selectedServer === srv.id ? 'rgba(79,142,247,0.4)' : S.border}`, boxShadow: selectedServer === srv.id ? '0 0 20px rgba(79,142,247,0.15)' : 'none', opacity: isBusy && selectedServer !== srv.id ? 0.5 : 1 }}>
+                          
+                          {/* Server icon / status dot */}
+                          {st?.favicon && !srv.statusOverride ? (
+                            <img src={st.favicon} alt="" className="w-10 h-10 rounded" style={{ imageRendering: 'pixelated' }} />
                           ) : (
-                            <span style={{ fontSize: 9, color: S.red, border: `1px solid rgba(255,68,68,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>HORS LIGNE</span>
+                            <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: S.surface3 }}>
+                              <Server size={18} style={{ color: srv.statusOverride ? S.text3 : (isOnline ? S.accent : S.text3) }} />
+                            </div>
                           )}
-                        </div>
-                        <div style={{ fontSize: 11, color: S.text3, marginBottom: 2 }}>{srv.host}{srv.port === 25565 ? '' : `:${srv.port}`}</div>
-                        {isOnline && st?.motd && <div style={{ fontSize: 10, color: S.text2 }} className="truncate">{st.motd.replace(/§[0-9a-fk-or]/gi, '')}</div>}
-                        {isOnline && st?.players && <div style={{ fontSize: 10, color: S.text3 }}>{st.players.online}/{st.players.max} joueurs · {st.version}</div>}
-                      </div>
 
-                      {/* Ping bars */}
-                      <div className="flex items-end gap-0.5 shrink-0">
-                        {[1,2,3,4,5].map(b => (
-                          <div key={b} style={{ width: 3, height: 4 + b * 2, borderRadius: 1, background: isOnline && bars >= b ? getPingColor(st?.ping) : S.border2, opacity: isOnline && bars >= b ? 1 : 0.3 }} />
-                        ))}
-                        {isOnline && st?.ping && <span style={{ fontSize: 9, color: getPingColor(st?.ping), marginLeft: 4 }}>{st.ping}ms</span>}
-                      </div>
-                    </button>
-                  )
-                })}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span style={{ fontWeight: 700, fontSize: 14, color: S.text }}>{srv.name}</span>
+                              {srv.statusOverride ? (
+                                <span style={{ fontSize: 9, color: S.text3, border: `1px solid ${S.border2}`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>{srv.statusOverride}</span>
+                              ) : st === undefined ? (
+                                <span style={{ fontSize: 9, color: S.text3, border: `1px solid ${S.border2}`, padding: '1px 6px', borderRadius: 4 }}>…</span>
+                              ) : isOnline ? (
+                                <span style={{ fontSize: 9, color: S.green, border: `1px solid rgba(68,204,102,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>EN LIGNE</span>
+                              ) : (
+                                <span style={{ fontSize: 9, color: S.red, border: `1px solid rgba(255,68,68,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>HORS LIGNE</span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 11, color: S.text3, marginBottom: 2 }}>{srv.host}{srv.port === 25565 ? '' : `:${srv.port}`}</div>
+                            {isOnline && st?.motd && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text2 }} className="truncate">{st.motd.replace(/§[0-9a-fk-or]/gi, '')}</div>}
+                            {isOnline && st?.players && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text3 }}>{st.players.online}/{st.players.max} joueurs · {srv.mcVersion}</div>}
+                          </div>
+
+                          {/* Ping bars */}
+                          {!srv.statusOverride && (
+                            <div className="flex items-end gap-0.5 shrink-0">
+                              {[1,2,3,4,5].map(b => (
+                                <div key={b} style={{ width: 3, height: 4 + b * 2, borderRadius: 1, background: isOnline && bars >= b ? getPingColor(st?.ping) : S.border2, opacity: isOnline && bars >= b ? 1 : 0.3 }} />
+                              ))}
+                              {isOnline && st?.ping && <span style={{ fontSize: 9, color: getPingColor(st?.ping), marginLeft: 4 }}>{st.ping}ms</span>}
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -318,8 +331,13 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
               <div>
                 <span style={{ fontSize: 12, fontWeight: 700, color: S.text }}>{server.name}</span>
                 <span style={{ fontSize: 11, color: S.text3 }}> · {server.host}{server.port === 25565 ? '' : `:${server.port}`}</span>
-                {status?.online && <span style={{ fontSize: 10, color: S.green, marginLeft: 8 }}>● {status.players?.online}/{status.players?.max} joueurs</span>}
-                {status && !status.online && <span style={{ fontSize: 10, color: S.red, marginLeft: 8 }}>● Hors ligne</span>}
+                {server.statusOverride ? (
+                  <span style={{ fontSize: 10, color: S.text3, marginLeft: 8 }}>● {server.statusOverride}</span>
+                ) : status?.online ? (
+                  <span style={{ fontSize: 10, color: S.green, marginLeft: 8 }}>● {status.players?.online}/{status.players?.max} joueurs</span>
+                ) : status && !status.online ? (
+                  <span style={{ fontSize: 10, color: S.red, marginLeft: 8 }}>● Hors ligne</span>
+                ) : null}
               </div>
             )}
           </div>
@@ -331,6 +349,10 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
           ) : isBusy ? (
             <button className="flex items-center gap-2 px-8 py-3.5 rounded-xl font-black text-base text-white/50 cursor-not-allowed" style={{ background: S.surface3 }}>
               <span className="animate-spin inline-block">⟳</span> EN COURS...
+            </button>
+          ) : server.statusOverride ? (
+            <button disabled className="flex items-center gap-2 px-8 py-3.5 rounded-xl font-black text-base text-white/50 cursor-not-allowed" style={{ background: S.surface3 }}>
+              <AlertTriangle size={18} />INDISPONIBLE
             </button>
           ) : status?.online === false ? (
             <button disabled className="flex items-center gap-2 px-8 py-3.5 rounded-xl font-black text-base text-white/50 cursor-not-allowed" style={{ background: S.surface3 }}>

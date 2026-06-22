@@ -255,7 +255,7 @@ function createWindow() {
     })
 
     // Launch Game
-    ipcMain.handle('launch-game', async (_e, profileId, serverHost?: string, serverPort?: number) => {
+    ipcMain.handle('launch-game', async (_e, profileId, serverHost?: string, serverPort?: number, mcVersion?: string) => {
       if (gameProcess) {
         win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Le jeu est dÃ©jÃ  en cours...' })
         return
@@ -265,20 +265,21 @@ function createWindow() {
       const profile = profiles.find(p => p.id === profileId)
       if (!profile) return
 
-      const settings = store.get('settings') as any
-      const rootPath = path.join(app.getPath('appData'), '.azuria')
+      const v = mcVersion || '1.21.1'
+      const isV2 = v === '1.21.4'
+      const rootPath = path.join(app.getPath('appData'), isV2 ? '.azuria-v2' : '.azuria')
       const launchHost = serverHost || 'playazuria.astraltechnologie.fr'
       const launchPort = serverPort || 25565
       const fs = require('node:fs')
 
       // --- Mod sync ---
-      win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 0, task: 'VÃ©rification des mods...' })
+      win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 0, task: 'Vérification des mods...' })
       const modsDir = path.join(rootPath, 'mods')
       const modsDisabledDir = path.join(rootPath, 'mods-disabled')
       if (!fs.existsSync(modsDir)) fs.mkdirSync(modsDir, { recursive: true })
       if (!fs.existsSync(modsDisabledDir)) fs.mkdirSync(modsDisabledDir, { recursive: true })
 
-      const sourceModsDir = 'F:\\code\\azuria\\azuriav3\\mods-client'
+      const sourceModsDir = isV2 ? 'F:\\code\\azuria\\azuriav3\\mods-client-1.21.4' : 'F:\\code\\azuria\\azuriav3\\mods-client'
       if (fs.existsSync(sourceModsDir)) {
         const sourceFiles = fs.readdirSync(sourceModsDir).filter((f: string) => f.endsWith('.jar'))
         
@@ -329,8 +330,8 @@ function createWindow() {
       }
 
       const optionalMods = [
-        { file: 'controlify-3.0.0+lts+1.21.1-neoforge.jar', enabled: settings.controllable === true },
-        { file: 'yet_another_config_lib_v3-3.8.2+1.21.1-neoforge.jar', enabled: settings.controllable === true }
+        { file: isV2 ? 'controlify-3.0.0+lts+1.21.4-neoforge.jar' : 'controlify-3.0.0+lts+1.21.1-neoforge.jar', enabled: settings.controllable === true },
+        { file: isV2 ? 'yet_another_config_lib_v3-3.8.2+1.21.4-neoforge.jar' : 'yet_another_config_lib_v3-3.8.2+1.21.1-neoforge.jar', enabled: settings.controllable === true }
       ]
       for (const { file, enabled } of optionalMods) {
         const ep = path.join(modsDir, file), dp = path.join(modsDisabledDir, file)
@@ -401,12 +402,19 @@ function createWindow() {
 
       const qpIdentifier = launchPort === 25565 ? launchHost : `${launchHost}:${launchPort}`
 
+      // Force copy of the correct NeoForge installer to rootPath
+      const forgeInstallerSource = isV2 ? path.join(sourceModsDir, 'neoforge-installer.jar') : null
+      const forgeInstallerTarget = path.join(rootPath, 'neoforge-installer.jar')
+      if (isV2 && fs.existsSync(forgeInstallerSource) && !fs.existsSync(forgeInstallerTarget)) {
+        try { fs.copyFileSync(forgeInstallerSource, forgeInstallerTarget) } catch {}
+      }
+
       const opts: any = {
         clientPackage: null,
         authorization: authObj,
         root: rootPath,
-        version: { number: '1.21.1', type: 'release' },
-        forge: path.join(rootPath, 'neoforge-installer.jar'),
+        version: { number: v, type: 'release' },
+        forge: forgeInstallerTarget,
         javaPath,
         memory: {
           max: `${settings.ram || 4}G`,
