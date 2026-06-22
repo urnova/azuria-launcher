@@ -261,47 +261,45 @@ function createWindow() {
         const currentVersion = app.getVersion()
         const latestVersion  = (data.tag_name || '').replace(/^v/, '')
         const hasUpdate = latestVersion !== '' && latestVersion !== currentVersion
-        // Find the exe asset download URL
+        // Find the exe asset — use asset ID for reliable API download (avoids HTML corruption on private repos)
         const exeAsset = (data.assets || []).find((a: any) => a.name.endsWith('.exe') && a.name.startsWith('AzuriaSetup'))
-        const downloadUrl = exeAsset ? exeAsset.browser_download_url : null
-        console.log(`[Updater] current=${currentVersion} latest=${latestVersion} hasUpdate=${hasUpdate}`)
-        return { hasUpdate, currentVersion, latestVersion, downloadUrl, releaseNotes: data.body }
+        const assetId   = exeAsset ? exeAsset.id : null
+        const assetName = exeAsset ? exeAsset.name : null
+        console.log(`[Updater] current=${currentVersion} latest=${latestVersion} hasUpdate=${hasUpdate} assetId=${assetId}`)
+        return { hasUpdate, currentVersion, latestVersion, assetId, assetName, releaseNotes: data.body }
       } catch (e: any) {
         console.warn('[Updater] check failed:', e?.message)
         return { hasUpdate: false, error: e?.message }
       }
     })
 
-    ipcMain.handle('download-update', async (_e, downloadUrl: string) => {
-      // Download the new installer into temp dir and launch it
+    ipcMain.handle('download-update', async (_e, assetId: number) => {
+      // Download via GitHub API asset endpoint — guaranteed to return the real binary, not an HTML error page
       return new Promise((resolve) => {
-        const https = require('https')
+        const https   = require('https')
+        const fs      = require('fs')
         const tmpPath = path.join(app.getPath('temp'), 'AzuriaSetup-update.exe')
-        const file = require('fs').createWriteStream(tmpPath)
-        const opts = {
-          hostname: 'objects.githubusercontent.com',
-          path: new URL(downloadUrl).pathname + new URL(downloadUrl).search,
-          method: 'GET',
-          headers: {
-            'Authorization': `token ${GH_TOKEN}`,
-            'User-Agent': 'azuria-launcher-updater',
-            'Accept': 'application/octet-stream'
-          }
-        }
+
+        // Remove stale file if present
+        try { fs.unlinkSync(tmpPath) } catch {}
+        const file = fs.createWriteStream(tmpPath)
 
         function doRequest(url: string, redirects = 0) {
           const parsedUrl = new URL(url)
-          const reqOpts = {
-            hostname: parsedUrl.hostname,
-            path: parsedUrl.pathname + parsedUrl.search,
-            method: 'GET',
-            headers: redirects === 0 ? opts.headers : { 'User-Agent': 'azuria-launcher-updater' }
-          }
-          https.request(reqOpts, (res: any) => {
+          // On first request (api.github.com) keep auth + Accept: octet-stream
+          // On redirect (objects.githubusercontent.com signed URL) drop auth — signed URL already embeds credentials
+          const headers: any = redirects === 0
+            ? { 'Authorization': `token ${GH_TOKEN}`, 'User-Agent': 'azuria-launcher-updater', 'Accept': 'application/octet-stream' }
+            : { 'User-Agent': 'azuria-launcher-updater', 'Accept': 'application/octet-stream' }
+
+          https.request({ hostname: parsedUrl.hostname, path: parsedUrl.pathname + parsedUrl.search, method: 'GET', headers }, (res: any) => {
             if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
               if (redirects > 5) { resolve({ done: false, error: 'Too many redirects' }); return }
               doRequest(res.headers.location, redirects + 1)
               return
+            }
+            if (res.statusCode !== 200) {
+              resolve({ done: false, error: `HTTP ${res.statusCode}` }); return
             }
             const total = parseInt(res.headers['content-length'] || '0')
             let received = 0
@@ -312,13 +310,26 @@ function createWindow() {
             res.pipe(file)
             res.on('end', () => {
               file.close(async () => {
+                // Validate: check Windows PE magic bytes (MZ = 0x4D5A)
                 try {
-                  // Use Electron's shell.openPath — the correct way to launch an installer on Windows
+                  const fd = fs.openSync(tmpPath, 'r')
+                  const buf = Buffer.alloc(2)
+                  fs.readSync(fd, buf, 0, 2, 0)
+                  fs.closeSync(fd)
+                  if (buf[0] !== 0x4D || buf[1] !== 0x5A) {
+                    resolve({ done: false, error: 'Fichier telechargé invalide (pas un .exe Windows). Réessaie.' })
+                    return
+                  }
+                } catch (ve: any) {
+                  resolve({ done: false, error: 'Validation fichier échouée: ' + ve.message })
+                  return
+                }
+                // Launch installer
+                try {
                   const { shell } = await import('electron')
                   await shell.openPath(tmpPath)
                   resolve({ done: true })
-                } catch (spawnErr: any) {
-                  // Fallback: try with cmd /c start
+                } catch {
                   try {
                     require('child_process').spawn('cmd', ['/c', 'start', '', tmpPath], { detached: true, stdio: 'ignore', shell: false }).unref()
                     resolve({ done: true })
@@ -332,7 +343,8 @@ function createWindow() {
           }).on('error', (e: any) => resolve({ done: false, error: e.message })).end()
         }
 
-        doRequest(downloadUrl)
+        // Use the GitHub API assets endpoint — always returns the real binary
+        doRequest(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/releases/assets/${assetId}`)
       })
     })
 
@@ -534,16 +546,31 @@ function createWindow() {
       launcher.on('data', (e: any) => {
         const line = String(e)
         console.log('[MC]', line)
-        // Track when we actually connect to a server
-        if (line.includes('ConnectScreen]: Connecting to')) hasConnected = true
-        // Detect disconnect from server
+        // Track when we actually connect to a server (multiple patterns for NeoForge 1.21.x)
+        if (
+          line.includes('ConnectScreen]: Connecting to') ||
+          line.includes('Connecting to server') ||
+          line.includes('Joining server') ||
+          line.includes('Logged in!')
+        ) hasConnected = true
+
+        // Detect disconnect from server (server kick, network drop, etc.)
         if (hasConnected && !killPending) {
           if (
             line.includes('Client UDP channel inactive') ||
             line.includes('disconnect.loginFailed') ||
             line.includes('Connection lost') ||
             line.includes('Disconnected') ||
-            (line.includes('[Netty Client IO') && line.includes('channel inactive'))
+            (line.includes('[Netty Client IO') && line.includes('channel inactive')) ||
+            // Voluntary disconnect through Minecraft menu (Echap → Quitter le serveur)
+            line.includes('Stopping multiplayer') ||
+            line.includes('Leaving server') ||
+            line.includes('ClientPacketListener]: Disconnected') ||
+            line.includes('Returning to title screen') ||
+            line.includes('disconnect.lost') ||
+            // NeoForge 1.21.x: retour au title screen
+            (line.includes('Render thread') && line.includes('Stopping!')) ||
+            (line.includes('[minecraft/TitleScreen]') && hasConnected)
           ) {
             killGame('disconnect detected')
           }
