@@ -629,13 +629,20 @@ function createWindow() {
       launcher.removeAllListeners('close')
 
       launcher.on('debug', (e: any) => console.log('[MC Debug]', e))
-      
+
+      // Detailed progress messages for each installation step
       const onProgress = (e: any) => {
         if (!e || typeof e.task !== 'number' || typeof e.total !== 'number') return
-        const types: any = { assets: 'Ressources', natives: 'Natives', classes: 'Librairies' }
-        const typeStr = types[e.type] || 'Fichiers'
         const pct = Math.min(100, Math.round((e.task / Math.max(e.total, 1)) * 100))
-        win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: pct, task: `Installation : ${typeStr} (${pct}%)` })
+        let label = 'Téléchargement en cours...'
+        const t = (e.type || '').toLowerCase()
+        if (t === 'assets' || t === 'asset') label = `Téléchargement des ressources Minecraft (${pct}%)`
+        else if (t === 'natives') label = `Installation des bibliothèques natives (${pct}%)`
+        else if (t === 'classes' || t === 'libraries') label = `Téléchargement des librairies (${pct}%)`
+        else if (t === 'client') label = `Téléchargement de Minecraft ${v} (${pct}%)`
+        else if (t.includes('forge') || t.includes('neoforge')) label = `Installation de NeoForge (${pct}%)`
+        else label = `Téléchargement : ${e.type} (${pct}%)`
+        win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: pct, task: label })
       }
       launcher.on('download-status', onProgress)
       launcher.on('progress', onProgress)
@@ -656,6 +663,24 @@ function createWindow() {
       launcher.on('data', (e: any) => {
         const line = String(e)
         console.log('[MC]', line)
+
+        // --- Live status messages from Minecraft/NeoForge stdout ---
+        if (line.includes('Loading Minecraft')) {
+          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 50, task: 'Chargement de Minecraft...' })
+        } else if (line.includes('ModLauncher running') || line.includes('FML marker')) {
+          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 55, task: 'Initialisation de NeoForge...' })
+        } else if (line.includes('Loading mods') || line.includes('Discovering mods') || line.includes('ModDiscoveryCompleted')) {
+          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 65, task: 'Chargement des mods...' })
+        } else if (line.includes('Performing pre-initialization') || line.includes('PreInitialization')) {
+          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 70, task: 'Pré-initialisation des mods...' })
+        } else if (line.includes('Performing initialization') || line.includes('FMLModIdMapping')) {
+          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 80, task: 'Initialisation des mods...' })
+        } else if (line.includes('Performing post-initialization') || line.includes('InterModComms')) {
+          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 90, task: 'Finalisation des mods...' })
+        } else if (line.includes('Minecraft finished loading') || line.includes('Setting user:') || line.includes('[Worker-Main-')) {
+          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 99, task: 'Lancement du jeu... Presque prêt !' })
+        }
+
         // Track when we actually connect to a server (multiple patterns for NeoForge 1.21.x)
         if (
           line.includes('ConnectScreen]: Connecting to') ||
@@ -697,9 +722,7 @@ function createWindow() {
         }
       })
 
-      launcher.on('progress', (e: any) => {
-        win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: Math.round((e.task / e.total) * 100), task: `Téléchargement: ${e.type}` })
-      })
+      // Note: progress listener already registered above (no duplicate)
       launcher.on('close', () => {
         if (!killPending) {
           gameProcess = null
@@ -709,6 +732,7 @@ function createWindow() {
       })
 
       try {
+        win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 98, task: 'Initialisation de Minecraft...' })
         const spawnedProcess: any = await launcher.launch(opts)
         cp.spawn = originalSpawn // restore spawn
         
