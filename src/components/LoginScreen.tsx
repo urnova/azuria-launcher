@@ -67,17 +67,17 @@ export default function LoginScreen({ onLogin }: { onLogin: (p: any) => void }) 
 
       {/* Centered card */}
       <div className="flex-1 flex items-center justify-center p-6 overflow-y-auto">
-        <div className="w-full max-w-[380px] shrink-0">
+        <div className="w-full max-w-[440px] shrink-0">
 
           {/* Logo */}
-          <div className="flex flex-col items-center mb-7">
-            <img src={logo} alt="Azuria" className="w-20 h-20 object-contain mb-3" style={{ filter: 'drop-shadow(0 0 20px rgba(79,142,247,0.5))' }} />
-            <h1 className="font-black text-center" style={{ fontSize: 26, letterSpacing: -1, background: `linear-gradient(135deg, #fff 0%, ${S.accent2} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AZURIA V3</h1>
-            <p style={{ fontSize: 12, color: S.text2, marginTop: 4 }}>Bienvenue, connectez-vous pour jouer.</p>
+          <div className="flex flex-col items-center mb-8">
+            <img src={logo} alt="Azuria" className="w-24 h-24 object-contain mb-4" style={{ filter: 'drop-shadow(0 0 24px rgba(79,142,247,0.5))' }} />
+            <h1 className="font-black text-center" style={{ fontSize: 32, letterSpacing: -1, background: `linear-gradient(135deg, #fff 0%, ${S.accent2} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AZURIA V3</h1>
+            <p style={{ fontSize: 13, color: S.text2, marginTop: 4 }}>Bienvenue, connectez-vous pour jouer.</p>
           </div>
 
           {/* Card */}
-          <div className="rounded-2xl p-6 flex flex-col gap-4" style={{ background: 'rgba(17,17,24,0.95)', border: `1px solid ${S.border2}`, boxShadow: '0 24px 60px rgba(0,0,0,0.6)', backdropFilter: 'blur(20px)' }}>
+          <div className="rounded-2xl p-8 flex flex-col gap-5" style={{ background: 'rgba(17,17,24,0.95)', border: `1px solid ${S.border2}`, boxShadow: '0 32px 80px rgba(0,0,0,0.6)', backdropFilter: 'blur(20px)' }}>
 
             {/* Error */}
             {errorMsg && (

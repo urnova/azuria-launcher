@@ -72,7 +72,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
   useEffect(() => {
     if (!canvasRef.current) return
     const viewer = new SkinViewer({
-      canvas: canvasRef.current, width: 190, height: 290,
+      canvas: canvasRef.current, width: 170, height: 210,
       skin: profile.customAvatar || `https://minotar.net/skin/${profile.name}`,
     })
     viewer.animation = new IdleAnimation()
@@ -157,48 +157,50 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
       {showUpdateModal && <UpdateModal onClose={() => setShowUpdateModal(false)} />}
 
       {/* SIDEBAR */}
-      <div className="w-64 shrink-0 flex flex-col relative z-20" style={{ background: 'rgba(17,17,24,0.95)', borderRight: `1px solid ${S.border}`, backdropFilter: 'blur(20px)' }}>
+      <div className="w-64 shrink-0 flex flex-col relative z-20" style={{ background: 'rgba(17,17,24,0.95)', borderRight: `1px solid ${S.border}`, backdropFilter: 'blur(20px)', minHeight: 0 }}>
 
-        <div className="flex flex-col items-center pt-5 pb-4 px-4" style={{ borderBottom: `1px solid ${S.border}` }}>
-          <div className="relative group mb-3">
-            <canvas ref={canvasRef} className="outline-none" style={{ filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.8))' }} />
-          </div>
-          <div className="w-full relative mt-2">
-            <button onClick={() => setShowAccounts(!showAccounts)} className="flex items-center gap-1.5 px-2 py-1 transition-colors rounded-md hover:bg-white/5 w-full justify-center">
-              <span style={{ fontWeight: 800, fontSize: 16, color: S.text }}>{profile.name}</span>
-              <ChevronDown size={15} style={{ color: S.text3, transform: showAccounts ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-            </button>
-            <div className="flex justify-center">
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', marginTop: 4, padding: '2px 10px', borderRadius: 20, background: profile.type === 'crack' ? S.surface3 : 'rgba(170,68,255,0.15)', color: profile.type === 'crack' ? S.text3 : S.epic, border: `1px solid ${profile.type === 'crack' ? S.border2 : 'rgba(170,68,255,0.3)'}`, display: 'inline-block' }}>
-                {profile.type === 'crack' ? 'Craqué' : '★ Premium'}
-              </div>
+        <div className="flex-1 overflow-y-auto flex flex-col min-h-0 custom-scrollbar">
+          <div className="flex flex-col items-center pt-4 pb-3 px-4 flex-shrink-0" style={{ borderBottom: `1px solid ${S.border}` }}>
+            <div className="relative group mb-3 flex-shrink-0">
+              <canvas ref={canvasRef} className="outline-none" style={{ filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.8))', maxHeight: 220, display: 'block' }} />
             </div>
-            {showAccounts && (
-              <div className="absolute top-full left-0 right-0 mt-2 rounded-lg overflow-hidden z-50" style={{ background: S.surface, border: `1px solid ${S.border2}`, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-                {profiles.length > 0 ? profiles.map(p => (
-                  <button key={p.id} onClick={() => switchProfile(p)} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-white/5">
-                    <div className="w-7 h-7 rounded shrink-0" style={{ background: S.surface3 }} />
-                    <div><div style={{ fontSize: 13, fontWeight: 700, color: S.text }}>{p.name}</div><div style={{ fontSize: 9, color: p.type === 'crack' ? S.text3 : S.epic, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{p.type === 'crack' ? 'Craqué' : 'Premium'}</div></div>
-                  </button>
-                )) : <div style={{ padding: '8px 12px', fontSize: 11, color: S.text3, textAlign: 'center' }}>Aucun autre compte</div>}
-                <div style={{ borderTop: `1px solid ${S.border}` }}>
-                  <button onClick={onLogout} className="w-full py-2 transition-colors hover:bg-white/5" style={{ fontSize: 11, color: S.accent, fontWeight: 600 }}>+ Ajouter un compte</button>
+            <div className="w-full relative mt-2">
+              <button onClick={() => setShowAccounts(!showAccounts)} className="flex items-center gap-1.5 px-2 py-1 transition-colors rounded-md hover:bg-white/5 w-full justify-center">
+                <span style={{ fontWeight: 800, fontSize: 16, color: S.text }}>{profile.name}</span>
+                <ChevronDown size={15} style={{ color: S.text3, transform: showAccounts ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+              <div className="flex justify-center">
+                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', marginTop: 4, padding: '2px 10px', borderRadius: 20, background: profile.type === 'crack' ? S.surface3 : 'rgba(170,68,255,0.15)', color: profile.type === 'crack' ? S.text3 : S.epic, border: `1px solid ${profile.type === 'crack' ? S.border2 : 'rgba(170,68,255,0.3)'}`, display: 'inline-block' }}>
+                  {profile.type === 'crack' ? 'Craqué' : '★ Premium'}
                 </div>
               </div>
-            )}
+              {showAccounts && (
+                <div className="absolute top-full left-0 right-0 mt-2 rounded-lg overflow-hidden z-50" style={{ background: S.surface, border: `1px solid ${S.border2}`, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+                  {profiles.length > 0 ? profiles.map(p => (
+                    <button key={p.id} onClick={() => switchProfile(p)} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-white/5">
+                      <div className="w-7 h-7 rounded shrink-0" style={{ background: S.surface3 }} />
+                      <div><div style={{ fontSize: 13, fontWeight: 700, color: S.text }}>{p.name}</div><div style={{ fontSize: 9, color: p.type === 'crack' ? S.text3 : S.epic, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{p.type === 'crack' ? 'Craqué' : 'Premium'}</div></div>
+                    </button>
+                  )) : <div style={{ padding: '8px 12px', fontSize: 11, color: S.text3, textAlign: 'center' }}>Aucun autre compte</div>}
+                  <div style={{ borderTop: `1px solid ${S.border}` }}>
+                    <button onClick={onLogout} className="w-full py-2 transition-colors hover:bg-white/5" style={{ fontSize: 11, color: S.accent, fontWeight: 600 }}>+ Ajouter un compte</button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
+
+          <nav className="flex flex-col gap-1 p-3 flex-shrink-0">
+            {([{ id: 'home' as Tab, icon: '⚔', label: 'Accueil' }, { id: 'settings' as Tab, icon: '⚙', label: 'Paramètres' }]).map(item => (
+              <button key={item.id} onClick={() => setTab(item.id)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
+                style={{ background: tab === item.id ? 'rgba(79,142,247,0.15)' : 'transparent', color: tab === item.id ? S.accent : S.text2, border: `1px solid ${tab === item.id ? 'rgba(79,142,247,0.3)' : 'transparent'}` }}>
+                <span>{item.icon}</span>{item.label}
+              </button>
+            ))}
+          </nav>
         </div>
 
-        <nav className="flex flex-col gap-1 p-3">
-          {([{ id: 'home' as Tab, icon: '⚔', label: 'Accueil' }, { id: 'settings' as Tab, icon: '⚙', label: 'Paramètres' }]).map(item => (
-            <button key={item.id} onClick={() => setTab(item.id)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
-              style={{ background: tab === item.id ? 'rgba(79,142,247,0.15)' : 'transparent', color: tab === item.id ? S.accent : S.text2, border: `1px solid ${tab === item.id ? 'rgba(79,142,247,0.3)' : 'transparent'}` }}>
-              <span>{item.icon}</span>{item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="mt-auto p-3" style={{ borderTop: `1px solid ${S.border}` }}>
+        <div className="mt-auto p-3 flex-shrink-0" style={{ borderTop: `1px solid ${S.border}` }}>
           <button onClick={onLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all hover:bg-red-500/10" style={{ color: S.red }}>
             <LogOut size={16} />Déconnexion
           </button>
