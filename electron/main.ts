@@ -620,10 +620,16 @@ function createWindow() {
       const qpIdentifier = launchPort === 25565 ? launchHost : `${launchHost}:${launchPort}`
 
       // Force copy of the correct NeoForge installer to rootPath
-      const forgeInstallerSource = isV2 ? path.join(sourceModsDir, 'neoforge-installer.jar') : null
+      const forgeInstallerSource = path.join(sourceModsDir, 'neoforge-installer.jar')
       const forgeInstallerTarget = path.join(rootPath, 'neoforge-installer.jar')
-      if (isV2 && fs.existsSync(forgeInstallerSource) && !fs.existsSync(forgeInstallerTarget)) {
+      if (fs.existsSync(forgeInstallerSource)) {
+        // Toujours copier (ou écraser) pour s'assurer d'avoir la bonne version de NeoForge selon le serveur
         try { fs.copyFileSync(forgeInstallerSource, forgeInstallerTarget) } catch {}
+      }
+
+      if (!fs.existsSync(forgeInstallerTarget)) {
+        win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur NeoForge' })
+        return { error: 'no_forge', message: `L'installateur NeoForge est introuvable sur le serveur.\nImpossible de lancer le jeu sans NeoForge.\nFichier attendu : ${forgeInstallerTarget}` }
       }
 
       const opts: any = {
