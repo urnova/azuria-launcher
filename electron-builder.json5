@@ -33,18 +33,6 @@
     ],
     "artifactName": "AzuriaSetup-${version}.${ext}"
   },
-  "extraResources": [
-    {
-      "from": "../mods-client",
-      "to": "mods-client",
-      "filter": ["**/*"]
-    },
-    {
-      "from": "../mods-client-1.21.4",
-      "to": "mods-client-1.21.4",
-      "filter": ["**/*"]
-    }
-  ],
   "nsis": {
     "oneClick": false,
     "perMachine": false,

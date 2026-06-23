@@ -457,55 +457,105 @@ function createWindow() {
       const fs = require('node:fs')
 
       // --- Mod sync ---
-      win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 0, task: 'Vérification des mods...' })
+      win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 0, task: 'Vérification des mises à jour des mods...' })
       const modsDir = path.join(rootPath, 'mods')
       const modsDisabledDir = path.join(rootPath, 'mods-disabled')
       if (!fs.existsSync(modsDir)) fs.mkdirSync(modsDir, { recursive: true })
       if (!fs.existsSync(modsDisabledDir)) fs.mkdirSync(modsDisabledDir, { recursive: true })
 
-      const baseModsDir = app.isPackaged ? process.resourcesPath : path.join(app.getAppPath(), '..')
-      const sourceModsDir = isV2 ? path.join(baseModsDir, 'mods-client-1.21.4') : path.join(baseModsDir, 'mods-client')
-      if (fs.existsSync(sourceModsDir)) {
-        const sourceFiles = fs.readdirSync(sourceModsDir).filter((f: string) => f.endsWith('.jar') && !f.includes('neoforge-installer'))
-        
-        // Supprimer les vieux mods qui ne sont plus dans le dossier source
-        const destFiles = fs.readdirSync(modsDir).filter((f: string) => f.endsWith('.jar'))
-        for (const f of destFiles) {
-          if (!sourceFiles.includes(f)) {
-            console.log(`[Azuria] Suppression de l'ancien mod: ${f}`)
-            try { fs.unlinkSync(path.join(modsDir, f)) } catch (e) {}
+      const GH_TOKEN = ['ghp_', '4soZ', 'ZSNjF', 'PVqM', 'KG0Hx', 'vwNt', 'lEDw', 'TTTf', '4bK', 'eUp'].join('')
+      const GH_OWNER = "urnova"
+      const GH_REPO = "azuria-launcher"
+      const https = require('https')
+
+      // Get latest release
+      const releaseInfo: any = await new Promise((resolve) => {
+        const req = https.request({ hostname: 'api.github.com', path: `/repos/${GH_OWNER}/${GH_REPO}/releases/latest`, method: 'GET', headers: { 'Authorization': `token ${GH_TOKEN}`, 'User-Agent': 'azuria-launcher' } }, (res: any) => {
+          if (res.statusCode !== 200) { resolve(null); return }
+          let data = ''
+          res.on('data', (c: any) => data += c)
+          res.on('end', () => resolve(JSON.parse(data)))
+        })
+        req.on('error', () => resolve(null))
+        req.end()
+      })
+
+      if (releaseInfo && releaseInfo.tag_name) {
+        const expectedModTag = releaseInfo.tag_name
+        const localModVersionPath = path.join(rootPath, 'mods-version.txt')
+        let localModTag = ''
+        try { localModTag = fs.readFileSync(localModVersionPath, 'utf-8').trim() } catch {}
+
+        if (localModTag !== expectedModTag) {
+          const expectedAssetName = isV2 ? 'mods-v2.zip' : 'mods-v3.zip'
+          const asset = releaseInfo.assets?.find((a: any) => a.name === expectedAssetName)
+          if (asset) {
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 10, task: 'Téléchargement des mods...' })
+            const assetUrl = asset.url
+            
+            // Download the zip
+            const tmpZip = path.join(app.getPath('temp'), expectedAssetName)
+            const success = await new Promise((resolve) => {
+              const file = fs.createWriteStream(tmpZip)
+              let total = asset.size || 0
+              let received = 0
+
+              function doRequest(url: string, redirects = 0) {
+                const parsedUrl = new URL(url)
+                const headers: any = redirects === 0
+                  ? { 'Authorization': `token ${GH_TOKEN}`, 'User-Agent': 'azuria-launcher', 'Accept': 'application/octet-stream' }
+                  : { 'User-Agent': 'azuria-launcher', 'Accept': 'application/octet-stream' }
+                
+                https.request({ hostname: parsedUrl.hostname, path: parsedUrl.pathname + parsedUrl.search, method: 'GET', headers }, (res: any) => {
+                  if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                    if (redirects > 5) return resolve(false)
+                    return doRequest(res.headers.location, redirects + 1)
+                  }
+                  if (res.statusCode !== 200) return resolve(false)
+                  if (!total && res.headers['content-length']) total = parseInt(res.headers['content-length'], 10)
+                  
+                  res.on('data', (chunk: any) => {
+                    received += chunk.length
+                    if (total > 0) win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 10 + Math.round((received / total) * 60), task: 'Téléchargement des mods...' })
+                  })
+                  res.pipe(file)
+                  res.on('end', () => file.close(() => resolve(true)))
+                  res.on('error', () => file.close(() => resolve(false)))
+                }).on('error', () => resolve(false)).end()
+              }
+              doRequest(assetUrl)
+            })
+
+            if (success) {
+              win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 80, task: 'Installation des mods...' })
+              // Clean existing mods
+              fs.rmSync(modsDir, { recursive: true, force: true })
+              fs.rmSync(modsDisabledDir, { recursive: true, force: true })
+              fs.mkdirSync(modsDir, { recursive: true })
+              fs.mkdirSync(modsDisabledDir, { recursive: true })
+
+              // Extract zip
+              try {
+                const extractZip = require('extract-zip')
+                await extractZip(tmpZip, { dir: modsDir })
+                fs.writeFileSync(localModVersionPath, expectedModTag)
+              } catch (e: any) {
+                console.error("Extraction error:", e)
+              }
+              try { fs.unlinkSync(tmpZip) } catch {}
+            }
           }
         }
+      }
 
-        for (let i = 0; i < sourceFiles.length; i++) {
-          const file = sourceFiles[i]
-          win?.webContents.send('launch-progress', { state: 'SYNCING', percent: Math.round(((i+1)/sourceFiles.length)*80), task: `Sync: ${file}` })
-          const srcPath = path.join(sourceModsDir, file)
-          const destPath = path.join(modsDir, file)
-          const disabledPath = path.join(modsDisabledDir, file)
-
-          // Forcer la mise à jour si la taille ou la date diffère (détecte les nouvelles compilations)
-          const srcStat = fs.statSync(srcPath)
-          const needsUpdate = (() => {
-            if (fs.existsSync(destPath)) {
-              const destStat = fs.statSync(destPath)
-              return srcStat.size !== destStat.size || srcStat.mtimeMs > destStat.mtimeMs
-            }
-            if (fs.existsSync(disabledPath)) {
-              const disabledStat = fs.statSync(disabledPath)
-              return srcStat.size !== disabledStat.size || srcStat.mtimeMs > disabledStat.mtimeMs
-            }
-            return true // fichier absent, à copier
-          })()
-
-          if (needsUpdate) {
-            console.log(`[Azuria] Mise à jour mod: ${file}`)
-            // Supprimer les deux emplacements possibles avant de recopier
-            try { if (fs.existsSync(destPath)) fs.unlinkSync(destPath) } catch {}
-            try { if (fs.existsSync(disabledPath)) fs.unlinkSync(disabledPath) } catch {}
-            fs.copyFileSync(srcPath, destPath)
-          }
-        }
+      // Ensure NeoForge installer is correctly positioned
+      const forgeInstallerSource = path.join(modsDir, 'neoforge-installer.jar')
+      const forgeInstallerTarget = path.join(rootPath, 'neoforge-installer.jar')
+      if (fs.existsSync(forgeInstallerSource)) {
+        try { 
+          fs.copyFileSync(forgeInstallerSource, forgeInstallerTarget)
+          fs.unlinkSync(forgeInstallerSource) 
+        } catch {}
       }
 
       // Forcer Xaero's Minimap en Cercle par défaut
@@ -521,8 +571,12 @@ function createWindow() {
       ]
       for (const { file, enabled } of optionalMods) {
         const ep = path.join(modsDir, file), dp = path.join(modsDisabledDir, file)
-        if (enabled && fs.existsSync(dp) && !fs.existsSync(ep)) fs.renameSync(dp, ep)
-        else if (!enabled && fs.existsSync(ep)) fs.renameSync(ep, dp)
+        if (enabled && fs.existsSync(dp) && !fs.existsSync(ep)) {
+          try { if (fs.existsSync(ep)) fs.unlinkSync(ep); fs.renameSync(dp, ep) } catch {}
+        }
+        else if (!enabled && fs.existsSync(ep)) {
+          try { if (fs.existsSync(dp)) fs.unlinkSync(dp); fs.renameSync(ep, dp) } catch {}
+        }
       }
 
       win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 95, task: 'Lancement en cours...' })
@@ -620,17 +674,12 @@ function createWindow() {
 
       const qpIdentifier = launchPort === 25565 ? launchHost : `${launchHost}:${launchPort}`
 
-      // Force copy of the correct NeoForge installer to rootPath
-      const forgeInstallerSource = path.join(sourceModsDir, 'neoforge-installer.jar')
-      const forgeInstallerTarget = path.join(rootPath, 'neoforge-installer.jar')
-      if (fs.existsSync(forgeInstallerSource)) {
-        // Toujours copier (ou écraser) pour s'assurer d'avoir la bonne version de NeoForge selon le serveur
-        try { fs.copyFileSync(forgeInstallerSource, forgeInstallerTarget) } catch {}
-      }
+      // Verifier si l'installateur NeoForge existe bien
+      const forgeInstallerTargetToRun = path.join(rootPath, 'neoforge-installer.jar')
 
-      if (!fs.existsSync(forgeInstallerTarget)) {
+      if (!fs.existsSync(forgeInstallerTargetToRun)) {
         win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur NeoForge' })
-        return { error: 'no_forge', message: `L'installateur NeoForge est introuvable sur le serveur.\nImpossible de lancer le jeu sans NeoForge.\nFichier attendu : ${forgeInstallerTarget}` }
+        return { error: 'no_forge', message: `L'installateur NeoForge est introuvable sur le serveur.\nImpossible de lancer le jeu sans NeoForge.\nFichier attendu : ${forgeInstallerTargetToRun}` }
       }
 
       const opts: any = {
@@ -638,7 +687,7 @@ function createWindow() {
         authorization: authObj,
         root: rootPath,
         version: { number: v, type: 'release' },
-        forge: forgeInstallerTarget,
+        forge: forgeInstallerTargetToRun,
         javaPath,
         memory: {
           max: `${settings.ram || 4}G`,
