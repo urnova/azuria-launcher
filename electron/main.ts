@@ -579,6 +579,28 @@ function createWindow() {
         } catch {}
       }
 
+      // Fix for NeoForge 1.21.1 missing binarypatcher/installertools bug
+      const installerToolsSource = path.join(modsDir, 'installertools')
+      if (fs.existsSync(installerToolsSource)) {
+        const installerToolsTarget = path.join(rootPath, 'libraries', 'net', 'neoforged', 'installertools')
+        try {
+          if (!fs.existsSync(installerToolsTarget)) fs.mkdirSync(installerToolsTarget, { recursive: true })
+          const cpSyncRecursive = (src: string, dest: string) => {
+            if (fs.statSync(src).isDirectory()) {
+              if (!fs.existsSync(dest)) fs.mkdirSync(dest)
+              for (const child of fs.readdirSync(src)) cpSyncRecursive(path.join(src, child), path.join(dest, child))
+            } else {
+              fs.copyFileSync(src, dest)
+            }
+          }
+          cpSyncRecursive(installerToolsSource, installerToolsTarget)
+          fs.rmSync(installerToolsSource, { recursive: true, force: true }) // Clean up from mods dir
+          console.log('[Azuria] Successfully copied bundled installertools for NeoForge')
+        } catch (e) {
+          console.error('[Azuria] Failed to copy bundled installertools', e)
+        }
+      }
+
       // Forcer Xaero's Minimap en Cercle par défaut
       const xaeroConfigPath = path.join(rootPath, 'xaerominimap.txt')
       if (!fs.existsSync(xaeroConfigPath)) {
