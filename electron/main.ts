@@ -463,7 +463,8 @@ function createWindow() {
       if (!fs.existsSync(modsDir)) fs.mkdirSync(modsDir, { recursive: true })
       if (!fs.existsSync(modsDisabledDir)) fs.mkdirSync(modsDisabledDir, { recursive: true })
 
-      const sourceModsDir = isV2 ? 'F:\\code\\azuria\\azuriav3\\mods-client-1.21.4' : 'F:\\code\\azuria\\azuriav3\\mods-client'
+      const baseModsDir = app.isPackaged ? process.resourcesPath : path.join(app.getAppPath(), '..')
+      const sourceModsDir = isV2 ? path.join(baseModsDir, 'mods-client-1.21.4') : path.join(baseModsDir, 'mods-client')
       if (fs.existsSync(sourceModsDir)) {
         const sourceFiles = fs.readdirSync(sourceModsDir).filter((f: string) => f.endsWith('.jar') && !f.includes('neoforge-installer'))
         
