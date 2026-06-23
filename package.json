@@ -1,7 +1,7 @@
 {
   "name": "azuria-launcher",
   "private": true,
-  "version": "1.1.24",
+  "version": "1.1.25",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,7 @@
   "dependencies": {
     "electron-store": "^11.0.2",
     "electron-updater": "^6.8.9",
+    "extract-zip": "^2.0.1",
     "minecraft-launcher-core": "^3.18.2",
     "msal-node": "^0.0.1-security",
     "msmc": "^5.0.5",

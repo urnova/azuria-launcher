@@ -534,15 +534,36 @@ function createWindow() {
               fs.mkdirSync(modsDir, { recursive: true })
               fs.mkdirSync(modsDisabledDir, { recursive: true })
 
-              // Extract zip
+              // Extract zip - extract-zip is a declared dependency, always available in packaged app
+              let extractionOk = false
               try {
                 const extractZip = require('extract-zip')
                 await extractZip(tmpZip, { dir: modsDir })
-                fs.writeFileSync(localModVersionPath, expectedModTag)
+                extractionOk = true
               } catch (e: any) {
-                console.error("Extraction error:", e)
+                console.error('[Azuria] extract-zip failed:', e)
+                win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: `Erreur extraction des mods: ${e?.message || 'inconnue'}` })
+                try { fs.unlinkSync(tmpZip) } catch {}
+                return { error: 'extract_failed', message: `Impossible d'extraire les mods.\nErreur: ${e?.message || 'inconnue'}` }
+              }
+
+              if (extractionOk) {
+                // Verify the extraction was successful by checking for at least one .jar file
+                const extractedFiles = fs.existsSync(modsDir) ? fs.readdirSync(modsDir) : []
+                console.log(`[Azuria] Extracted ${extractedFiles.length} files to mods dir`)
+                if (extractedFiles.length === 0) {
+                  console.error('[Azuria] Extraction produced no files!')
+                  win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur: le zip des mods est vide.' })
+                  return { error: 'extract_empty', message: 'Le téléchargement des mods a produit un dossier vide.\nRéessaie en cliquant sur Jouer.' }
+                }
+                fs.writeFileSync(localModVersionPath, expectedModTag)
               }
               try { fs.unlinkSync(tmpZip) } catch {}
+            } else {
+              // Download failed — don't update version tag, will retry next launch
+              console.error('[Azuria] Mod zip download failed')
+              win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur: téléchargement des mods échoué. Vérifie ta connexion.' })
+              return { error: 'download_failed', message: 'Le téléchargement des mods a échoué.\nVérifie ta connexion internet et réessaie.' }
             }
           }
         }
