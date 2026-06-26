@@ -1,5 +1,17 @@
 {
-  "buildCommand": null,
-  "outputDirectory": ".",
-  "framework": null
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/support/chat", "destination": "/api/support/chat.js" },
+    { "source": "/api/support/ticket", "destination": "/api/support/ticket.js" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+      ]
+    }
+  ]
 }

@@ -1,0 +1,123 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin — Azuria Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Outfit,sans-serif;background:#07070f;color:#e8eaf0;min-height:100vh}
+:root{--accent:#4f8ef7;--surface:#111118;--surface2:#16161f;--border:#1e1e2e;--text2:#9999bb;--text3:#5a5a7a;--green:#44cc66;--red:#ff4444;--purple:#aa44ff}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(79,142,247,.1) 0%,transparent 70%)}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:380px;text-align:center}
+.login-logo{font-size:2.5rem;margin-bottom:16px}
+.login-title{font-size:1.5rem;font-weight:800;margin-bottom:4px}
+.login-sub{font-size:.85rem;color:var(--text2);margin-bottom:28px}
+.login-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:#e8eaf0;font-size:.9rem;outline:none;margin-bottom:12px;font-family:inherit}
+.login-input:focus{border-color:var(--accent)}
+.login-btn{width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#6ba3ff);color:#fff;font-weight:800;font-size:1rem;cursor:pointer;border:none}
+.login-err{color:var(--red);font-size:.85rem;margin-top:8px;display:none}
+.admin-wrap{display:none;flex-direction:column;min-height:100vh}
+.admin-header{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:var(--surface);border-bottom:1px solid var(--border)}
+.admin-header h1{font-size:1.2rem;font-weight:800}
+.admin-header .badge{background:rgba(170,68,255,.15);border:1px solid rgba(170,68,255,.3);color:var(--purple);padding:4px 12px;border-radius:999px;font-size:.78rem;font-weight:700}
+.admin-body{flex:1;padding:32px;max-width:1200px;margin:0 auto;width:100%}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+.stat-num{font-size:2rem;font-weight:900;background:linear-gradient(135deg,var(--accent),#aa44ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:.78rem;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+.section-title{font-size:1.1rem;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.info-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+.info-box p{font-size:.9rem;color:var(--text2);line-height:1.7}
+.info-box a{color:var(--accent);text-decoration:none;font-weight:700}
+.code-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.code-table th{text-align:left;padding:10px 14px;background:var(--surface2);color:var(--text3);font-weight:700;letter-spacing:.5px;font-size:.75rem;text-transform:uppercase}
+.code-table td{padding:10px 14px;border-top:1px solid var(--border)}
+.code-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:800;letter-spacing:1px;background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.3);color:#ff6666}
+.logout-btn{padding:8px 18px;border-radius:8px;background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);color:var(--red);font-weight:700;font-size:.85rem;cursor:pointer}
+</style>
+</head>
+<body>
+<!-- LOGIN SCREEN -->
+<div class="login-wrap" id="login-wrap">
+<div class="login-card">
+<div class="login-logo">🛡️</div>
+<h1 class="login-title">Panel Admin</h1>
+<p class="login-sub">Azuria Support — Acces restreint</p>
+<input type="password" class="login-input" id="admin-pwd" placeholder="Mot de passe admin..." onkeydown="if(event.key==='Enter')doLogin()"/>
+<button class="login-btn" onclick="doLogin()">Connexion</button>
+<div class="login-err" id="login-err">Mot de passe incorrect.</div>
+</div>
+</div>
+<!-- ADMIN PANEL -->
+<div class="admin-wrap" id="admin-wrap">
+<div class="admin-header">
+<h1>🛡️ Admin Panel — Azuria Support</h1>
+<div style="display:flex;align-items:center;gap:12px">
+<span class="badge">ADMIN</span>
+<button class="logout-btn" onclick="doLogout()">Deconnexion</button>
+</div>
+</div>
+<div class="admin-body">
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-num" id="stat-codes">7</div><div class="stat-label">Codes erreur</div></div>
+<div class="stat-card"><div class="stat-num">24h</div><div class="stat-label">Temps de reponse</div></div>
+<div class="stat-card"><div class="stat-num">Discord</div><div class="stat-label">Tickets via</div></div>
+</div>
+<div class="info-box" style="border-color:rgba(79,142,247,.3);background:rgba(79,142,247,.05)">
+<div style="font-weight:800;margin-bottom:8px;font-size:1rem">📨 Tickets de support</div>
+<p>Les tickets envoyes par les utilisateurs (via le site ou le launcher) arrivent directement dans votre canal Discord via webhook.<br><br>
+<strong>Pour configurer :</strong> Ajoutez la variable <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px">DISCORD_WEBHOOK_URL</code> dans les parametres Vercel de votre projet, avec l URL de votre webhook Discord #support-tickets.<br><br>
+Une fois configure, chaque ticket apparaitra dans Discord avec toutes les informations (pseudo, email, categorie, code erreur, description).</p>
+</div>
+<div class="info-box" style="border-color:rgba(170,68,255,.3);background:rgba(170,68,255,.05)">
+<div style="font-weight:800;margin-bottom:8px;font-size:1rem">🤖 Eva AI — Conversations</div>
+<p>Quand un utilisateur clique sur "Transmettre a l equipe de support" dans le chat Eva, la conversation complete est envoyee dans votre canal Discord.<br><br>
+<strong>Variables Vercel requises :</strong><br>
+• <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px">GROQ_API_KEY</code> — Votre cle API Groq (llama-3.1-8b-instant)<br>
+• <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px">DISCORD_WEBHOOK_URL</code> — Webhook Discord pour les tickets et escalades</p>
+</div>
+<h2 class="section-title">📋 Reference des codes d erreur</h2>
+<div class="info-box">
+<table class="code-table">
+<thead><tr><th>Code</th><th>Signification</th><th>Cause</th><th>Solution rapide</th></tr></thead>
+<tbody>
+<tr><td><span class="code-badge">AZ-001</span></td><td>Session Microsoft expiree</td><td>Token OAuth2 expire</td><td>Reconnexion Microsoft dans le launcher</td></tr>
+<tr><td><span class="code-badge">AZ-002</span></td><td>Java 21 introuvable</td><td>Java absent ou mauvaise version</td><td>Telechargement auto au prochain lancement</td></tr>
+<tr><td><span class="code-badge">AZ-003</span></td><td>Minecraft non possede</td><td>Compte sans licence MC</td><td>Achat minecraft.net ou mode Hors-Ligne</td></tr>
+<tr><td><span class="code-badge">AZ-004</span></td><td>NeoForge introuvable</td><td>Fichier neoforge-installer.jar absent</td><td>Supprimer .azuria dans %APPDATA%</td></tr>
+<tr><td><span class="code-badge">AZ-005</span></td><td>Telechargement echoue</td><td>Connexion / antivirus</td><td>Verifier reseau, desactiver AV</td></tr>
+<tr><td><span class="code-badge">AZ-006</span></td><td>Extraction mods echouee</td><td>Disque plein / permissions</td><td>Liberer espace, verifier droits AppData</td></tr>
+<tr><td><span class="code-badge">AZ-007</span></td><td>Archive mods vide</td><td>Probleme serveur temporaire</td><td>Reessayer dans 5 min</td></tr>
+<tr><td><span class="code-badge">AZ-999</span></td><td>Erreur inconnue</td><td>Non repertoriee</td><td>Analyser les logs, ouvrir ticket</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<script>
+const ADMIN_PWD_HASH='azuria-admin-2025'
+function doLogin(){
+  const pwd=document.getElementById('admin-pwd').value
+  if(pwd===ADMIN_PWD_HASH||pwd===localStorage.getItem('az_admin_pwd')){
+    sessionStorage.setItem('az_admin','1')
+    document.getElementById('login-wrap').style.display='none'
+    document.getElementById('admin-wrap').style.display='flex'
+  }else{
+    document.getElementById('login-err').style.display='block'
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('az_admin')
+  location.reload()
+}
+if(sessionStorage.getItem('az_admin')==='1'){
+  document.getElementById('login-wrap').style.display='none'
+  document.getElementById('admin-wrap').style.display='flex'
+}
+</script>
+</body>
+</html>
+
