@@ -10,7 +10,7 @@ const SERVERS = [
   { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'game2.northhost.fr', port: 26130, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.21.1', statusOverride: 'INDISPONIBLE' as string | null },
 ]
 
-const SUPPORT_URL = 'https://playazuria.astraltechnologie.fr/support'
+const SUPPORT_URL = 'https://azuria.astraltechnologie.fr/support'
 
 // Error code mapping
 const ERROR_CODES: Record<string, { code: string; label: string }> = {
