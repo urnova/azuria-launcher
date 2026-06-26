@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Play, LogOut, ChevronDown, Gamepad2, CheckCircle2, Circle, AlertTriangle, Server, RefreshCw, StopCircle, Zap } from 'lucide-react'
+import { Play, LogOut, ChevronDown, Gamepad2, CheckCircle2, Circle, AlertTriangle, Server, RefreshCw, StopCircle, Zap, HelpCircle, Send, Copy } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { SkinViewer, IdleAnimation, WalkingAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
@@ -9,6 +9,34 @@ const SERVERS = [
   { id: 'v3test', category: 'V3 EARLY ACCESS', name: 'Azuria V3 — Serveur de test', host: '91.197.6.19', port: 25854, displayHost: '91.197.6.19:25854', desc: '⚠️ Serveur de test — attention', mcVersion: '1.21.1', statusOverride: null as string | null },
   { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'game2.northhost.fr', port: 26130, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.21.1', statusOverride: 'INDISPONIBLE' as string | null },
 ]
+
+const SUPPORT_URL = 'https://playazuria.astraltechnologie.fr/support'
+
+// Error code mapping
+const ERROR_CODES: Record<string, { code: string; label: string }> = {
+  session_expired: { code: 'AZ-001', label: 'Session Microsoft expirée' },
+  no_java:         { code: 'AZ-002', label: 'Java 21 introuvable' },
+  no_game:         { code: 'AZ-003', label: 'Minecraft non possédé' },
+  no_forge:        { code: 'AZ-004', label: 'NeoForge introuvable' },
+  download_failed: { code: 'AZ-005', label: 'Téléchargement échoué' },
+  extract_failed:  { code: 'AZ-006', label: 'Extraction des mods échouée' },
+  extract_empty:   { code: 'AZ-007', label: 'Archive des mods vide' },
+}
+
+function getErrorInfo(errorKey?: string) {
+  if (!errorKey) return { code: 'AZ-999', label: 'Erreur inconnue' }
+  return ERROR_CODES[errorKey] || { code: 'AZ-999', label: 'Erreur inconnue' }
+}
+
+function openSupport(errorCode?: string, errorMsg?: string) {
+  let url = SUPPORT_URL
+  if (errorCode) {
+    const params = new URLSearchParams({ code: errorCode })
+    if (errorMsg) params.set('msg', errorMsg.substring(0, 300))
+    url += '?' + params.toString()
+  }
+  window.ipcRenderer.invoke('open-external', url)
+}
 
 type Tab = 'home' | 'settings'
 type GameState = 'IDLE' | 'SYNCING' | 'DOWNLOADING' | 'RUNNING' | 'CLOSED'
@@ -32,6 +60,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
   const [embeddium, setEmbeddium] = useState(true)
   const [ram, setRam] = useState(4)
   const [progress, setProgress] = useState({ state: 'IDLE' as GameState, percent: 0, task: '' })
+  const [lastError, setLastError] = useState<{ key: string; code: string; label: string; message: string } | null>(null)
   const [profiles, setProfiles] = useState<any[]>([])
   const [serverStatuses, setServerStatuses] = useState<Record<string, ServerStatus>>({})
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -92,18 +121,22 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
   const isBusy = !['IDLE', 'RUNNING', 'CLOSED'].includes(progress.state)
 
   const handleLaunch = async () => {
+    setLastError(null)
     setProgress({ state: 'SYNCING', percent: 0, task: 'Initialisation...' })
     const res = await window.ipcRenderer.invoke('launch-game', profile.id, server.host, server.port, server.mcVersion)
     if (res && res.error) {
+      const errInfo = getErrorInfo(res.error)
+      setLastError({ key: res.error, code: errInfo.code, label: errInfo.label, message: res.message || '' })
       setProgress({ state: 'CLOSED', percent: 0, task: res.message || 'Erreur de connexion' })
       if (res.error === 'session_expired') {
         alert(res.message + "\n\nLa fenêtre de connexion va s'ouvrir automatiquement.")
         try {
           const newProfile = await window.ipcRenderer.invoke('login-microsoft')
           if (newProfile && !newProfile.error) {
+            setLastError(null)
             setProgress({ state: 'SYNCING', percent: 0, task: 'Connexion réussie, lancement...' })
             await window.ipcRenderer.invoke('launch-game', newProfile.id, server.host, server.port)
-            window.location.reload() // Reload to update avatar and data
+            window.location.reload()
           } else if (newProfile?.error) {
             alert(newProfile.message || newProfile.error)
           }
@@ -197,6 +230,15 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                 <span>{item.icon}</span>{item.label}
               </button>
             ))}
+            <button
+              onClick={() => openSupport()}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
+              style={{ color: S.text2, border: '1px solid transparent' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLButtonElement).style.color = S.text }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = S.text2 }}
+            >
+              <HelpCircle size={16} />Support
+            </button>
           </nav>
         </div>
 
@@ -336,7 +378,39 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                 <span style={{ fontSize: 13, fontWeight: 700, color: S.green }}>EN COURS — {server.name}</span>
               </div>
             ) : isClosed ? (
-              <div><span style={{ fontSize: 13, fontWeight: 700, color: S.text }}>{progress.task}</span></div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {lastError && (
+                    <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 4, background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.4)', color: S.red, letterSpacing: 1 }}>
+                      {lastError.code}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 13, fontWeight: 700, color: S.text }}>
+                    {lastError ? lastError.label : progress.task}
+                  </span>
+                </div>
+                {lastError && (
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <button
+                      onClick={() => openSupport(lastError.code, lastError.message)}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all"
+                      style={{ background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.35)', color: S.accent }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.25)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(79,142,247,0.15)')}
+                    >
+                      <Send size={11} />Envoyer le rapport
+                    </button>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(`${lastError.code}: ${lastError.label}\n${lastError.message}`) }}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${S.border}`, color: S.text3 }}
+                      title="Copier le code d'erreur"
+                    >
+                      <Copy size={11} />{lastError.code}
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <div>
                 <span style={{ fontSize: 12, fontWeight: 700, color: S.text }}>{server.name}</span>

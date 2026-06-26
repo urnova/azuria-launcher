@@ -244,6 +244,12 @@ function createWindow() {
     // Server Ping
     ipcMain.handle('ping-server', async (_e, host: string, port: number) => pingServer(host, port))
 
+    // Open URL in system browser
+    ipcMain.handle('open-external', async (_e, url: string) => {
+      const { shell } = await import('electron')
+      await shell.openExternal(url)
+    })
+
     // Auto-Updater — direct GitHub API (works with private repos)
     // Obfuscated token to prevent GitHub's automatic revocation scanner
     const GH_TOKEN = ['ghp_', '4soZ', 'ZSNjF', 'PVqM', 'KG0Hx', 'vwNt', 'lEDw', 'TTTf', '4bK', 'eUp'].join('')
