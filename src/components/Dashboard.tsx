@@ -57,7 +57,6 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
   const [showAccounts, setShowAccounts] = useState(false)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [controllable, setControllable] = useState(false)
-  const [embeddium, setEmbeddium] = useState(true)
   const [ram, setRam] = useState(4)
   const [progress, setProgress] = useState({ state: 'IDLE' as GameState, percent: 0, task: '' })
   const [lastError, setLastError] = useState<{ key: string; code: string; label: string; message: string } | null>(null)
@@ -86,7 +85,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
   useEffect(() => {
     window.ipcRenderer.on('launch-progress', (_e: any, d: any) => setProgress(d))
     window.ipcRenderer.invoke('get-settings').then((s: any) => {
-      if (s) { setControllable(s.controllable ?? false); setEmbeddium(s.embeddium ?? true); setRam(s.ram ?? 4) }
+      if (s) { setControllable(s.controllable ?? false); setRam(s.ram ?? 4) }
     })
     window.ipcRenderer.invoke('get-all-profiles').then((ps: any) => {
       if (ps) setProfiles(ps.filter((p: any) => p.id !== profile.id))
@@ -153,9 +152,9 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
 
   const handleStop = () => window.ipcRenderer.invoke('stop-game')
 
-  const toggleSetting = async (key: 'controllable' | 'embeddium') => {
-    const val = key === 'controllable' ? !controllable : !embeddium
-    if (key === 'controllable') setControllable(val); else setEmbeddium(val)
+  const toggleSetting = async (key: 'controllable') => {
+    const val = !controllable
+    setControllable(val)
     await window.ipcRenderer.invoke('update-settings', { [key]: val })
   }
 
@@ -346,11 +345,11 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                   <div className="flex-1"><div className="font-bold text-sm" style={{ color: S.text }}>Support Manette (Controlify)</div><div className="text-xs" style={{ color: S.text3 }}>PS4 / Xbox / Switch Pro</div></div>
                   {controllable ? <CheckCircle2 size={20} style={{ color: S.green }} /> : <Circle size={20} style={{ color: S.text3 }} />}
                 </button>
-                <button onClick={() => toggleSetting('embeddium')} className="p-4 rounded-xl flex items-center gap-4 text-left transition-all" style={{ background: S.surface, border: `1px solid ${embeddium ? S.accent : S.border}` }}>
-                  <Zap size={26} style={{ color: embeddium ? S.accent : S.text3 }} />
-                  <div className="flex-1"><div className="font-bold text-sm" style={{ color: S.text }}>Optimisation FPS (Embeddium)</div><div className="text-xs" style={{ color: S.text3 }}>Améliore drastiquement les performances</div></div>
-                  {embeddium ? <CheckCircle2 size={20} style={{ color: S.green }} /> : <Circle size={20} style={{ color: S.text3 }} />}
-                </button>
+                <div className="p-4 rounded-xl flex items-center gap-4" style={{ background: S.surface, border: `1px solid ${S.accent}` }}>
+                  <Zap size={26} style={{ color: S.accent }} />
+                  <div className="flex-1"><div className="font-bold text-sm" style={{ color: S.text }}>Optimisation FPS (Embeddium + Chloride)</div><div className="text-xs" style={{ color: S.text3 }}>Activé par défaut — améliore drastiquement les performances</div></div>
+                  <CheckCircle2 size={20} style={{ color: S.green }} />
+                </div>
 
               </div>
             </div>

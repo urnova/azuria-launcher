@@ -620,9 +620,9 @@ function createWindow() {
       const optionalMods = [
         { file: isV2 ? 'controlify-3.0.0+lts+1.21.4-neoforge.jar' : 'controlify-forgified-2.1.9-mc1.20.1-forge.jar', enabled: settings.controllable === true },
         { file: isV2 ? 'yet_another_config_lib_v3-3.8.2+1.21.4-neoforge.jar' : '', enabled: false },
-        { file: isV2 ? 'embeddium-1.0.12-beta.9999+mc1.21.4.jar' : '', enabled: false }
       ]
       for (const { file, enabled } of optionalMods) {
+        if (!file) continue
         const ep = path.join(modsDir, file), dp = path.join(modsDisabledDir, file)
         if (enabled && fs.existsSync(dp) && !fs.existsSync(ep)) {
           try { if (fs.existsSync(ep)) fs.unlinkSync(ep); fs.renameSync(dp, ep) } catch {}
