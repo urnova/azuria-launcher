@@ -455,7 +455,7 @@ function createWindow() {
       if (!profile) return
 
       const settings = store.get('settings') as any
-      const v = mcVersion || '1.21.1'
+      const v = mcVersion || '1.20.1'
       const isV2 = v === '1.21.4'
       const rootPath = path.join(app.getPath('appData'), isV2 ? '.azuria-v2' : '.azuria')
       const launchHost = serverHost || 'playazuria.astraltechnologie.fr'
@@ -575,9 +575,11 @@ function createWindow() {
         }
       }
 
-      // Ensure NeoForge installer is correctly positioned
-      const forgeInstallerSource = path.join(modsDir, 'neoforge-installer.jar')
-      const forgeInstallerTarget = path.join(rootPath, 'neoforge-installer.jar')
+      // Ensure Forge installer is correctly positioned
+      // V2 uses NeoForge, V3 uses Forge 1.20.1
+      const forgeInstallerFilename = isV2 ? 'neoforge-installer.jar' : 'forge-installer.jar'
+      const forgeInstallerSource = path.join(modsDir, forgeInstallerFilename)
+      const forgeInstallerTarget = path.join(rootPath, forgeInstallerFilename)
       if (fs.existsSync(forgeInstallerSource)) {
         try { 
           fs.copyFileSync(forgeInstallerSource, forgeInstallerTarget)
@@ -585,25 +587,27 @@ function createWindow() {
         } catch {}
       }
 
-      // Fix for NeoForge 1.21.1 missing binarypatcher/installertools bug
-      const installerToolsSource = path.join(modsDir, 'installertools')
-      if (fs.existsSync(installerToolsSource)) {
-        const installerToolsTarget = path.join(rootPath, 'libraries', 'net', 'neoforged', 'installertools')
-        try {
-          if (!fs.existsSync(installerToolsTarget)) fs.mkdirSync(installerToolsTarget, { recursive: true })
-          const cpSyncRecursive = (src: string, dest: string) => {
-            if (fs.statSync(src).isDirectory()) {
-              if (!fs.existsSync(dest)) fs.mkdirSync(dest)
-              for (const child of fs.readdirSync(src)) cpSyncRecursive(path.join(src, child), path.join(dest, child))
-            } else {
-              fs.copyFileSync(src, dest)
+      // NeoForge 1.21.1 installertools fix (V2 only)
+      if (isV2) {
+        const installerToolsSource = path.join(modsDir, 'installertools')
+        if (fs.existsSync(installerToolsSource)) {
+          const installerToolsTarget = path.join(rootPath, 'libraries', 'net', 'neoforged', 'installertools')
+          try {
+            if (!fs.existsSync(installerToolsTarget)) fs.mkdirSync(installerToolsTarget, { recursive: true })
+            const cpSyncRecursive = (src: string, dest: string) => {
+              if (fs.statSync(src).isDirectory()) {
+                if (!fs.existsSync(dest)) fs.mkdirSync(dest)
+                for (const child of fs.readdirSync(src)) cpSyncRecursive(path.join(src, child), path.join(dest, child))
+              } else {
+                fs.copyFileSync(src, dest)
+              }
             }
+            cpSyncRecursive(installerToolsSource, installerToolsTarget)
+            fs.rmSync(installerToolsSource, { recursive: true, force: true })
+            console.log('[Azuria] Successfully copied bundled installertools for NeoForge')
+          } catch (e) {
+            console.error('[Azuria] Failed to copy bundled installertools', e)
           }
-          cpSyncRecursive(installerToolsSource, installerToolsTarget)
-          fs.rmSync(installerToolsSource, { recursive: true, force: true }) // Clean up from mods dir
-          console.log('[Azuria] Successfully copied bundled installertools for NeoForge')
-        } catch (e) {
-          console.error('[Azuria] Failed to copy bundled installertools', e)
         }
       }
 
@@ -614,9 +618,9 @@ function createWindow() {
       }
 
       const optionalMods = [
-        { file: isV2 ? 'controlify-3.0.0+lts+1.21.4-neoforge.jar' : 'controlify-3.0.0+lts+1.21.1-neoforge.jar', enabled: settings.controllable === true },
-        { file: isV2 ? 'yet_another_config_lib_v3-3.8.2+1.21.4-neoforge.jar' : 'yet_another_config_lib_v3-3.8.2+1.21.1-neoforge.jar', enabled: settings.controllable === true },
-        { file: isV2 ? 'embeddium-1.0.12-beta.9999+mc1.21.4.jar' : 'embeddium-0.3.31+mc1.21.1.jar', enabled: isV2 ? false : settings.embeddium !== false }
+        { file: isV2 ? 'controlify-3.0.0+lts+1.21.4-neoforge.jar' : 'controlify-forgified-2.1.9-mc1.20.1-forge.jar', enabled: settings.controllable === true },
+        { file: isV2 ? 'yet_another_config_lib_v3-3.8.2+1.21.4-neoforge.jar' : '', enabled: false },
+        { file: isV2 ? 'embeddium-1.0.12-beta.9999+mc1.21.4.jar' : '', enabled: false }
       ]
       for (const { file, enabled } of optionalMods) {
         const ep = path.join(modsDir, file), dp = path.join(modsDisabledDir, file)
@@ -723,12 +727,12 @@ function createWindow() {
 
       const qpIdentifier = launchPort === 25565 ? launchHost : `${launchHost}:${launchPort}`
 
-      // Verifier si l'installateur NeoForge existe bien
-      const forgeInstallerTargetToRun = path.join(rootPath, 'neoforge-installer.jar')
+      // Vérifier si l'installateur Forge/NeoForge existe bien
+      const forgeInstallerTargetToRun = path.join(rootPath, isV2 ? 'neoforge-installer.jar' : 'forge-installer.jar')
 
       if (!fs.existsSync(forgeInstallerTargetToRun)) {
-        win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur NeoForge' })
-        return { error: 'no_forge', message: `L'installateur NeoForge est introuvable sur le serveur.\nImpossible de lancer le jeu sans NeoForge.\nFichier attendu : ${forgeInstallerTargetToRun}` }
+        win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: isV2 ? 'Erreur NeoForge' : 'Erreur Forge' })
+        return { error: 'no_forge', message: `L'installateur ${isV2 ? 'NeoForge' : 'Forge'} est introuvable.\nImpossible de lancer le jeu.\nFichier attendu : ${forgeInstallerTargetToRun}` }
       }
 
       const opts: any = {
@@ -763,7 +767,7 @@ function createWindow() {
         else if (t === 'natives') label = `Installation des bibliothèques natives (${pct}%)`
         else if (t === 'classes' || t === 'libraries') label = `Téléchargement des librairies (${pct}%)`
         else if (t === 'client') label = `Téléchargement de Minecraft ${v} (${pct}%)`
-        else if (t.includes('forge') || t.includes('neoforge')) label = `Installation de NeoForge (${pct}%)`
+        else if (t.includes('forge') || t.includes('neoforge')) label = `Installation de ${isV2 ? 'NeoForge' : 'Forge'} (${pct}%)`
         else label = `Téléchargement : ${e.type} (${pct}%)`
         win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: pct, task: label })
       }
