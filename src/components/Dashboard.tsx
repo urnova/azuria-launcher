@@ -17,7 +17,7 @@ const ERROR_CODES: Record<string, { code: string; label: string }> = {
   session_expired: { code: 'AZ-001', label: 'Session Microsoft expirée' },
   no_java:         { code: 'AZ-002', label: 'Java 21 introuvable' },
   no_game:         { code: 'AZ-003', label: 'Minecraft non possédé' },
-  no_forge:        { code: 'AZ-004', label: 'NeoForge introuvable' },
+  no_forge:        { code: 'AZ-004', label: 'Forge introuvable' },
   download_failed: { code: 'AZ-005', label: 'Téléchargement échoué' },
   extract_failed:  { code: 'AZ-006', label: 'Extraction des mods échouée' },
   extract_empty:   { code: 'AZ-007', label: 'Archive des mods vide' },

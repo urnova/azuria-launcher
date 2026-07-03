@@ -731,8 +731,43 @@ function createWindow() {
       const forgeInstallerTargetToRun = path.join(rootPath, isV2 ? 'neoforge-installer.jar' : 'forge-installer.jar')
 
       if (!fs.existsSync(forgeInstallerTargetToRun)) {
-        win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: isV2 ? 'Erreur NeoForge' : 'Erreur Forge' })
-        return { error: 'no_forge', message: `L'installateur ${isV2 ? 'NeoForge' : 'Forge'} est introuvable.\nImpossible de lancer le jeu.\nFichier attendu : ${forgeInstallerTargetToRun}` }
+        if (isV2) {
+          win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur NeoForge' })
+          return { error: 'no_forge', message: `L'installateur NeoForge est introuvable.\nFichier attendu : ${forgeInstallerTargetToRun}` }
+        }
+        // V3: téléchargement automatique de Forge 1.20.1-47.4.20
+        win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: 0, task: 'Téléchargement de Forge 1.20.1...' })
+        const forgeUrl = 'https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.4.20/forge-1.20.1-47.4.20-installer.jar'
+        const forgeDownloaded = await new Promise<boolean>((resolve) => {
+          const file = fs.createWriteStream(forgeInstallerTargetToRun)
+          function doReq(url: string, redirects = 0) {
+            const parsed = new URL(url)
+            const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, method: 'GET', headers: { 'User-Agent': 'azuria-launcher' } }
+            require('https').request(opts, (res: any) => {
+              if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                if (redirects > 5) { file.close(); resolve(false); return }
+                return doReq(res.headers.location, redirects + 1)
+              }
+              if (res.statusCode !== 200) { file.close(); resolve(false); return }
+              const total = parseInt(res.headers['content-length'] || '0')
+              let received = 0
+              res.on('data', (chunk: any) => {
+                received += chunk.length
+                if (total > 0) win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: Math.round(received / total * 100), task: `Téléchargement de Forge 1.20.1 (${Math.round(received/1024)}KB)...` })
+              })
+              res.pipe(file)
+              res.on('end', () => file.close(() => resolve(true)))
+              res.on('error', () => file.close(() => resolve(false)))
+            }).on('error', () => { file.close(); resolve(false) }).end()
+          }
+          doReq(forgeUrl)
+        })
+        if (!forgeDownloaded) {
+          try { fs.unlinkSync(forgeInstallerTargetToRun) } catch {}
+          win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur téléchargement Forge' })
+          return { error: 'no_forge', message: 'Impossible de télécharger l\'installateur Forge 1.20.1.\nVérifie ta connexion internet et réessaie.' }
+        }
+        win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 95, task: 'Forge téléchargé, lancement...' })
       }
 
       const opts: any = {
