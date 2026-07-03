@@ -206,7 +206,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (p: any) => void }) 
           </div>
 
           <div className="text-center mt-4" style={{ fontSize: 10, color: S.text3 }}>
-            playazuria.astraltechnologie.fr · v1.21.1 · Survival
+            playazuria.astraltechnologie.fr · Forge 1.20.1 · Survival
           </div>
         </div>
       </div>
