@@ -38,7 +38,7 @@ const store = new Store({
   defaults: {
     profiles: [],
     activeProfileId: null,
-    settings: { controllable: false, embeddium: true, ram: 4 }
+    settings: { controllable: false, ram: 6 }
   }
 })
 
@@ -46,7 +46,7 @@ const { Client } = require('minecraft-launcher-core')
 const launcher = new Client()
 let gameProcess: any = null
 
-// Java 21 from official Minecraft launcher (compatible with NeoForge 1.21.1)
+// Java 21 from official Minecraft launcher (compatible with Forge 1.20.1 + NeoForge 1.21.x)
 const MC_JAVA_PATH = 'C:\\Users\\zozoo\\AppData\\Local\\Packages\\Microsoft.4297127D64EC6_8wekyb3d8bbwe\\LocalCache\\Local\\runtime\\java-runtime-delta\\windows-x64\\java-runtime-delta\\bin\\javaw.exe'
 
 // --- Minecraft Server List Ping (SLP) ---
@@ -778,10 +778,33 @@ function createWindow() {
         forge: forgeInstallerTargetToRun,
         javaPath,
         memory: {
-          max: `${settings.ram || 4}G`,
-          min: `${Math.max(1, Math.floor((settings.ram || 4) / 2))}G`
+          max: `${settings.ram || 6}G`,
+          min: `${Math.max(2, Math.floor((settings.ram || 6) / 2))}G`
         },
-        quickPlay: { type: 'multiplayer', identifier: qpIdentifier }
+        quickPlay: { type: 'multiplayer', identifier: qpIdentifier },
+        // JVM args optimisés pour un gros modpack (Aikar's flags)
+        javaOptions: [
+          '-XX:+UseG1GC',
+          '-XX:+ParallelRefProcEnabled',
+          '-XX:MaxGCPauseMillis=200',
+          '-XX:+UnlockExperimentalVMOptions',
+          '-XX:+DisableExplicitGC',
+          '-XX:+AlwaysPreTouch',
+          '-XX:G1NewSizePercent=30',
+          '-XX:G1MaxNewSizePercent=40',
+          '-XX:G1HeapRegionSize=8M',
+          '-XX:G1ReservePercent=20',
+          '-XX:G1HeapWastePercent=5',
+          '-XX:G1MixedGCCountTarget=4',
+          '-XX:InitiatingHeapOccupancyPercent=15',
+          '-XX:G1MixedGCLiveThresholdPercent=90',
+          '-XX:G1RSetUpdatingPauseTimePercent=5',
+          '-XX:SurvivorRatio=32',
+          '-XX:+PerfDisableSharedMem',
+          '-XX:MaxTenuringThreshold=1',
+          '-Dfml.readTimeout=120',
+          '-Dfml.loginTimeout=120'
+        ]
       }
 
       launcher.removeAllListeners('debug')
