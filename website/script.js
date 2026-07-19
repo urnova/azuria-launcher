@@ -338,6 +338,37 @@
   }
 
   /* ============================================================
+     STATUT SERVEUR
+     ============================================================ */
+  function initServerStatus() {
+    var statusText = $("#server-status-text");
+    var statusDot = $("#server-status-dot");
+    if (!statusText || !statusDot) return;
+
+    fetch("https://api.mcsrvstat.us/3/playazuria.astraltechnologie.fr")
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.online) {
+          statusText.textContent = (data.players ? data.players.online : 0) + " / " + (data.players ? data.players.max : 20) + " joueurs";
+          statusText.style.color = "#2ecc71";
+          statusDot.style.background = "#2ecc71";
+          statusDot.style.boxShadow = "0 0 10px #2ecc71";
+        } else {
+          statusText.textContent = "Hors ligne";
+          statusText.style.color = "#e74c3c";
+          statusDot.style.background = "#e74c3c";
+          statusDot.style.boxShadow = "0 0 10px #e74c3c";
+        }
+      })
+      .catch(function () {
+        statusText.textContent = "Erreur de connexion";
+        statusText.style.color = "#e74c3c";
+        statusDot.style.background = "#e74c3c";
+        statusDot.style.boxShadow = "0 0 10px #e74c3c";
+      });
+  }
+
+  /* ============================================================
      INIT
      ============================================================ */
   function init() {
@@ -350,6 +381,7 @@
     initFadeIn();
     initProgressBars();
     initParticles();
+    initServerStatus();
   }
 
   if (document.readyState === "loading") {

@@ -48,7 +48,7 @@ Le Launcher Azuria est une application Electron (Windows) qui :
 
 Commence par accueillir chaleureusement l'utilisateur et demander quel est son problème.`
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }

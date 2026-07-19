@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Admin � Azuria Support</title>
+<title>Admin — Azuria Support</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <style>
@@ -43,9 +43,9 @@ body{font-family:Outfit,sans-serif;background:#07070f;color:#e8eaf0;min-height:1
 <!-- LOGIN SCREEN -->
 <div class="login-wrap" id="login-wrap">
 <div class="login-card">
-<div class="login-logo">???</div>
+<div class="login-logo">🛡️</div>
 <h1 class="login-title">Panel Admin</h1>
-<p class="login-sub">Azuria Support � Acces restreint</p>
+<p class="login-sub">Azuria Support — Acces restreint</p>
 <input type="password" class="login-input" id="admin-pwd" placeholder="Mot de passe admin..." onkeydown="if(event.key==='Enter')doLogin()"/>
 <button class="login-btn" onclick="doLogin()">Connexion</button>
 <div class="login-err" id="login-err">Mot de passe incorrect.</div>
@@ -54,7 +54,7 @@ body{font-family:Outfit,sans-serif;background:#07070f;color:#e8eaf0;min-height:1
 <!-- ADMIN PANEL -->
 <div class="admin-wrap" id="admin-wrap">
 <div class="admin-header">
-<h1>??? Admin Panel � Azuria Support</h1>
+<h1>🛡️ Admin Panel — Azuria Support</h1>
 <div style="display:flex;align-items:center;gap:12px">
 <span class="badge">ADMIN</span>
 <button class="logout-btn" onclick="doLogout()">Deconnexion</button>
@@ -67,19 +67,19 @@ body{font-family:Outfit,sans-serif;background:#07070f;color:#e8eaf0;min-height:1
 <div class="stat-card"><div class="stat-num">Discord</div><div class="stat-label">Tickets via</div></div>
 </div>
 <div class="info-box" style="border-color:rgba(79,142,247,.3);background:rgba(79,142,247,.05)">
-<div style="font-weight:800;margin-bottom:8px;font-size:1rem">?? Tickets de support</div>
+<div style="font-weight:800;margin-bottom:8px;font-size:1rem">📨 Tickets de support</div>
 <p>Les tickets envoyes par les utilisateurs (via le site ou le launcher) arrivent directement dans votre canal Discord via webhook.<br><br>
 <strong>Pour configurer :</strong> Ajoutez la variable <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px">DISCORD_WEBHOOK_URL</code> dans les parametres Vercel de votre projet, avec l URL de votre webhook Discord #support-tickets.<br><br>
 Une fois configure, chaque ticket apparaitra dans Discord avec toutes les informations (pseudo, email, categorie, code erreur, description).</p>
 </div>
 <div class="info-box" style="border-color:rgba(170,68,255,.3);background:rgba(170,68,255,.05)">
-<div style="font-weight:800;margin-bottom:8px;font-size:1rem">?? Eva AI � Conversations</div>
+<div style="font-weight:800;margin-bottom:8px;font-size:1rem">🤖 Eva AI — Conversations</div>
 <p>Quand un utilisateur clique sur "Transmettre a l equipe de support" dans le chat Eva, la conversation complete est envoyee dans votre canal Discord.<br><br>
 <strong>Variables Vercel requises :</strong><br>
-� <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px">GROQ_API_KEY</code> � Votre cle API Groq (llama-3.1-8b-instant)<br>
-� <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px">DISCORD_WEBHOOK_URL</code> � Webhook Discord pour les tickets et escalades</p>
+• <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px">GROQ_API_KEY</code> — Votre cle API Groq (llama-3.1-8b-instant)<br>
+• <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px">DISCORD_WEBHOOK_URL</code> — Webhook Discord pour les tickets et escalades</p>
 </div>
-<h2 class="section-title">?? Reference des codes d erreur</h2>
+<h2 class="section-title">📋 Reference des codes d erreur</h2>
 <div class="info-box">
 <table class="code-table">
 <thead><tr><th>Code</th><th>Signification</th><th>Cause</th><th>Solution rapide</th></tr></thead>
@@ -120,5 +120,4 @@ if(sessionStorage.getItem('az_admin')==='1'){
 </script>
 </body>
 </html>
-
 

@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Grimoire Azuria — Faction &amp; Corruption V2</title>
+    <title>Grimoire Azuria — Encyclopédie Officielle</title>
     <meta name="description" content="Le Grimoire Azuria : wiki complet du serveur — histoire, items exclusifs, boss légendaires, métiers, quêtes, armures et économie." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -47,6 +47,8 @@
     .sidebar-link:hover{background:rgba(255,255,255,.04);color:var(--text)}
     .sidebar-link.active{background:rgba(0,210,255,.1);color:var(--accent)}
     .sidebar-sep{height:1px;background:var(--border);margin:12px 0}
+    .sidebar-meta{font-size:.72rem;color:var(--muted);padding:0 8px}
+
     /* ══ Filter bar ═══════════════════════════════════════════════════ */
     .filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
     .filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:.2s;font-family:'Outfit',sans-serif}
@@ -98,8 +100,6 @@
     .r-legendary {background:rgba(245,158,11,.15);   color:var(--legendary)}
     .r-mythic    {background:rgba(239,68,68,.15);    color:var(--mythic)}
     .r-divine    {background:linear-gradient(90deg,rgba(253,224,71,.2),rgba(168,85,247,.2));color:var(--divine)}
-    .r-antique   {background:rgba(255,107,53,.15);   color:var(--antique)}
-    .r-event     {background:rgba(168,85,247,.2);border:1px solid rgba(168,85,247,.4);color:#c084fc}
 
     /* ══ Job Card ═════════════════════════════════════════════════════ */
     .job-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:20px}
@@ -234,14 +234,14 @@
 <!-- ══ NAVBAR ══════════════════════════════════════════════════════ -->
 <header class="navbar">
     <div class="nav-inner">
-        <a href="/" class="nav-logo">
+        <a href="index.html" class="nav-logo">
             <img src="assets/logo.png" alt="Azuria" />
             <span>Azuria</span>
             <span class="nav-badge">GRIMOIRE</span>
         </a>
         <nav class="nav-links">
-            <a href="/" class="nav-link">Accueil</a>
-            <a href="/grimoire" class="nav-link active">Grimoire</a>
+            <a href="index.html" class="nav-link">Accueil</a>
+            <a href="grimoire.html" class="nav-link active">Grimoire</a>
         </nav>
         <div class="hamburger" id="hamburgerBtn" aria-label="Menu">
             <span></span><span></span><span></span>
@@ -270,14 +270,7 @@
         <a href="#fonctions"   class="sidebar-link" data-section="fonctions">  <span>🔧</span>Fonctionnalités</a>
         <a href="#commandes"   class="sidebar-link" data-section="commandes">  <span>📟</span>Commandes</a>
         <div class="sidebar-sep"></div>
-        <div class="sidebar-sep"></div>
-        <p class="sidebar-label">Nouveau · V2</p>
-        <a href="#factions"    class="sidebar-link" data-section="factions">   <span>⚔️</span>Factions</a>
-        <a href="#evenements"  class="sidebar-link" data-section="evenements"> <span>🌟</span>Événements</a>
-        <a href="#lootboxes-event" class="sidebar-link" data-section="lootboxes-event"><span>✨</span>Lootboxes EVENT</a>
-        <a href="#portails"    class="sidebar-link" data-section="portails">   <span>🏛️</span>Portails</a>
-        <div class="sidebar-sep"></div>
-        <p class="sidebar-label" style="color:var(--accent)">V2.1 · Mai 2026</p>
+        <p class="sidebar-meta">v3.1.0 · Avril 2026</p>
     </aside>
 
     <!-- CONTENT -->
@@ -377,69 +370,101 @@
             </div>
 
             <div class="saga-timeline">
-
-<div class="saga-entry">
-    <div class="saga-body">
-        <div class="saga-title">Chronique I — La Fracture</div>
-        <div class="saga-desc">Naguère, Azuria fut un carrefour entre les mondes. Vous débarquez alors que les failles se rouvrent… Il faut d'abord survivre.</div>
-        <div class="saga-steps">
-            <div class="saga-step"><b>Étape 1 - Les Fondations :</b> Coupez 150 bûches pour établir les premières défenses du campement.</div>
-        </div>
-    </div>
-</div>
-
-<div class="saga-entry">
-    <div class="saga-body">
-        <div class="saga-title">Chronique II — L'Héritage du Colosse</div>
-        <div class="saga-desc">L'armure noire se réveille près des ruines du Portail Ouest. Les marchands murmurent : le Colosse approche. Il faut réduire son armée.</div>
-        <div class="saga-steps">
-            <div class="saga-step"><b>Étape 1 - Chasse nocturne :</b> Terrassez 150 créatures corrompues pour affaiblir les avant-gardes.</div>
-        </div>
-    </div>
-</div>
-
-<div class="saga-entry">
-    <div class="saga-body">
-        <div class="saga-title">Chronique III — Le Vide du Nord</div>
-        <div class="saga-desc">Des pillards aux bannières inconnues profanent les sanctuaires du Portail Nord. Le froid s'installe sur Azuria.</div>
-        <div class="saga-steps">
-            <div class="saga-step"><b>Étape 1 - Échos de guerre :</b> Éliminez 250 créatures hostiles aux abords des sanctuaires.</div>
-        </div>
-    </div>
-</div>
-
-<div class="saga-entry">
-    <div class="saga-body">
-        <div class="saga-title">Chronique IV — Le Magicien des Flammes</div>
-        <div class="saga-desc">Un mage de feu grave des runes dans la pierre en brûlant depuis des siècles. Les flammes précèdent l'eau noire.</div>
-        <div class="saga-steps">
-            <div class="saga-step"><b>Étape 1 - Le Pacte Incandescent :</b> Consultez la §eSentinelle des Flammes§7 au Portail Est.</div>
-        </div>
-    </div>
-</div>
-
-<div class="saga-entry">
-    <div class="saga-body">
-        <div class="saga-title">Chronique V — L'Abyssal Veille</div>
-        <div class="saga-desc">Sous les flots du Portail Sud, quelque chose de plus ancien qu'Azuria elle-même ouvre un œil.</div>
-        <div class="saga-steps">
-            <div class="saga-step"><b>Étape 1 - Les Marées Sombres :</b> Adressez-vous au §bVeilleur des Abysses§7.</div>
-        </div>
-    </div>
-</div>
-
-<div class="saga-entry">
-    <div class="saga-body">
-        <div class="saga-title">Chronique VI — L'Éveil des Ténèbres</div>
-        <div class="saga-desc">Les quatre Gardiens sont vaincus. L'Éveil des Ténèbres se libère de ses chaînes.</div>
-        <div class="saga-steps">
-            <div class="saga-step"><b>Étape 1 - Volonté d'Acier :</b> Prouvez que vous êtes l'ultime Voyageur en tuant 1000 créatures de l'Aetheria.</div>
-        </div>
-    </div>
-</div>
-
-</div>
-</section>
+                <!-- Chronique I -->
+                <div class="saga-entry">
+                    <div class="saga-body">
+                        <div class="saga-title">Chronique I — L'Écho des Portails</div>
+                        <div class="saga-desc">Azuria fut jadis un carrefour entre les mondes, gardé par quatre Portails scellés. Depuis la Fracture, les failles se rouvrent, les morts marchent la nuit, et les mines résonnent d'une énergie que personne ne comprend encore. Vous débarquez sans armure, sans réputation, sans cristal. Commencez par ne pas mourir.</div>
+                        <div class="saga-steps">
+                            <div class="saga-step"><b>Étape 1 — Racines du refuge :</b> Coupez 24 bûches pour fortifier le campement</div>
+                            <div class="saga-step"><b>Étape 2 — Charbon des profondeurs :</b> Extrayez 48 blocs de charbon des veines oubliées</div>
+                            <div class="saga-step"><b>Étape 3 — Nuit de brume :</b> Repoussez 20 morts-vivants qui rôdent</div>
+                        </div>
+                        <div class="quest-rewards" style="margin-top:12px">
+                            <span class="quest-reward coins">💎 6 000 AC</span>
+                            <span class="quest-reward xp">⭐ 600 XP</span>
+                            <span class="quest-reward" style="color:var(--muted)">Débloque : Chronique II</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Chronique II -->
+                <div class="saga-entry">
+                    <div class="saga-body">
+                        <div class="saga-title">Chronique II — Le Chevalier de Rouille</div>
+                        <div class="saga-desc">Des marchands parlent en chuchotant d'une armure noire aperçue près du Portail Ouest. <em>«&nbsp;Le Chevalier Sombre — autrefois le plus loyal serviteur de l'Archimage. La Fracture a fusionné son armure avec sa chair. Il ne ressent plus la douleur.&nbsp;»</em> Vous vous demandez si vous en ressentrez à sa place.</div>
+                        <div class="saga-steps">
+                            <div class="saga-step"><b>Étape 1 — Marche vers l'Arène :</b> Parcourez 800 blocs à travers Azuria</div>
+                            <div class="saga-step"><b>Étape 2 — Premier titan :</b> Terrassez le Chevalier Sombre dans l'arène</div>
+                        </div>
+                        <div class="quest-rewards" style="margin-top:12px">
+                            <span class="quest-reward coins">💎 14 000 AC</span>
+                            <span class="quest-reward xp">⭐ 1 400 XP</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Chronique III -->
+                <div class="saga-entry">
+                    <div class="saga-body">
+                        <div class="saga-title">Chronique III — Bannières & Pillards</div>
+                        <div class="saga-desc">Des pillards aux bannières d'Aetheria dévastent les sanctuaires du Portail Nord. Leur chef n'a jamais eu de nom — il n'a jamais eu de corps véritable. Il se matérialise, aveugle ses proies, et disparaît dans l'obscurité. Jusqu'à aujourd'hui.</div>
+                        <div class="saga-steps">
+                            <div class="saga-step"><b>Étape 1 — Échos de guerre :</b> Éliminez 80 créatures hostiles (hors boss)</div>
+                            <div class="saga-step"><b>Étape 2 — Le Chasseur des Failles :</b> Vainquez L'Ombre du Vide à l'arène — 2e Gardien du Portail Nord</div>
+                        </div>
+                        <div class="quest-rewards" style="margin-top:12px">
+                            <span class="quest-reward coins">💎 22 000 AC</span>
+                            <span class="quest-reward xp">⭐ 2 200 XP</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Chronique IV -->
+                <div class="saga-entry">
+                    <div class="saga-body">
+                        <div class="saga-title">Chronique IV — Cendres &amp; Prophétie</div>
+                        <div class="saga-desc">Les terres autour du Portail Est sont calcinées. Un mage erre parmi les ruines en brûlant — le dernier survivant de l'Ordre des Mages-Architectes, consumé par ses propres sorts lors de la Fracture. Il brûle depuis des siècles sans pouvoir mourir, sans pouvoir oublier les formules qui devaient fermer les Portails.</div>
+                        <div class="saga-steps">
+                            <div class="saga-step"><b>Étape 1 — Moisson du pacte :</b> Récoltez 120 cultures pour les survivants des terres brûlées</div>
+                            <div class="saga-step"><b>Étape 2 — Le Gardien du Ciel :</b> Battez le Magicien des Flammes à l'arène (Portail Est)</div>
+                        </div>
+                        <div class="quest-rewards" style="margin-top:12px">
+                            <span class="quest-reward coins">💎 35 000 AC</span>
+                            <span class="quest-reward xp">⭐ 3 500 XP</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Chronique V -->
+                <div class="saga-entry">
+                    <div class="saga-body">
+                        <div class="saga-title">Chronique V — L'Abyssal Veille</div>
+                        <div class="saga-desc">Les filets des pêcheurs du port Sud reviennent déchirés. Pas par des poissons. <em>Par des griffes.</em> Le Léviathan Abyssal n'est pas corrompu par la Fracture — il existait avant l'Archimage, avant les Portails, avant Azuria. Il déteste simplement la lumière. Et il vient de vous repérer.</div>
+                        <div class="saga-steps">
+                            <div class="saga-step"><b>Étape 1 — Filets et légendes :</b> Pêchez 40 fois dans les eaux d'Azuria — la mer a des secrets</div>
+                            <div class="saga-step"><b>Étape 2 — Seigneur des Profondeurs :</b> Terrassez le Léviathan Abyssal à l'arène (Portail Sud)</div>
+                        </div>
+                        <div class="quest-rewards" style="margin-top:12px">
+                            <span class="quest-reward coins">💎 55 000 AC</span>
+                            <span class="quest-reward xp">⭐ 5 500 XP</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Chronique VI -->
+                <div class="saga-entry">
+                    <div class="saga-body">
+                        <div class="saga-title" style="color:var(--epic)">Chronique VI — L'Éveil des Ténèbres</div>
+                        <div class="saga-desc">Les quatre Portails sont libérés. Les chaînes de l'Éveillé se fissurent dans l'obsidienne. <strong style="color:var(--mythic)">Boom. Boom. Boom.</strong> Son battement de cœur résonne depuis les profondeurs de l'arène. Il attend depuis l'aube du monde. Le vaincre, c'est briser le serment qui lie Azuria à ses ténèbres. Pour l'instant.</div>
+                        <div class="saga-steps">
+                            <div class="saga-step"><b>Étape 1 — Épreuve du Voyageur :</b> Prouvez votre valeur — 3 éliminations en arène PvP</div>
+                            <div class="saga-step"><b>Étape finale — L'Éveil Brisé :</b> Terrassez L'Éveillé des Ténèbres — le Chef Suprême — dans l'arène</div>
+                        </div>
+                        <div class="quest-rewards" style="margin-top:12px">
+                            <span class="quest-reward coins">💎 120 000 AC</span>
+                            <span class="quest-reward xp">⭐ 12 000 XP</span>
+                            <span class="quest-reward" style="color:var(--divine);border-color:rgba(253,224,71,.3)">✨ Fin de Saga</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- ══════════════════════════════════════════════════════════
              SECTION : QUÊTES
@@ -482,28 +507,28 @@
             <!-- SECONDAIRES -->
             <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:16px;color:var(--epic)">🎯 Quêtes Secondaires <span style="font-size:.75rem;color:var(--muted);font-weight:400">(permanentes · une seule fois · 21 quêtes)</span></h3>
             <div class="quest-grid" style="margin-bottom:40px">
-                <div class="quest-card"><div class="quest-cat side">'  Secondaire</div><div class="quest-title">L'Héritage des Mages-Architectes</div><div class="quest-desc">Les Mages-Architectes alimentaient des Portails inter-dimensionnels avec le minerai de ces veines. Minez 250 blocs. C'est beaucoup moins héroïque mais nettement plus payant.</div><div class="quest-rewards"><span class="quest-reward coins">💎 8 000 AC</span><span class="quest-reward xp">'  1 000 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">🎣 Secondaire</div><div class="quest-title">Les Trésors du Port Sud</div><div class="quest-desc">Depuis que le Léviathan a troublé les abysses du Portail Sud, les poissons remontent avec des reliques englouties. 100 lancers. Essayez de ne pas ramener autre chose.</div><div class="quest-rewards"><span class="quest-reward coins">💎 10 000 AC</span><span class="quest-reward xp">'  1 500 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">🌲 Secondaire</div><div class="quest-title">La Forêt des Portails</div><div class="quest-desc">Les forêts autour des anciens Portails ont cru trois fois plus vite depuis la Fracture — énergie résiduelle, probablement. 1 000 bûches pour les cartographier et constater les dégâts.</div><div class="quest-rewards"><span class="quest-reward coins">💎 12 000 AC</span><span class="quest-reward xp">'  2 000 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">⚔'  Secondaire</div><div class="quest-title">Duels des Cristaux</div><div class="quest-desc">Les Azur Cristaux s'obtiennent en combat ou en boutique. Le combat, c'est plus risqué mais tellement plus satisfaisant. 25 victoires PvP — la diplomatie, c'est pour les Gardiens vaincus.</div><div class="quest-rewards"><span class="quest-reward coins">💎 25 000 AC</span><span class="quest-reward xp">'  4 000 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">🌾 Secondaire</div><div class="quest-title">Nourrir l'Aetheria</div><div class="quest-desc">Les pillards de l'Ombre du Vide ont brûlé les champs du Portail Nord. Les refuges manquent de vivres. 800 cultures — vous nourrissez Azuria pendant qu'elle se remet de ses blessures.</div><div class="quest-rewards"><span class="quest-reward coins">💎 9 000 AC</span><span class="quest-reward xp">'  1 200 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">💀 Secondaire</div><div class="quest-title">L'Arène Appelle</div><div class="quest-desc">Un Gardien de l'arène attend dans les ténèbres depuis des siècles. Il espère que vous serez à la hauteur. (Spoiler : il ment. Il espère surtout que vous ne le serez pas.)</div><div class="quest-rewards"><span class="quest-reward coins">💎 50 000 AC</span><span class="quest-reward xp">'  5 000 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">🌱 Secondaire</div><div class="quest-title">Les Racines d'Azuria</div><div class="quest-desc">Les fermiers du spawn ont survécu à la Fracture, aux Gardiens, et aux morts-vivants. Et ils continuent de cultiver des pommes de terre. Respect absolu. 400 récoltes pour mériter de les rejoindre.</div><div class="quest-rewards"><span class="quest-reward coins">💎 3 500 AC</span><span class="quest-reward xp">'  400 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">' - Secondaire</div><div class="quest-title">L'Explorateur des Ruines</div><div class="quest-desc">Chaque ruine porte les cicatrices de la Fracture. Chaque pierre a un nom que personne ne prononce plus. 2 500 blocs — et essayez de ne pas trébucher sur les ossements en chemin.</div><div class="quest-rewards"><span class="quest-reward coins">💎 6 000 AC</span><span class="quest-reward xp">'  600 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">' - Secondaire</div><div class="quest-title">Cartographe d'Azuria</div><div class="quest-desc">6 000 blocs. Vous avez vu les cendres du Portail Est, les plages du Portail Sud, les ruines du Nord. Vos pieds savent des choses que votre tête ignore encore.</div><div class="quest-rewards"><span class="quest-reward coins">💎 11 000 AC</span><span class="quest-reward xp">'  900 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">' - Secondaire</div><div class="quest-title">La Première Prise</div><div class="quest-desc">5 poissons. Même eux portent l'énergie résiduelle des cristaux d'Azuria. Ou c'est juste des poissons ordinaires. On n'a pas vérifié. Pêchez quand même.</div><div class="quest-rewards"><span class="quest-reward coins">💎 500 AC</span><span class="quest-reward xp">'  50 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">�  Secondaire</div><div class="quest-title">L'Héritage des Mages-Architectes</div><div class="quest-desc">Les Mages-Architectes alimentaient des Portails inter-dimensionnels avec le minerai de ces veines. Minez 250 blocs. C'est beaucoup moins héroïque mais nettement plus payant.</div><div class="quest-rewards"><span class="quest-reward coins">💎 8 000 AC</span><span class="quest-reward xp">�  1 000 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">🎣 Secondaire</div><div class="quest-title">Les Trésors du Port Sud</div><div class="quest-desc">Depuis que le Léviathan a troublé les abysses du Portail Sud, les poissons remontent avec des reliques englouties. 100 lancers. Essayez de ne pas ramener autre chose.</div><div class="quest-rewards"><span class="quest-reward coins">💎 10 000 AC</span><span class="quest-reward xp">�  1 500 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">🌲 Secondaire</div><div class="quest-title">La Forêt des Portails</div><div class="quest-desc">Les forêts autour des anciens Portails ont cru trois fois plus vite depuis la Fracture — énergie résiduelle, probablement. 1 000 bûches pour les cartographier et constater les dégâts.</div><div class="quest-rewards"><span class="quest-reward coins">💎 12 000 AC</span><span class="quest-reward xp">�  2 000 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">⚔�  Secondaire</div><div class="quest-title">Duels des Cristaux</div><div class="quest-desc">Les Azur Cristaux s'obtiennent en combat ou en boutique. Le combat, c'est plus risqué mais tellement plus satisfaisant. 25 victoires PvP — la diplomatie, c'est pour les Gardiens vaincus.</div><div class="quest-rewards"><span class="quest-reward coins">💎 25 000 AC</span><span class="quest-reward xp">�  4 000 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">🌾 Secondaire</div><div class="quest-title">Nourrir l'Aetheria</div><div class="quest-desc">Les pillards de l'Ombre du Vide ont brûlé les champs du Portail Nord. Les refuges manquent de vivres. 800 cultures — vous nourrissez Azuria pendant qu'elle se remet de ses blessures.</div><div class="quest-rewards"><span class="quest-reward coins">💎 9 000 AC</span><span class="quest-reward xp">�  1 200 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">💀 Secondaire</div><div class="quest-title">L'Arène Appelle</div><div class="quest-desc">Un Gardien de l'arène attend dans les ténèbres depuis des siècles. Il espère que vous serez à la hauteur. (Spoiler : il ment. Il espère surtout que vous ne le serez pas.)</div><div class="quest-rewards"><span class="quest-reward coins">💎 50 000 AC</span><span class="quest-reward xp">�  5 000 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">🌱 Secondaire</div><div class="quest-title">Les Racines d'Azuria</div><div class="quest-desc">Les fermiers du spawn ont survécu à la Fracture, aux Gardiens, et aux morts-vivants. Et ils continuent de cultiver des pommes de terre. Respect absolu. 400 récoltes pour mériter de les rejoindre.</div><div class="quest-rewards"><span class="quest-reward coins">💎 3 500 AC</span><span class="quest-reward xp">�  400 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">� � Secondaire</div><div class="quest-title">L'Explorateur des Ruines</div><div class="quest-desc">Chaque ruine porte les cicatrices de la Fracture. Chaque pierre a un nom que personne ne prononce plus. 2 500 blocs — et essayez de ne pas trébucher sur les ossements en chemin.</div><div class="quest-rewards"><span class="quest-reward coins">💎 6 000 AC</span><span class="quest-reward xp">�  600 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">� � Secondaire</div><div class="quest-title">Cartographe d'Azuria</div><div class="quest-desc">6 000 blocs. Vous avez vu les cendres du Portail Est, les plages du Portail Sud, les ruines du Nord. Vos pieds savent des choses que votre tête ignore encore.</div><div class="quest-rewards"><span class="quest-reward coins">💎 11 000 AC</span><span class="quest-reward xp">�  900 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">� � Secondaire</div><div class="quest-title">La Première Prise</div><div class="quest-desc">5 poissons. Même eux portent l'énergie résiduelle des cristaux d'Azuria. Ou c'est juste des poissons ordinaires. On n'a pas vérifié. Pêchez quand même.</div><div class="quest-rewards"><span class="quest-reward coins">💎 500 AC</span><span class="quest-reward xp">�  50 XP</span></div></div>
 
-                <div class="quest-card"><div class="quest-cat side">&#x26CF; Secondaire</div><div class="quest-title">Veines Profondes</div><div class="quest-desc">Les géologues qui ont étudié les veines sous Azuria affirment qu'elles sont infinies. Ceux qui ont tenté de le vérifier n'ont pas tous donné de nouvelles. 2 000 blocs pour votre propre enquête.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 7 000 AC</span><span class="quest-reward xp">&#x2B50; 700 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x1FAA8; Secondaire</div><div class="quest-title">Fouilles Archéologiques</div><div class="quest-desc">Sous la terre d'Azuria dorment des fragments de l'ancien monde - et beaucoup de terre ordinaire. 600 blocs de terre. C'est de l'archéologie pour ceux qui n'ont pas de pinceau.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 3 200 AC</span><span class="quest-reward xp">&#x2B50; 350 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x1F480; Secondaire</div><div class="quest-title">Gardien du Spawn</div><div class="quest-desc">300 créatures corrompues par l'énergie des Portails brisés rôdent autour du spawn. Elles ne sont pas méchantes - elles sont juste légèrement homicides depuis la Fracture.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 9 500 AC</span><span class="quest-reward xp">&#x2B50; 950 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x2694;&#xFE0F; Secondaire</div><div class="quest-title">Baptême du Feu</div><div class="quest-desc">3 victoires en PvP. Tout Voyageur arrivant à Azuria doit prouver sa valeur. C'est une tradition. Personne ne sait qui l'a inventée, mais tout le monde s'y plie.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 4 000 AC</span><span class="quest-reward xp">&#x2B50; 400 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x1F33E; Secondaire</div><div class="quest-title">Les Champs de la Paix</div><div class="quest-desc">Après la Fracture, cultiver la terre est un acte de rébellion contre le chaos cosmique. 350 récoltes pour dire à l'Éveillé des Ténèbres que vous, vous avez des carottes.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 4 500 AC</span><span class="quest-reward xp">&#x2B50; 450 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x1F3D6;&#xFE0F; Secondaire</div><div class="quest-title">Sablier d'Azuria</div><div class="quest-desc">Les plages du Portail Sud cachent des fragments de cristaux depuis des siècles. Ou juste du sable. 800 blocs pour le découvrir par vous-même - équipez une pelle et gardez l'esprit ouvert.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 5 500 AC</span><span class="quest-reward xp">&#x2B50; 550 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x26CF; Secondaire</div><div class="quest-title">Les Profondeurs de la Fracture</div><div class="quest-desc">La deepslate garde les secrets de la Fracture dans ses strates. Chaque couche est un siècle. 4 000 blocs - vous lisez l'histoire d'Azuria avec une pioche. C'est plus efficace qu'un livre.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 14 000 AC</span><span class="quest-reward xp">&#x2B50; 1 400 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x1F420; Secondaire</div><div class="quest-title">Mémoire des Flots</div><div class="quest-desc">Depuis que le Léviathan sommeille à nouveau, les poissons remontent en masse - comme soulageés. On le serait aussi. 200 prises, le temps que ça dure.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 13 000 AC</span><span class="quest-reward xp">&#x2B50; 1 300 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x1F331; Secondaire</div><div class="quest-title">La Terre Nourrière</div><div class="quest-desc">Les fermiers ont reconstruit leurs cultures pierre par pierre depuis la Fracture. 500 récoltes - et une fierté que les Gardiens ne pourront jamais effacer.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 5 000 AC</span><span class="quest-reward xp">&#x2B50; 500 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x1F343; Secondaire</div><div class="quest-title">Grand Voyageur d'Azuria</div><div class="quest-desc">8 000 blocs parcourus - vous avez arpenté Azuria de la première ruine au dernier Portail. Vos chaussures en ont souffert.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 10 000 AC</span><span class="quest-reward xp">&#x2B50; 1 000 XP</span></div></div>
-                <div class="quest-card"><div class="quest-cat side">&#x1F480; Secondaire</div><div class="quest-title">Chasseur de l'Ombre</div><div class="quest-desc">150 créatures corrompues éliminées. L'obscurité recule à chaque victoire - mais elle a l'habitude d'attendre dans le noir.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 4 200 AC</span><span class="quest-reward xp">&#x2B50; 420 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x26CF; Secondaire</div><div class="quest-title">Veines Profondes</div><div class="quest-desc">Les géologues qui ont étudié les veines sous Azuria affirment qu�elles sont infinies. Ceux qui ont tenté de le vérifier n�ont pas tous donné de nouvelles. 2 000 blocs pour votre propre enquête.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 7 000 AC</span><span class="quest-reward xp">&#x2B50; 700 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x1FAA8; Secondaire</div><div class="quest-title">Fouilles Archéologiques</div><div class="quest-desc">Sous la terre d�Azuria dorment des fragments de l�ancien monde � et beaucoup de terre ordinaire. 600 blocs de terre. C�est de l�archéologie pour ceux qui n�ont pas de pinceau.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 3 200 AC</span><span class="quest-reward xp">&#x2B50; 350 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x1F480; Secondaire</div><div class="quest-title">Gardien du Spawn</div><div class="quest-desc">300 créatures corrompues par l�énergie des Portails brisés rôdent autour du spawn. Elles ne sont pas méchantes � elles sont juste légèrement homicides depuis la Fracture.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 9 500 AC</span><span class="quest-reward xp">&#x2B50; 950 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x2694;&#xFE0F; Secondaire</div><div class="quest-title">Baptême du Feu</div><div class="quest-desc">3 victoires en PvP. Tout Voyageur arrivant à Azuria doit prouver sa valeur. C�est une tradition. Personne ne sait qui l�a inventée, mais tout le monde s�y plie.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 4 000 AC</span><span class="quest-reward xp">&#x2B50; 400 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x1F33E; Secondaire</div><div class="quest-title">Les Champs de la Paix</div><div class="quest-desc">Après la Fracture, cultiver la terre est un acte de rébellion contre le chaos cosmique. 350 récoltes pour dire à l��?veillé des Ténèbres que vous, vous avez des carottes.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 4 500 AC</span><span class="quest-reward xp">&#x2B50; 450 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x1F3D6;&#xFE0F; Secondaire</div><div class="quest-title">Sablier d�Azuria</div><div class="quest-desc">Les plages du Portail Sud cachent des fragments de cristaux depuis des siècles. Ou juste du sable. 800 blocs pour le découvrir par vous-même � équipez une pelle et gardez l�esprit ouvert.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 5 500 AC</span><span class="quest-reward xp">&#x2B50; 550 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x26CF; Secondaire</div><div class="quest-title">Les Profondeurs de la Fracture</div><div class="quest-desc">La deepslate garde les secrets de la Fracture dans ses strates. Chaque couche est un siècle. 4 000 blocs � vous lisez l�histoire d�Azuria avec une pioche. C�est plus efficace qu�un livre.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 14 000 AC</span><span class="quest-reward xp">&#x2B50; 1 400 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x1F420; Secondaire</div><div class="quest-title">Mémoire des Flots</div><div class="quest-desc">Depuis que le Léviathan sommeille à nouveau, les poissons remontent en masse � comme soulageés. On le serait aussi. 200 prises, le temps que ça dure.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 13 000 AC</span><span class="quest-reward xp">&#x2B50; 1 300 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x1F331; Secondaire</div><div class="quest-title">La Terre Nourrière</div><div class="quest-desc">Les fermiers ont reconstruit leurs cultures pierre par pierre depuis la Fracture. 500 récoltes � et une fierté que les Gardiens ne pourront jamais effacer.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 5 000 AC</span><span class="quest-reward xp">&#x2B50; 500 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x1F343; Secondaire</div><div class="quest-title">Grand Voyageur d�Azuria</div><div class="quest-desc">8 000 blocs parcourus � vous avez arpenté Azuria de la première ruine au dernier Portail. Vos chaussures en ont souffert.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 10 000 AC</span><span class="quest-reward xp">&#x2B50; 1 000 XP</span></div></div>
+                <div class="quest-card"><div class="quest-cat side">&#x1F480; Secondaire</div><div class="quest-title">Chasseur de l�Ombre</div><div class="quest-desc">150 créatures corrompues éliminées. L�obscurité recule à chaque victoire � mais elle a l�habitude d�attendre dans le noir.</div><div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 4 200 AC</span><span class="quest-reward xp">&#x2B50; 420 XP</span></div></div>
 
             <!-- ÉQUIPE -->
             <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:16px;color:var(--mythic)">⚡ Quêtes d'Équipe <span style="font-size:.75rem;color:var(--muted);font-weight:400">(progression collective · /equipe)</span></h3>
@@ -537,25 +562,25 @@
                     <div class="quest-rewards"><span class="quest-reward coins">💎 80 000 AC</span><span class="quest-reward xp">⭐ 25 000 XP</span></div>
                 </div>
                 <div class="quest-card">
-                    <div class="quest-cat team">&#x1F332; '?quipe</div>
-                    <div class="quest-title">Reconstruction d'Azuria</div>
-                    <div class="quest-desc">L'avenir d'Azuria passe par l'érection de nouveaux remparts. Coupez 15 000 bûches en faction pour bâtir l'impassable forteresse.</div>
+                    <div class="quest-cat team">&#x1F332; �?quipe</div>
+                    <div class="quest-title">Reconstruction d�Azuria</div>
+                    <div class="quest-desc">L�avenir d�Azuria passe par l�érection de nouveaux remparts. Coupez 15 000 bûches en faction pour bâtir l�impassable forteresse.</div>
                     <div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 120 000 AC</span><span class="quest-reward xp">&#x2B50; 35 000 XP</span></div>
                 </div>
                 <div class="quest-card">
-                    <div class="quest-cat team">&#x1F5FA; '?quipe</div>
-                    <div class="quest-title">Cartographes de l'Ombre</div>
-                    <div class="quest-desc">La Fracture a déformé la géographie d'Azuria. Parcourez 50 000 blocs ensemble pour cartographier les anomalies résiduelles dans toutes les contrées hostiles.</div>
+                    <div class="quest-cat team">&#x1F5FA; �?quipe</div>
+                    <div class="quest-title">Cartographes de l�Ombre</div>
+                    <div class="quest-desc">La Fracture a déformé la géographie d�Azuria. Parcourez 50 000 blocs ensemble pour cartographier les anomalies résiduelles dans toutes les contrées hostiles.</div>
                     <div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 90 000 AC</span><span class="quest-reward xp">&#x2B50; 20 000 XP</span></div>
                 </div>
                 <div class="quest-card">
-                    <div class="quest-cat team">&#x2694;&#xFE0F; '?quipe</div>
-                    <div class="quest-title">Suprématie d'Azur (PvP)</div>
-                    <div class="quest-desc">Seuls les plus forts guideront Azuria vers la lumière. '?liminez 100 joueurs adverses et imposez la volonté absolue de votre faction.</div>
+                    <div class="quest-cat team">&#x2694;&#xFE0F; �?quipe</div>
+                    <div class="quest-title">Suprématie d�Azur (PvP)</div>
+                    <div class="quest-desc">Seuls les plus forts guideront Azuria vers la lumière. �?liminez 100 joueurs adverses et imposez la volonté absolue de votre faction.</div>
                     <div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 200 000 AC</span><span class="quest-reward xp">&#x2B50; 50 000 XP</span></div>
                 </div>
                 <div class="quest-card">
-                    <div class="quest-cat team">&#x1F3A3; '?quipe</div>
+                    <div class="quest-cat team">&#x1F3A3; �?quipe</div>
                     <div class="quest-title">Festin du Léviathan</div>
                     <div class="quest-desc">Le réveil du Léviathan a affolé les poissons migrateurs. Pêchez 1 000 créatures aquatiques en prévision du long hiver à venir.</div>
                     <div class="quest-rewards"><span class="quest-reward coins">&#x1F48E; 60 000 AC</span><span class="quest-reward xp">&#x2B50; 15 000 XP</span></div>
@@ -590,10 +615,9 @@
                         </div>
                     </div>
                     <div class="boss-stats">
-                        <div class="boss-hp" style="color:var(--rare)">425 000 PV</div>
-                        <div class="boss-price">Invocation : 500 000 💎</div>
-                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 195 000 💎</div>
-                        <div class="boss-cooldown">Attente : 10 minutes</div>
+                        <div class="boss-hp">425 000 PV</div>
+                        <div class="boss-price">Invocation : 195 000 💎</div>
+                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 500 000 💎</div>
                     </div>
                 </div>
                 <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px">Abilities : Lenteur sur les joueurs proches · Squelettes minions · Faiblesse en Phase 2 · Éclairs de zone</p>
@@ -634,9 +658,8 @@
                     </div>
                     <div class="boss-stats">
                         <div class="boss-hp" style="color:var(--legendary)">1 100 000 PV</div>
-                        <div class="boss-price">Invocation : 1 500 000 💎</div>
-                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 485 000 💎</div>
-                        <div class="boss-cooldown">Attente : 15 minutes</div>
+                        <div class="boss-price">Invocation : 485 000 💎</div>
+                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 1 500 000 💎</div>
                     </div>
                 </div>
                 <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px">Abilities : Éclairs aléatoires · Pillager et Vindicator minions · Cécité en Phase 2–3</p>
@@ -677,9 +700,8 @@
                     </div>
                     <div class="boss-stats">
                         <div class="boss-hp" style="color:var(--legendary)">2 250 000 PV</div>
-                        <div class="boss-price">Invocation : 3 500 000 💎</div>
-                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 1 150 000 💎</div>
-                        <div class="boss-cooldown">Attente : 15 minutes</div>
+                        <div class="boss-price">Invocation : 1 150 000 💎</div>
+                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 3 500 000 💎</div>
                     </div>
                 </div>
                 <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px">Abilities : Joueurs enflammés · Blaze minions · Crocs d'évocateur en Phase 3</p>
@@ -720,9 +742,8 @@
                     </div>
                     <div class="boss-stats">
                         <div class="boss-hp" style="color:var(--rare)">4 000 000 PV</div>
-                        <div class="boss-price">Invocation : 7 000 000 💎</div>
-                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 2 450 000 💎</div>
-                        <div class="boss-cooldown">Attente : 20 minutes</div>
+                        <div class="boss-price">Invocation : 2 450 000 💎</div>
+                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 7 000 000 💎</div>
                     </div>
                 </div>
                 <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px">Abilities : Fatigue Minière permanente · Guardian minions · Cécité des Abysses en Phase 2</p>
@@ -764,9 +785,8 @@
                     </div>
                     <div class="boss-stats">
                         <div class="boss-hp" style="color:var(--epic)">9 000 000 PV</div>
-                        <div class="boss-price">Invocation : 15 000 000 💎</div>
-                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 5 200 000 💎</div>
-                        <div class="boss-cooldown">Attente : 20 minutes</div>
+                        <div class="boss-price">Invocation : 5 200 000 💎</div>
+                        <div class="boss-price" style="color:var(--legendary);margin-top:4px">Récompense : 15 000 000 💎</div>
                     </div>
                 </div>
                 <div class="callout danger" style="margin-bottom:16px">
@@ -929,7 +949,6 @@
                 <button class="filter-btn" data-filter="boss">💀 Boss Drop</button>
                 <button class="filter-btn" data-filter="artefact">🏺 Artéfacts</button>
                 <button class="filter-btn" data-filter="utility">🎒 Utilitaires</button>
-                <button class="filter-btn" data-filter="event" style="border-color:rgba(168,85,247,.4);color:#c084fc">✨ Événement</button>
             </div>
 
             <div class="items-grid" id="itemsGrid">
@@ -978,7 +997,7 @@
                 <div class="item-card" data-cat="boss"><div class="item-top"><p class="item-origin">💀 Ombre du Vide (20%)</p><h3 class="item-name" style="color:var(--mythic)">🏹 Arc Spectral</h3><p class="item-desc">Traverse tout sur son passage. Perforation Totale de l'armure adverse.</p></div><div class="item-bot"><span class="item-effect" style="color:#f0f0f0">Perforation</span><span class="ac-chip" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--mythic)">📊 ~ 15 M 💎</span><span class="rarity-tag r-mythic">Mythique</span></div></div>
                 <div class="item-card" data-cat="boss"><div class="item-top"><p class="item-origin">💀 Mage des Cendres (50%)</p><h3 class="item-name" style="color:var(--legendary)">💚 Cœur de Nature</h3><p class="item-desc">La vie coule en vous. Régénération I permanente quand tenu en main.</p></div><div class="item-bot"><span class="item-effect">Régénération I</span><span class="ac-chip" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--legendary)">📊 ~ 5 M 💎</span><span class="rarity-tag r-legendary">Légendaire</span></div></div>
                 <div class="item-card" data-cat="boss"><div class="item-top"><p class="item-origin">💀 Mage des Cendres (30%)</p><h3 class="item-name" style="color:var(--mythic)">🌩 Bâton d'Ouragan</h3><p class="item-desc">Maîtrisez les vents violents. Dégâts de zone en ouragan autour de vous.</p></div><div class="item-bot"><span class="item-effect" style="color:var(--divine)">Vent AOE</span><span class="ac-chip" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--mythic)">📊 ~ 15 M 💎</span><span class="rarity-tag r-mythic">Mythique</span></div></div>
-                <div class="item-card" data-cat="boss"><div class="item-top"><p class="item-origin">💀 Mage des Cendres (20%)</p><h3 class="item-name" style="color:var(--mythic)">🛡️ Cuirasse Cœur-de-Fer</h3><p class="item-desc">Une défense de diamant. Ajoute +10 cœurs (+20 PV) au porteur.</p></div><div class="item-bot"><span class="item-effect" style="color:var(--mythic)">+10 Cœurs</span><span class="ac-chip" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--mythic)">📊 ~ 20 M 💎</span><span class="rarity-tag r-mythic">Mythique</span></div></div>
+                <div class="item-card" data-cat="boss"><div class="item-top"><p class="item-origin">💀 Mage des Cendres (20%)</p><h3 class="item-name" style="color:var(--mythic)">?? Cuirasse C�ur-de-Fer</h3><p class="item-desc">Une défense de diamant. Ajoute +10 cœurs (+20 PV) au porteur.</p></div><div class="item-bot"><span class="item-effect" style="color:var(--mythic)">+10 Cœurs</span><span class="ac-chip" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--mythic)">📊 ~ 20 M 💎</span><span class="rarity-tag r-mythic">Mythique</span></div></div>
                 <div class="item-card" data-cat="boss"><div class="item-top"><p class="item-origin">💀 Léviathan Abyssal (50%)</p><h3 class="item-name" style="color:var(--legendary)">🔴 Orbe de Sang</h3><p class="item-desc">Consomme l'âme des vaincus. Vampirisme I en main.</p></div><div class="item-bot"><span class="item-effect">Vampirisme I</span><span class="ac-chip" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--legendary)">📊 ~ 6 M 💎</span><span class="rarity-tag r-legendary">Légendaire</span></div></div>
                 <div class="item-card" data-cat="boss"><div class="item-top"><p class="item-origin">💀 Léviathan Abyssal (30%)</p><h3 class="item-name" style="color:var(--mythic)">⚪ Faux Spectrale</h3><p class="item-desc">L'armure ne sert à rien. 25% des dégâts traversent directement.</p></div><div class="item-bot"><span class="item-effect" style="color:#f0f0f0">Bypass Armure 25%</span><span class="ac-chip" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--mythic)">📊 ~ 18 M 💎</span><span class="rarity-tag r-mythic">Mythique</span></div></div>
                 <div class="item-card" data-cat="boss"><div class="item-top"><p class="item-origin">💀 Léviathan Abyssal (20%)</p><h3 class="item-name" style="color:var(--mythic)">🟣 Bouclier du Vide</h3><p class="item-desc">Immobile comme une montagne. Immunité totale au Knockback.</p></div><div class="item-bot"><span class="item-effect">Anti-Knockback</span><span class="ac-chip" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--mythic)">📊 ~ 25 M 💎</span><span class="rarity-tag r-mythic">Mythique</span></div></div>
@@ -995,13 +1014,6 @@
                 <div class="item-card" data-cat="utility"><div class="item-top"><p class="item-origin">🎒 Admin Shop</p><h3 class="item-name" style="color:var(--rare)">🐢 Masque de Plongeur</h3><p class="item-desc">Vision et respiration aquatique. Parfait pour l'exploration marine.</p></div><div class="item-bot"><span class="item-effect">Requin des Mers</span><span class="ac-chip">📊 125 000 💎</span><span class="rarity-tag r-rare">Rare</span></div></div>
                 <div class="item-card" data-cat="utility"><div class="item-top"><p class="item-origin">🎒 Admin Shop</p><h3 class="item-name" style="color:var(--legendary)">🟡 Cape de Nomad</h3><p class="item-desc">Vitesse de déplacement accrue. Vitesse I passive quand portée.</p></div><div class="item-bot"><span class="item-effect">Vitesse I</span><span class="ac-chip">📊 200 000 💎</span><span class="rarity-tag r-rare">Rare</span></div></div>
             </div>
-
-                <!-- ── ITEMS EVENT ── -->
-                <div class="item-card" data-cat="event" style="border-color:rgba(249,115,22,.25)"><div class="item-top"><p class="item-origin">☄️ Lootbox Météorite</p><h3 class="item-name" style="color:#f97316">☄️ Set Météoritique (4 pièces)</h3><p class="item-desc">Aura de Chaleur : Immunité Feu + Force I si enflammé. Skin Silence/Cuivre.</p></div><div class="item-bot"><span class="item-effect" style="color:#f97316">Aura de Chaleur</span><span class="ac-chip">~ 13 M 💎</span><span class="rarity-tag r-event">EVENT</span></div></div>
-                <div class="item-card" data-cat="event" style="border-color:rgba(168,85,247,.3)"><div class="item-top"><p class="item-origin">🌑 Lootbox Corruption</p><h3 class="item-name" style="color:#c084fc">🌑 Set Corrompu (4 pièces)</h3><p class="item-desc">Étreinte du Vide : Vitesse II + Vision Nocturne + Bouclier Wither. Skin Groin/Émeraude.</p></div><div class="item-bot"><span class="item-effect" style="color:#c084fc">Étreinte du Vide</span><span class="ac-chip">~ 13 M 💎</span><span class="rarity-tag r-event">EVENT</span></div></div>
-                <div class="item-card" data-cat="event" style="border-color:rgba(249,115,22,.2)"><div class="item-top"><p class="item-origin">☄️ Drop Événement</p><h3 class="item-name" style="color:#f97316">Cristal de Météorite</h3><p class="item-desc">Fragment drop de la Pluie de Météorites. Clé de la Lootbox Météorite.</p></div><div class="item-bot"><span class="item-effect" style="color:#f97316">Clé Lootbox</span><span class="ac-chip">Variable</span><span class="rarity-tag r-event">EVENT</span></div></div>
-                <div class="item-card" data-cat="event" style="border-color:rgba(168,85,247,.25)"><div class="item-top"><p class="item-origin">🌑 Drop Événement</p><h3 class="item-name" style="color:#c084fc">Fragment d'Âme Corrompue</h3><p class="item-desc">Fragment drop de la Corruption Cristalline. Clé de la Lootbox Corruption.</p></div><div class="item-bot"><span class="item-effect" style="color:#c084fc">Clé Lootbox</span><span class="ac-chip">Variable</span><span class="rarity-tag r-event">EVENT</span></div></div>
-            </div>
         </section>
 
         <!-- ══════════════════════════════════════════════════════════
@@ -1010,7 +1022,7 @@
         <section id="sets" class="section">
             <div class="section-head">
                 <h2>🛡️ Armures & Sets Complets</h2>
-                <p>5 sets d'armures légendaires. Portez les 4 pièces du même set pour activer le bonus de set complet.</p>
+                <p>4 sets d'armures légendaires. Portez les 4 pièces du même set pour activer le bonus de set complet.</p>
             </div>
 
             <!-- SET OMBRE -->
@@ -1089,41 +1101,6 @@
                     <div class="set-piece"><div class="set-piece-name">Bottes d'Apprenti</div><div class="set-piece-effect">Pièce de Set</div></div>
                 </div>
             </div>
-
-            <!-- SET DE L'ANCIEN -->
-            <div class="set-card" style="border-color:rgba(255,107,53,.15)">
-                <div class="set-header">
-                    <div class="set-icon">🌋</div>
-                    <div>
-                        <h3 style="font-size:1.15rem;margin-bottom:4px;color:var(--antique)">Set de l'Ancien</h3>
-                        <span class="rarity-tag r-mythic">Mythique</span>
-                        <span style="font-size:.78rem;color:var(--muted);margin-left:8px">Obtention : Chevalier Sombre (Arène)</span>
-                    </div>
-                </div>
-                <div class="callout" style="margin-bottom:14px"><span class="callout-icon">⭐</span><div><b>Bonus Set ×4 :</b> Force II permanente + Immolation des ennemis proches</div></div>
-                <div class="set-pieces">
-                    <div class="set-piece"><div class="set-piece-name" style="color:var(--mythic)">Casque de l'Ancien</div><div class="set-piece-effect">Résistance II</div></div>
-                    <div class="set-piece"><div class="set-piece-name" style="color:var(--mythic)">Plastron de l'Ancien</div><div class="set-piece-effect">Pièce de Set</div></div>
-                    <div class="set-piece"><div class="set-piece-name" style="color:var(--mythic)">Jambières de l'Ancien</div><div class="set-piece-effect">Pièce de Set</div></div>
-                    <div class="set-piece"><div class="set-piece-name" style="color:var(--mythic)">Bottes de l'Ancien</div><div class="set-piece-effect">Pièce de Set</div></div>
-                </div>
-            </div>
-
-            <!-- SET MÉTÉORITE -->
-            <div class="set-card" style="border-color:rgba(249,115,22,.3);background:linear-gradient(145deg,#130e08,var(--card))">
-                <div class="set-header"><div class="set-icon">☄️</div><div><h3 style="font-size:1.15rem;margin-bottom:4px;color:#f97316">Set Météoritique</h3><span class="rarity-tag r-event">EVENT</span><span style="font-size:.78rem;color:var(--muted);margin-left:8px">Lootbox Météorite · Cristal de Météorite</span></div></div>
-                <div class="callout" style="margin-bottom:14px;border-color:rgba(249,115,22,.3)"><span class="callout-icon">🔥</span><div><b>Bonus Set ×4 — Aura de Chaleur :</b> Immunité Feu permanente · Force I si en feu · Skin : Motif Silence/Cuivre</div></div>
-                <div class="set-pieces"><div class="set-piece"><div class="set-piece-name" style="color:#f97316">Casque Météoritique</div><div class="set-piece-effect">~ 3.0 M 💎</div></div><div class="set-piece"><div class="set-piece-name" style="color:#f97316">Plastron Météoritique</div><div class="set-piece-effect">~ 4.0 M 💎</div></div><div class="set-piece"><div class="set-piece-name" style="color:#f97316">Jambières Météoritiques</div><div class="set-piece-effect">~ 3.5 M 💎</div></div><div class="set-piece"><div class="set-piece-name" style="color:#f97316">Bottes Météoritiques</div><div class="set-piece-effect">~ 2.5 M 💎</div></div></div>
-                <p style="font-size:.82rem;color:var(--muted);margin-top:10px"><b>Armes :</b> Épée Météoritique (Enflamme + AoE si en feu) · Hache Météoritique (20% explosion de zone)</p>
-            </div>
-
-            <!-- SET CORRUPTION -->
-            <div class="set-card" style="border-color:rgba(168,85,247,.35);background:linear-gradient(145deg,#100a1a,var(--card))">
-                <div class="set-header"><div class="set-icon">🌑</div><div><h3 style="font-size:1.15rem;margin-bottom:4px;color:#c084fc">Set Corrompu</h3><span class="rarity-tag r-event">EVENT</span><span style="font-size:.78rem;color:var(--muted);margin-left:8px">Lootbox Corruption · Fragment d'Âme Corrompue</span></div></div>
-                <div class="callout" style="margin-bottom:14px;border-color:rgba(168,85,247,.4)"><span class="callout-icon">🌀</span><div><b>Bonus Set ×4 — Étreinte du Vide :</b> Vitesse II + Vision Nocturne · Bouclier Wither (renvoie Wither II à l'agresseur CaC) · Skin : Motif Groin/Émeraude</div></div>
-                <div class="set-pieces"><div class="set-piece"><div class="set-piece-name" style="color:#c084fc">Casque Corrompu</div><div class="set-piece-effect">~ 3.0 M 💎</div></div><div class="set-piece"><div class="set-piece-name" style="color:#c084fc">Plastron Corrompu</div><div class="set-piece-effect">~ 4.0 M 💎</div></div><div class="set-piece"><div class="set-piece-name" style="color:#c084fc">Jambières Corrompues</div><div class="set-piece-effect">~ 3.5 M 💎</div></div><div class="set-piece"><div class="set-piece-name" style="color:#c084fc">Bottes Corrompues</div><div class="set-piece-effect">~ 2.5 M 💎</div></div></div>
-                <p style="font-size:.82rem;color:var(--muted);margin-top:10px"><b>Armes :</b> Lame Corrompue (Wither II systématique) · Arc du Vide (Cécité + Lenteur II sur impact)</p>
-            </div>
         </section>
 
         <!-- ══════════════════════════════════════════════════════════
@@ -1141,345 +1118,15 @@
             </div>
 
             <div class="items-grid">
-
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Boss Chevalier Sombre (20%)</p>
-        <h3 class="item-name">Casque de l''Ancien</h3>
-        <p class="item-desc">Protege l''esprit et le corps.<br>Effet: Resistance II permanent</p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">RESISTANCE_II SET_ANCIENT...</span>
-        <span class="ac-chip">💰 ~ 12 M 💎</span>
-        <span class="rarity-tag r-mythic">Mythic</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Boss Chevalier Sombre / Lootbox</p>
-        <h3 class="item-name">Plastron de l''Ancien</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">HEALTH_BOOST_10 SET_ANCIE...</span>
-        <span class="ac-chip">💰 ~ 14 M 💎</span>
-        <span class="rarity-tag r-mythic">Mythic</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Boss Chevalier Sombre / Lootbox</p>
-        <h3 class="item-name">Jambieres de l''Ancien</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SPEED_I SET_ANCIENT_PIECE</span>
-        <span class="ac-chip">💰 ~ 10 M 💎</span>
-        <span class="rarity-tag r-mythic">Mythic</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Boss Chevalier Sombre / Lootbox</p>
-        <h3 class="item-name">Bottes de l''Ancien</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">FALL_RESISTANCE SET_ANCIE...</span>
-        <span class="ac-chip">💰 ~ 8 M 💎</span>
-        <span class="rarity-tag r-mythic">Mythic</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Lootbox Legendaire</p>
-        <h3 class="item-name">Casque de l''Ombre</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">NIGHT_VISION SET_SHADOW_P...</span>
-        <span class="ac-chip">💰 ~ 2 M 💎</span>
-        <span class="rarity-tag r-legendary">Legendary</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Lootbox Legendaire</p>
-        <h3 class="item-name">Plastron de l''Ombre</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_SHADOW_PIECE</span>
-        <span class="ac-chip">💰 ~ 2.5 M 💎</span>
-        <span class="rarity-tag r-legendary">Legendary</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Lootbox Legendaire</p>
-        <h3 class="item-name">Jambieres de l''Ombre</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_SHADOW_PIECE</span>
-        <span class="ac-chip">💰 ~ 2 M 💎</span>
-        <span class="rarity-tag r-legendary">Legendary</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Lootbox Legendaire</p>
-        <h3 class="item-name">Bottes de l''Ombre</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_SHADOW_PIECE FALL_RES...</span>
-        <span class="ac-chip">💰 ~ 1.8 M 💎</span>
-        <span class="rarity-tag r-legendary">Legendary</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Lootbox Mythique</p>
-        <h3 class="item-name">Casque Cristallin</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">NIGHT_VISION SET_CRYSTAL_...</span>
-        <span class="ac-chip">💰 ~ 5 M 💎</span>
-        <span class="rarity-tag r-mythic">Mythic</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Lootbox Mythique</p>
-        <h3 class="item-name">Plastron Cristallin</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CRYSTAL_PIECE</span>
-        <span class="ac-chip">💰 ~ 6 M 💎</span>
-        <span class="rarity-tag r-mythic">Mythic</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Lootbox Mythique</p>
-        <h3 class="item-name">Jambieres Cristallines</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CRYSTAL_PIECE</span>
-        <span class="ac-chip">💰 ~ 5.5 M 💎</span>
-        <span class="rarity-tag r-mythic">Mythic</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Lootbox Mythique</p>
-        <h3 class="item-name">Bottes Cristallines</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CRYSTAL_PIECE</span>
-        <span class="ac-chip">💰 ~ 4.5 M 💎</span>
-        <span class="rarity-tag r-mythic">Mythic</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">\xC9vènement Spécial</p>
-        <h3 class="item-name">Casque Celeste</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">NIGHT_VISION RESISTANCE_I...</span>
-        <span class="ac-chip">💰 ~ 25 M 💎</span>
-        <span class="rarity-tag r-divine">Divine</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">\xC9vènement Spécial</p>
-        <h3 class="item-name">Plastron Celeste</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CELESTIAL_PIECE</span>
-        <span class="ac-chip">💰 ~ 30 M 💎</span>
-        <span class="rarity-tag r-divine">Divine</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">\xC9vènement Spécial</p>
-        <h3 class="item-name">Jambieres Celeste</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CELESTIAL_PIECE</span>
-        <span class="ac-chip">💰 ~ 28 M 💎</span>
-        <span class="rarity-tag r-divine">Divine</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">\xC9vènement Spécial</p>
-        <h3 class="item-name">Bottes Celeste</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CELESTIAL_PIECE</span>
-        <span class="ac-chip">💰 ~ 22 M 💎</span>
-        <span class="rarity-tag r-divine">Divine</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Admin Shop (50000 💎)</p>
-        <h3 class="item-name">Casque d''Apprenti</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">APPRENTICE_SET_PIECE</span>
-        <span class="ac-chip">💰 ~ 50 K 💎</span>
-        <span class="rarity-tag r-rare">Rare</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Admin Shop (50000 💎)</p>
-        <h3 class="item-name">Plastron d''Apprenti</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">APPRENTICE_SET_PIECE</span>
-        <span class="ac-chip">💰 ~ 50 K 💎</span>
-        <span class="rarity-tag r-rare">Rare</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Admin Shop (50000 💎)</p>
-        <h3 class="item-name">Jambieres d''Apprenti</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">APPRENTICE_SET_PIECE</span>
-        <span class="ac-chip">💰 ~ 50 K 💎</span>
-        <span class="rarity-tag r-rare">Rare</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Admin Shop (50000 💎)</p>
-        <h3 class="item-name">Bottes d''Apprenti</h3>
-        <p class="item-desc"></p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">APPRENTICE_SET_PIECE</span>
-        <span class="ac-chip">💰 ~ 50 K 💎</span>
-        <span class="rarity-tag r-rare">Rare</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Non spécifié</p>
-        <h3 class="item-name">Casque Météoritique</h3>
-        <p class="item-desc">Forgé dans la chaleur des étoiles.<br>Set: Météorite (1/4)<br>Bonus de Set (4/4):<br>Aura de Chaleur (Immunité Feu + Force I si en feu)</p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_METEORITE</span>
-        <span class="ac-chip">💰 ~ 3.0 M 💎</span>
-        <span class="rarity-tag r-event">Event</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Non spécifié</p>
-        <h3 class="item-name">Plastron Météoritique</h3>
-        <p class="item-desc">Forgé dans la chaleur des étoiles.<br>Set: Météorite (2/4)<br>Bonus de Set (4/4):<br>Aura de Chaleur (Immunité Feu + Force I si en feu)</p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_METEORITE</span>
-        <span class="ac-chip">💰 ~ 4.0 M 💎</span>
-        <span class="rarity-tag r-event">Event</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Non spécifié</p>
-        <h3 class="item-name">Jambières Météoritiques</h3>
-        <p class="item-desc">Forgé dans la chaleur des étoiles.<br>Set: Météorite (3/4)<br>Bonus de Set (4/4):<br>Aura de Chaleur (Immunité Feu + Force I si en feu)</p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_METEORITE</span>
-        <span class="ac-chip">💰 ~ 3.5 M 💎</span>
-        <span class="rarity-tag r-event">Event</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Non spécifié</p>
-        <h3 class="item-name">Bottes Météoritiques</h3>
-        <p class="item-desc">Forgé dans la chaleur des étoiles.<br>Set: Météorite (4/4)<br>Bonus de Set (4/4):<br>Aura de Chaleur (Immunité Feu + Force I si en feu)</p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_METEORITE</span>
-        <span class="ac-chip">💰 ~ 2.5 M 💎</span>
-        <span class="rarity-tag r-event">Event</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Non spécifié</p>
-        <h3 class="item-name">Casque Corrompu</h3>
-        <p class="item-desc">Pulsant d''une énergie sombre.<br>Set: Corruption (1/4)<br>Bonus de Set (4/4):<br>Étreinte du Vide (Vitesse II, Vision Nocturne, Anti-Agresseur)</p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CORRUPTION</span>
-        <span class="ac-chip">💰 ~ 3.0 M 💎</span>
-        <span class="rarity-tag r-event">Event</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Non spécifié</p>
-        <h3 class="item-name">Plastron Corrompu</h3>
-        <p class="item-desc">Pulsant d''une énergie sombre.<br>Set: Corruption (2/4)<br>Bonus de Set (4/4):<br>Étreinte du Vide (Vitesse II, Vision Nocturne, Anti-Agresseur)</p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CORRUPTION</span>
-        <span class="ac-chip">💰 ~ 4.0 M 💎</span>
-        <span class="rarity-tag r-event">Event</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Non spécifié</p>
-        <h3 class="item-name">Jambières Corrompues</h3>
-        <p class="item-desc">Pulsant d''une énergie sombre.<br>Set: Corruption (3/4)<br>Bonus de Set (4/4):<br>Étreinte du Vide (Vitesse II, Vision Nocturne, Anti-Agresseur)</p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CORRUPTION</span>
-        <span class="ac-chip">💰 ~ 3.5 M 💎</span>
-        <span class="rarity-tag r-event">Event</span>
-    </div>
-</div>
-<div class="item-card" data-cat="all">
-    <div class="item-top">
-        <p class="item-origin">Non spécifié</p>
-        <h3 class="item-name">Bottes Corrompues</h3>
-        <p class="item-desc">Pulsant d''une énergie sombre.<br>Set: Corruption (4/4)<br>Bonus de Set (4/4):<br>Étreinte du Vide (Vitesse II, Vision Nocturne, Anti-Agresseur)</p>
-    </div>
-    <div class="item-bot">
-        <span class="item-effect">SET_CORRUPTION</span>
-        <span class="ac-chip">💰 ~ 2.5 M 💎</span>
-        <span class="rarity-tag r-event">Event</span>
-    </div>
-</div>
-</div>
-</section>
+                <div class="item-card" style="border-color:rgba(245,158,11,.2)"><div class="item-top"><p class="item-origin">💀 Chevalier Sombre (50%)</p><h3 class="item-name" style="color:var(--legendary)">💍 Anneau du Roi</h3><p class="item-desc">Relique du Chevalier corrompu. Confère la force ancestrale à son porteur.</p></div><div class="item-bot"><span class="item-effect">Force I (main)</span><span class="ac-chip" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--legendary)">~ 4 M 💎</span><span class="rarity-tag r-legendary">Légendaire</span></div></div>
+                <div class="item-card" style="border-color:rgba(168,85,247,.2)"><div class="item-top"><p class="item-origin">💀 Ombre du Vide (50%)</p><h3 class="item-name" style="color:var(--legendary)">🌑 Amulette d'Ombre</h3><p class="item-desc">Écho de l'Ombre, tissu de néant. Vous déplace plus vite que la lumière.</p></div><div class="item-bot"><span class="item-effect">Vitesse II (main)</span><span class="ac-chip" style="background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.3);color:var(--epic)">~ 3.5 M 💎</span><span class="rarity-tag r-legendary">Légendaire</span></div></div>
+                <div class="item-card" style="border-color:rgba(0,200,100,.2)"><div class="item-top"><p class="item-origin">💀 Mage des Cendres (50%)</p><h3 class="item-name" style="color:var(--legendary)">💚 Cœur de Nature</h3><p class="item-desc">La vie coule dans ses veines de cristal. Régénère passivement.</p></div><div class="item-bot"><span class="item-effect">Régénération I (main)</span><span class="ac-chip" style="background:rgba(0,200,100,.1);border-color:rgba(0,200,100,.3);color:#0c8">~ 5 M 💎</span><span class="rarity-tag r-legendary">Légendaire</span></div></div>
+                <div class="item-card" style="border-color:rgba(239,68,68,.2)"><div class="item-top"><p class="item-origin">💀 Léviathan Abyssal (50%)</p><h3 class="item-name" style="color:var(--legendary)">🔴 Orbe de Sang</h3><p class="item-desc">Consomme l'âme des vaincus pour restaurer la vôtre.</p></div><div class="item-bot"><span class="item-effect">Vampirisme I (main)</span><span class="ac-chip" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--mythic)">~ 6 M 💎</span><span class="rarity-tag r-legendary">Légendaire</span></div></div>
+                <div class="item-card" style="border-color:rgba(168,85,247,.3)"><div class="item-top"><p class="item-origin">💀 L'Éveillé (50%)</p><h3 class="item-name" style="color:var(--legendary)">👁 Œil de l'Éveillé</h3><p class="item-desc">Regard qui perce toutes les ténèbres. Force puisée dans l'abîme.</p></div><div class="item-bot"><span class="item-effect">Force II (main)</span><span class="ac-chip" style="background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.3);color:var(--epic)">~ 15 M 💎</span><span class="rarity-tag r-legendary">Légendaire</span></div></div>
+                <div class="item-card" style="border-color:rgba(100,100,150,.3)"><div class="item-top"><p class="item-origin">💀 Léviathan Abyssal (20%)</p><h3 class="item-name" style="color:var(--mythic)">🟣 Bouclier du Vide</h3><p class="item-desc">Aucune force ne peut vous déplacer face au Vide. Immunité absolue au Knockback.</p></div><div class="item-bot"><span class="item-effect">Anti-Knockback</span><span class="ac-chip" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--mythic)">~ 25 M 💎</span><span class="rarity-tag r-mythic">Mythique</span></div></div>
+                <div class="item-card" style="border-color:rgba(80,80,80,.4)"><div class="item-top"><p class="item-origin">🌑 Évènement Secret</p><h3 class="item-name" style="color:var(--mythic)">⬛ Noyau d'Éternité</h3><p class="item-desc">Fragment de bedrock vivant. Résistance aux dégâts sans limite de durée.</p></div><div class="item-bot"><span class="item-effect">Résistance II (main)</span><span class="ac-chip" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--mythic)">~ 45 M 💎</span><span class="rarity-tag r-mythic">Mythique</span></div></div>
+            </div>
+        </section>
 
         <!-- ══════════════════════════════════════════════════════════
              SECTION : UTILITAIRES
@@ -1667,16 +1314,6 @@
         </section>
 
         <!-- ══════════════════════════════════════════════════════════
-             SECTION : LOOTBOXES ÉVÉNEMENTIELLES (V2)
-        ══════════════════════════════════════════════════════════ -->
-        <section id="lootboxes-event" class="section">
-            <div class="section-head"><h2>✨ Lootboxes Événementielles</h2><p>Exclusives V2. S'ouvrent uniquement avec le fragment de l'événement correspondant.</p></div>
-            <div class="callout tip" style="margin-bottom:20px"><span class="callout-icon">💎</span><div>Ces lootboxes ne contiennent <b>que</b> des items de rareté EVENT. Accès via <code>/menu → Événements</code>.</div></div>
-            <div class="boss-card" style="margin-bottom:18px;border-color:rgba(249,115,22,.3);background:linear-gradient(145deg,#130e08,var(--card))"><div class="boss-header"><div><div class="boss-diff" style="color:#f97316">☄️ MÉTÉORITE · EVENT</div><div class="boss-name" style="font-size:1.3rem;color:#f97316">Lootbox Météorite</div><p style="font-size:.84rem;color:var(--muted);margin-top:4px">Clé : <b>Cristal de Météorite</b></p></div></div><div class="loot-grid"><div class="loot-slot" style="border-color:rgba(249,115,22,.3)"><span class="loot-pct" style="color:#f97316">40 %</span><div class="loot-name" style="color:#f97316">☄️ Pièce Set Météorite</div><div class="loot-sub">1 sur 4 aléatoire · EVENT</div></div><div class="loot-slot"><span class="loot-pct">30 %</span><div class="loot-name">⬛ 8× Blocs Netherite</div><div class="loot-sub">Vanilla</div></div><div class="loot-slot"><span class="loot-pct">30 %</span><div class="loot-name">💎 500 000 AC</div><div class="loot-sub">Azur Cristaux</div></div></div></div>
-            <div class="boss-card" style="border-color:rgba(168,85,247,.35);background:linear-gradient(145deg,#0e0814,var(--card))"><div class="boss-header"><div><div class="boss-diff" style="color:#c084fc">🌑 CORRUPTION · EVENT</div><div class="boss-name" style="font-size:1.3rem;color:#c084fc">Lootbox Corruption</div><p style="font-size:.84rem;color:var(--muted);margin-top:4px">Clé : <b>Fragment d'Âme Corrompue</b></p></div></div><div class="loot-grid"><div class="loot-slot" style="border-color:rgba(168,85,247,.4)"><span class="loot-pct" style="color:#c084fc">40 %</span><div class="loot-name" style="color:#c084fc">🌑 Pièce Set Corrompu</div><div class="loot-sub">1 sur 4 aléatoire · EVENT</div></div><div class="loot-slot" style="border-color:rgba(168,85,247,.2)"><span class="loot-pct" style="color:#a855f7">30 %</span><div class="loot-name" style="color:#a855f7">⚔️ Arme Corrompue</div><div class="loot-sub">Épée ou Arc du Vide · EVENT</div></div><div class="loot-slot"><span class="loot-pct">30 %</span><div class="loot-name">💎 800 000 AC</div><div class="loot-sub">Azur Cristaux</div></div></div></div>
-        </section>
-
-        <!-- ══════════════════════════════════════════════════════════
              SECTION : FONCTIONNALITÉS
         ══════════════════════════════════════════════════════════ -->
         <section id="fonctions" class="section">
@@ -1741,26 +1378,26 @@
                     </ul>
                 </div>
                 <div class="eco-card">
-                    <h3>👣 Téléportation (TPA)</h3>
+                    <h3>?? Téléportation (TPA)</h3>
                     <ul>
-                        <li>Envoyez une <b>demande de TP</b> à n'importe quel joueur</li>
+                        <li>Envoyez une <b>demande de TP</b> à n�importe quel joueur</li>
                         <li>Commandes : <code>/tpa</code> <code>/tpaccept</code> <code>/tpdeny</code> <code>/tpacancel</code></li>
-                        <li><b>Délai 3 secondes</b> d'immobilité obligatoire avant le TP</li>
+                        <li><b>Délai 3 secondes</b> d�immobilité obligatoire avant le TP</li>
                         <li>Toute frappe ou mouvement annule le TP (anti-fuite PvP)</li>
                         <li>Règle identique pour <code>/f home</code> des factions</li>
                     </ul>
                 </div>
                 <div class="eco-card">
-                    <h3>🛡️ Tourelles Défensives</h3>
+                    <h3>?? Tourelles D�fensives</h3>
                     <ul>
-                        <li><b>Tourelle Résidence</b> - 250&thinsp;000 💎 - Protège votre terrain personnel</li>
-                        <li><b>Tourelle Faction</b> - 350&thinsp;000 💎 - Protège le territoire de votre faction</li>
-                        <li>Cadence : 3 tirs par seconde &middot; Portée : 16 blocs</li>
-                        <li><b>True Damage pur</b> - ignore armures, enchantements &amp; absorption</li>
-                        <li>Bypass total des frames d'invulnérabilité Vanilla</li>
-                        <li>Immunité inter-tourelles (elles ne se ciblent pas mutuellement)</li>
-                        <li>Immunité Boss &amp; Sbires (ne perturbent pas les phases de boss)</li>
-                        <li>Les tourelles restent configurables - distance via le <b>/menu</b></li>
+                        <li><b>Tourelle R�sidence</b> � 100&thinsp;000 ?? � Prot�ge votre terrain personnel</li>
+                        <li><b>Tourelle Faction</b> � 150&thinsp;000 ?? � Prot�ge le territoire de votre faction</li>
+                        <li>Cadence : 3 tirs par seconde &middot; Port�e : 16 blocs</li>
+                        <li><b>True Damage pur</b> � ignore armures, enchantements &amp; absorption</li>
+                        <li>Bypass total des frames d'invuln�rabilit� Vanilla</li>
+                        <li>Immunit� inter-tourelles (elles ne se ciblent pas mutuellement)</li>
+                        <li>Immunit� Boss &amp; Sbires (ne perturbent pas les phases de boss)</li>
+                        <li>Les tourelles restent configurables � distance via le <b>/menu</b></li>
                     </ul>
                 </div>
             </div>
@@ -1837,231 +1474,13 @@
             </table>
         </section>
 
-
-        <!-- ══════════════════════════════════════════════════════════
-             SECTION : FACTIONS
-        ══════════════════════════════════════════════════════════ -->
-        <section id="factions" class="section">
-            <div class="section-head">
-                <h1>⚔️ Factions</h1>
-                <p>Créez ou rejoignez une faction, réclamez des territoires et dominez la carte.</p>
-            </div>
-            
-            <div class="callout tip">
-                <span class="callout-icon">💡</span>
-                <div>La création d'une faction est gratuite, mais maintenir des territoires coûte des ressources.</div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
-                <div class="boss-card" style="margin-bottom:0">
-                    <h3 style="font-size:1.15rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:10px">Créer une Faction</h3>
-                    <p style="color:var(--muted);font-size:.93rem;margin-bottom:10px">Fondez votre propre faction avec <code style="background:rgba(0,210,255,.12);color:var(--accent);padding:2px 7px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:.85em">/f create [nom]</code>. Recrutez des membres, définissez un QG, et rédigez votre description.</p>
-                </div>
-                <div class="boss-card" style="margin-bottom:0">
-                    <h3 style="font-size:1.15rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:10px">Rejoindre une Faction</h3>
-                    <p style="color:var(--muted);font-size:.93rem;margin-bottom:10px">Utilisez <code>/f list</code> pour voir les factions publiques, puis <code>/f join [nom]</code> pour postuler. Le chef valide l'invitation.</p>
-                </div>
-            </div>
-
-            <div class="lore-block">
-                <h3>Système de Territoire</h3>
-                <table class="cmd-table">
-                    <tr><th>Action</th><th>Commande</th><th>Effet</th></tr>
-                    <tr><td>/f claim</td><td>Réclamer un chunk</td><td>Le chunk actuel devient territoire de votre faction</td></tr>
-                    <tr><td>/f unclaim</td><td>Abandonner un chunk</td><td>Libère le chunk — il peut être réclamé par d'autres</td></tr>
-                    <tr><td>/f map</td><td>Voir la carte</td><td>Affiche les territoires autour de vous en ASCII</td></tr>
-                    <tr><td>/f home</td><td>Rentrer au QG</td><td>Téléporte au point de ralliement de la faction</td></tr>
-                    <tr><td>/f sethome</td><td>Poser le QG</td><td>Définit la position actuelle comme QG</td></tr>
-                </table>
-            </div>
-
-            <div class="lore-block">
-                <h3>Guerre & Relations</h3>
-                <p><strong><span style="color:var(--mythic)">⚔️ Guerre :</span></strong> Déclarez la guerre avec <code>/f war [faction]</code>. En territoire ennemi, le PvP est automatiquement activé.</p>
-                <p><strong><span style="color:#22c55e">🤝 Alliance :</span></strong> Formez des alliances avec <code>/f ally [faction]</code>. Les alliés ne peuvent pas s'attaquer et partagent certaines ressources.</p>
-                <p><strong><span style="color:var(--legendary)">⚖️ Trêve :</span></strong> Négociez une trêve avec <code>/f truce [faction]</code>. Ni guerre ni alliance — coexistence pacifique.</p>
-            </div>
-            
-            <div class="lore-block">
-                <h3>Grades dans une Faction</h3>
-                <table class="cmd-table">
-                    <tr><th>Grade</th><th>Permissions</th></tr>
-                    <tr><td>👑 Chef</td><td>Toutes les permissions — dissoudre, nommer officiers, déclarer la guerre</td></tr>
-                    <tr><td>⭐ Officier</td><td>Gérer les membres, réclamer des terres, ouvrir/fermer les coffres partagés</td></tr>
-                    <tr><td>🛡️ Membre</td><td>Accès au territoire ami, participation aux guerres</td></tr>
-                    <tr><td>🌱 Recrue</td><td>Accès minimal — en attente de validation par un officier</td></tr>
-                </table>
-            </div>
-        </section>
-
-        <!-- ══════════════════════════════════════════════════════════
-             SECTION : EVENEMENTS
-        ══════════════════════════════════════════════════════════ -->
-        <section id="evenements" class="section">
-            <div class="section-head">
-                <h1>🌟 Événements Mondiaux</h1>
-                <p>5 types d'événements automatiques. Récompenses exclusives à chaque victoire. Les items EVENT (<span style="color:#c084fc">rareté violette</span>) ne s'obtiennent <strong>que</strong> via ces événements.</p>
-            </div>
-
-            <div class="callout warn">
-                <span class="callout-icon">⏰</span>
-                <div>Les événements automatiques se déclenchent aléatoirement toutes les <strong>90 à 120 minutes</strong>. Anti-répétition : le même événement ne peut pas tomber deux fois de suite. Ils s'affichent via une <strong>barre de boss</strong> en haut de l'écran.</div>
-            </div>
-
-            <div class="boss-card">
-                <div class="boss-header">
-                    <div>
-                        <div class="boss-diff" style="color:var(--accent)">15 min · 6 cœurs à miner</div>
-                        <div class="boss-name">☄️ La Pluie de Météorites</div>
-                    </div>
-                    <div class="boss-stats">
-                        <div class="boss-hp">2 500 000 💎</div>
-                        <div class="boss-price">Récompense globale</div>
-                    </div>
-                </div>
-                <p style="color:var(--muted);font-size:.9rem;line-height:1.5">Des météorites azuriennes s'écrasent sur la région ! Minez les cœurs d'Ancient Debris pour gagner. La corruption se propage depuis les points d'impact.</p>
-                <div class="boss-phases">
-                    <span class="phase-badge" style="color:var(--legendary);border-color:var(--legendary)">🎁 Cristal de Météorite</span>
-                </div>
-            </div>
-
-            <div class="boss-card">
-                <div class="boss-header">
-                    <div>
-                        <div class="boss-diff" style="color:#a855f7">15 min · Phase 1 → Phase 2</div>
-                        <div class="boss-name">♦ La Corruption Cristalline</div>
-                    </div>
-                    <div class="boss-stats">
-                        <div class="boss-hp">1 500 000 💎</div>
-                        <div class="boss-price">Récompense globale</div>
-                    </div>
-                </div>
-                <p style="color:var(--muted);font-size:.9rem;line-height:1.5"><strong>Phase 1 :</strong> La Corruption se propage naturellement sur le relief de la zone (collines, vallées). Purifiez les blocs de Sculk pour exposer le Cœur. <strong>Phase 2 :</strong> Le Cœur est exposé — frappez-le 50 fois pour stopper l'invasion !</p>
-                <div class="callout danger" style="margin-top:12px;margin-bottom:8px">
-                    <span class="callout-icon">☠️</span>
-                    <div><b>Échec Punitif :</b> Si le cœur n'est pas détruit avant la fin du temps, la zone reste <strong>corrompue de façon permanente</strong>. La nature ne reprend pas ses droits.</div>
-                </div>
-                <div class="boss-phases">
-                    <span class="phase-badge" style="color:#a855f7;border-color:#a855f7">🎁 Fragment d'Âme Corrompue</span>
-                    <span class="phase-badge" style="color:#c084fc;border-color:#c084fc">50 coups sur le Cœur</span>
-                </div>
-            </div>
-
-            <div class="boss-card">
-                <div class="boss-header">
-                    <div>
-                        <div class="boss-diff" style="color:var(--mythic)">20 min · Vagues successives</div>
-                        <div class="boss-name">⚔️ L'Invasion des Gardiens Déchus</div>
-                    </div>
-                    <div class="boss-stats">
-                        <div class="boss-hp">2 000 000 💎</div>
-                        <div class="boss-price">Récompense globale</div>
-                    </div>
-                </div>
-                <p style="color:var(--muted);font-size:.9rem;line-height:1.5">Les anciens gardiens d'Azuria se réveillent sous l'emprise des Ténèbres ! Éliminez-les par vagues successives. Chaque vague est plus difficile que la précédente.</p>
-                <div class="boss-phases">
-                    <span class="phase-badge" style="color:var(--mythic);border-color:var(--mythic)">⚠️ Mobs renforcés</span>
-                </div>
-            </div>
-
-            <div class="boss-card">
-                <div class="boss-header">
-                    <div>
-                        <div class="boss-diff" style="color:#6366f1">12 min · Piliers beacon</div>
-                        <div class="boss-name">🔮 Le Rituel des Ombres</div>
-                    </div>
-                    <div class="boss-stats">
-                        <div class="boss-hp">1 800 000 💎</div>
-                        <div class="boss-price">Récompense globale</div>
-                    </div>
-                </div>
-                <p style="color:var(--muted);font-size:.9rem;line-height:1.5">Un rituel interdit ouvre un portail vers le Vide ! Canalisez votre énergie sur les piliers beacon pour l'arrêter. Un Archimage des Ombres garde le portail.</p>
-                <div class="boss-phases">
-                    <span class="phase-badge" style="color:#6366f1;border-color:#6366f1">👹 Boss Archimage</span>
-                </div>
-            </div>
-            
-            <div class="boss-card">
-                <div class="boss-header">
-                    <div>
-                        <div class="boss-diff" style="color:var(--legendary)">15 min · Mobs à éliminer</div>
-                        <div class="boss-name">🎯 La Chasse à la Prime</div>
-                    </div>
-                    <div class="boss-stats">
-                        <div class="boss-hp">1 000 000 💎</div>
-                        <div class="boss-price">Récompense globale</div>
-                    </div>
-                </div>
-                <p style="color:var(--muted);font-size:.9rem;line-height:1.5">Des renégats légendaires ont été repérés dans la région ! La Guilde offre une prime pour chaque tête rapportée. Chassez-les avant le temps imparti.</p>
-                <div class="boss-phases">
-                    <span class="phase-badge" style="color:var(--legendary);border-color:var(--legendary)">🏆 Classement joueurs</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- ══════════════════════════════════════════════════════════
-             SECTION : PORTAILS
-        ══════════════════════════════════════════════════════════ -->
-        <section id="portails" class="section">
-            <div class="section-head">
-                <h1>🏛️ Portails & Structures</h1>
-                <p>4 portails dimensionnels que les admins peuvent invoquer n'importe où dans le monde.</p>
-            </div>
-            
-            <div class="callout tip">
-                <span class="callout-icon">🔧</span>
-                <div>Les portails sont générés via le panel Admin → Structures. Ils peuvent être invoqués sous les pieds d'un admin ou à une position définie.</div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:24px">
-                <div class="boss-card" style="margin-bottom:0;border-color:rgba(239,68,68,.3)">
-                    <div style="font-size:36px;margin-bottom:10px">🔥</div>
-                    <h4 style="color:#f87171;font-size:1.2rem;margin-bottom:8px">Portail de Feu</h4>
-                    <p style="color:var(--muted);font-size:.9rem">Temple Infernal. Piliers épais de Gilded Blackstone et Nether Bricks. Chaînes suspendues avec Soul Lanterns. Intérieur rempli de portail Nether.</p>
-                    <div class="boss-phases" style="margin-top:12px">
-                        <span class="phase-badge" style="color:#f87171;border-color:#f87171">GILDED_BLACKSTONE</span>
-                        <span class="phase-badge" style="color:#f87171;border-color:#f87171">NETHER_PORTAL</span>
-                    </div>
-                </div>
-                
-                <div class="boss-card" style="margin-bottom:0;border-color:rgba(6,182,212,.3)">
-                    <div style="font-size:36px;margin-bottom:10px">🧊</div>
-                    <h4 style="color:var(--accent);font-size:1.2rem;margin-bottom:8px">Portail des Glaces</h4>
-                    <p style="color:var(--muted);font-size:.9rem">Forteresse Glaciaire. Piliers de Blue Ice et Prismarine. Spires de glace en couronne montantes. Sea Lanterns intégrées dans la base.</p>
-                    <div class="boss-phases" style="margin-top:12px">
-                        <span class="phase-badge" style="color:var(--accent);border-color:var(--accent)">BLUE_ICE</span>
-                        <span class="phase-badge" style="color:var(--accent);border-color:var(--accent)">PRISMARINE</span>
-                    </div>
-                </div>
-                
-                <div class="boss-card" style="margin-bottom:0;border-color:rgba(124,58,237,.4)">
-                    <div style="font-size:36px;margin-bottom:10px">🌑</div>
-                    <h4 style="color:#c084fc;font-size:1.2rem;margin-bottom:8px">Portail des Ombres</h4>
-                    <p style="color:var(--muted);font-size:.9rem">Sanctuaire du Néant. Piliers massifs d'Obsidian et Crying Obsidian. Hauteur 11 blocs. Soul Sand et Wither Rose aux autels flancs.</p>
-                    <div class="boss-phases" style="margin-top:12px">
-                        <span class="phase-badge" style="color:#c084fc;border-color:#c084fc">OBSIDIAN</span>
-                        <span class="phase-badge" style="color:#c084fc;border-color:#c084fc">CRYING_OBSIDIAN</span>
-                    </div>
-                </div>
-                
-                <div class="boss-card" style="margin-bottom:0;border-color:rgba(168,85,247,.4);box-shadow:0 0 24px rgba(168,85,247,.1)">
-                    <div style="font-size:36px;margin-bottom:10px">✨</div>
-                    <h4 style="color:#d8b4fe;font-size:1.2rem;margin-bottom:8px">Portail Cristallin</h4>
-                    <p style="color:var(--muted);font-size:.9rem">Arche Céleste. Piliers de Purpur et Amethyst. Arche de clusters amethyst en couronne. Intérieur End Portal — effet étoilé unique.</p>
-                    <div class="boss-phases" style="margin-top:12px">
-                        <span class="phase-badge" style="color:#d8b4fe;border-color:#d8b4fe">AMETHYST</span>
-                        <span class="phase-badge" style="color:#d8b4fe;border-color:#d8b4fe">END_PORTAL</span>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 </div><!-- /page -->
 
 <!-- FOOTER -->
 <footer>
     <img src="assets/logo.png" alt="Azuria" />
-    <p>Grimoire Azuria <strong>v3.5.0</strong> · Wiki officiel du serveur · Mai 2026 — V2 complète</p>
+    <p>Grimoire Azuria v3.2.0 · Wiki officiel du serveur · Avril 2026</p>
     <p style="margin-top:6px">Les prix du marché sont des estimations — l'économie est pilotée par les joueurs.</p>
 </footer>
 
@@ -2111,4 +1530,3 @@ filterBtns.forEach(btn => {
 </script>
 </body>
 </html>
-

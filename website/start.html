@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Azuria — Démarrer le serveur</title>
+  <link rel="icon" type="image/png" href="assets/logo.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --primary:#00aaff;--primary-dark:#0077cc;
+      --bg:#02080f;--bg-2:#060e1a;--bg-card:#0a1525;--bg-card-hover:#0f1e35;
+      --border:rgba(0,170,255,.15);--border-hover:rgba(0,170,255,.45);
+      --text:#e0f2fe;--text-muted:#4a6a8a;--text-dim:#7aa8cc;
+      --gold:#fbbf24;--success:#10b981;--danger:#ef4444;
+      --glow-blue:0 0 40px rgba(0,170,255,.25);
+      --glow-soft:0 0 60px rgba(0,120,255,.12);
+      --shadow:0 25px 50px rgba(0,0,0,.7);
+      --radius:16px;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);
+      overflow-x:hidden;min-height:100vh;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:80px 16px 40px;
+    }
+
+    /* BG */
+    .particles{position:fixed;inset:0;pointer-events:none;z-index:0}
+    .particle{position:absolute;border-radius:50%;animation:floatUp linear infinite;opacity:0}
+    @keyframes floatUp{
+      0%{transform:translateY(100vh) translateX(0);opacity:0}
+      10%{opacity:.7}90%{opacity:.4}
+      100%{transform:translateY(-20px) translateX(var(--drift,0px));opacity:0}
+    }
+    .bg-grid{
+      position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:linear-gradient(rgba(0,170,255,.04) 1px,transparent 1px),
+                       linear-gradient(90deg,rgba(0,170,255,.04) 1px,transparent 1px);
+      background-size:60px 60px;
+    }
+    .bg-glow{
+      position:fixed;top:-200px;left:50%;transform:translateX(-50%);
+      width:900px;height:700px;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse,rgba(0,100,255,.14) 0%,transparent 70%);
+    }
+
+    /* BACK LINK */
+    .back-link{
+      position:fixed;top:20px;left:24px;z-index:10;
+      display:flex;align-items:center;gap:8px;
+      color:var(--text-muted);text-decoration:none;font-size:.85rem;
+      transition:color .2s;background:rgba(2,8,15,.7);
+      padding:8px 14px;border-radius:50px;border:1px solid var(--border);
+      backdrop-filter:blur(10px);
+    }
+    .back-link:hover{color:var(--primary);border-color:var(--border-hover)}
+
+    /* ADMIN TOGGLE */
+    .admin-toggle{
+      position:fixed;top:20px;right:24px;z-index:10;
+      background:rgba(2,8,15,.7);padding:8px 14px;border-radius:50px;
+      border:1px solid var(--border);backdrop-filter:blur(10px);
+      cursor:pointer;font-family:inherit;font-size:.8rem;color:var(--text-muted);
+      transition:all .2s;display:flex;align-items:center;gap:6px;
+    }
+    .admin-toggle:hover{color:var(--primary);border-color:var(--border-hover)}
+
+    /* MAIN CARD */
+    .card{
+      position:relative;z-index:1;
+      width:min(500px,92vw);
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:24px;padding:44px 36px 36px;
+      box-shadow:var(--shadow),var(--glow-soft);
+      display:flex;flex-direction:column;align-items:center;text-align:center;
+      gap:0;
+    }
+    .card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:2px;
+      border-radius:24px 24px 0 0;
+      background:linear-gradient(90deg,transparent,var(--primary),transparent);
+    }
+
+    /* LOGO */
+    .logo-wrap{width:120px;height:120px;display:flex;align-items:center;justify-content:center;margin-bottom:22px;position:relative}
+    .logo-ring{position:absolute;inset:-8px;border-radius:50%;border:1.5px solid rgba(0,170,255,.25);animation:ringPulse 3s ease-in-out infinite}
+    .logo-ring-2{position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(0,170,255,.1);animation:ringPulse 3s ease-in-out infinite .6s}
+    @keyframes ringPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+    .logo-img{
+      width:110px;height:110px;object-fit:contain;
+      filter:drop-shadow(0 0 24px rgba(0,170,255,.7)) drop-shadow(0 0 60px rgba(0,100,255,.35));
+      animation:logoFloat 4s ease-in-out infinite;
+    }
+    @keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+    /* TITLE */
+    .server-name{font-size:2.2rem;font-weight:900;line-height:1.1;margin-bottom:6px;color:#f0f8ff;letter-spacing:-.02em}
+    .gradient-text{
+      background:linear-gradient(135deg,var(--primary) 0%,#7dd3fc 50%,#fff 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .server-tagline{font-size:.88rem;color:var(--text-muted);margin-bottom:28px;line-height:1.5}
+
+    /* STATUS BADGE */
+    .status-badge{
+      display:inline-flex;align-items:center;gap:8px;
+      border-radius:50px;padding:9px 18px;font-size:.85rem;font-weight:600;
+      margin-bottom:24px;transition:all .4s ease;border:1px solid;
+    }
+    .status-badge.loading{background:rgba(74,106,138,.1);border-color:rgba(74,106,138,.25);color:var(--text-muted)}
+    .status-badge.online{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:#4ade80}
+    .status-badge.offline{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);color:#f87171}
+    .status-badge.starting{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.25);color:#fbbf24}
+    .status-badge.maintenance{background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.25);color:#c084fc}
+
+    .bdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    @keyframes bdotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+    .bdot.pulse{animation:bdotPulse 2s ease-in-out infinite}
+    .bdot.green{background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.6)}
+    .bdot.red{background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.6)}
+    .bdot.gold{background:#fbbf24;box-shadow:0 0 8px rgba(251,191,36,.6);animation:bdotPulse .8s ease-in-out infinite}
+    .bdot.purple{background:#c084fc;box-shadow:0 0 8px rgba(192,132,252,.6)}
+    .bdot.gray{background:#4a6a8a}
+
+    /* STATS */
+    .players-info{display:flex;align-items:center;gap:28px;margin-bottom:28px}
+    .pstat .val{font-size:1.7rem;font-weight:900;color:var(--primary);font-family:'JetBrains Mono',monospace}
+    .pstat .lbl{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+    .stat-sep{width:1px;height:38px;background:var(--border)}
+
+    /* IP BOX */
+    .ip-box{
+      display:flex;align-items:center;
+      background:rgba(0,0,0,.3);border:1px solid var(--border);
+      border-radius:12px;padding:4px;margin-bottom:22px;width:100%;
+    }
+    .ip-lbl{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;white-space:nowrap}
+    .ip-val{flex:1;font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--primary);padding:8px 6px;font-weight:500}
+    .ip-copy-btn{
+      display:flex;align-items:center;gap:6px;
+      background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+      color:#fff;border:none;cursor:pointer;border-radius:8px;padding:9px 14px;
+      font-family:inherit;font-weight:600;font-size:.82rem;transition:all .2s;white-space:nowrap;
+    }
+    .ip-copy-btn:hover{transform:scale(1.04)}
+
+    /* START BUTTON */
+    .start-btn{
+      width:100%;display:flex;align-items:center;justify-content:center;gap:12px;
+      padding:17px 32px;
+      background:linear-gradient(135deg,#16a34a,#15803d);
+      color:#fff;border:none;cursor:pointer;border-radius:14px;
+      font-family:inherit;font-weight:800;font-size:1.05rem;
+      box-shadow:0 0 32px rgba(22,163,74,.4),0 6px 20px rgba(0,0,0,.4);
+      transition:all .2s;position:relative;overflow:hidden;
+    }
+    .start-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent)}
+    .start-btn:hover:not(:disabled){transform:translateY(-3px) scale(1.01);box-shadow:0 0 48px rgba(22,163,74,.6),0 8px 28px rgba(0,0,0,.5)}
+    .start-btn:disabled{cursor:not-allowed;opacity:.65}
+    .start-btn.hidden{display:none}
+
+    /* MAINTENANCE BANNER */
+    .maintenance-banner{
+      width:100%;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);
+      border-radius:12px;padding:16px 20px;
+      color:#c084fc;font-size:.88rem;font-weight:600;line-height:1.5;
+      display:none;
+    }
+    .maintenance-banner.show{display:block}
+
+    /* HINT */
+    .hint{font-size:.78rem;color:var(--text-muted);margin-top:14px;line-height:1.5}
+
+    /* ===== ADMIN PANEL ===== */
+    .admin-overlay{
+      position:fixed;inset:0;background:rgba(2,8,15,.85);backdrop-filter:blur(12px);
+      z-index:200;display:none;align-items:center;justify-content:center;
+    }
+    .admin-overlay.show{display:flex}
+    .admin-panel{
+      background:var(--bg-card);border:1px solid rgba(168,85,247,.3);
+      border-radius:24px;padding:36px;width:min(440px,92vw);
+      box-shadow:0 0 60px rgba(168,85,247,.15),var(--shadow);
+      position:relative;
+    }
+    .admin-panel::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:2px;
+      border-radius:24px 24px 0 0;
+      background:linear-gradient(90deg,transparent,#a855f7,transparent);
+    }
+    .admin-close{
+      position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;
+      color:var(--text-muted);font-size:1.2rem;transition:color .2s;padding:4px;
+    }
+    .admin-close:hover{color:var(--text)}
+    .admin-title{font-size:1.3rem;font-weight:800;color:#f0f8ff;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+    .admin-subtitle{font-size:.83rem;color:var(--text-muted);margin-bottom:28px}
+
+    /* Auth form */
+    .admin-auth{display:flex;flex-direction:column;gap:16px}
+    .admin-auth label{font-size:.8rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;display:block}
+    .admin-input{
+      width:100%;background:rgba(0,0,0,.3);border:1px solid var(--border);
+      border-radius:10px;padding:12px 16px;
+      font-family:'JetBrains Mono',monospace;font-size:1rem;color:var(--text);
+      transition:border-color .2s;outline:none;
+    }
+    .admin-input:focus{border-color:rgba(168,85,247,.5)}
+    .admin-submit{
+      background:linear-gradient(135deg,#7c3aed,#6d28d9);
+      color:#fff;border:none;cursor:pointer;border-radius:12px;
+      padding:13px 24px;font-family:inherit;font-weight:700;font-size:.95rem;
+      transition:all .2s;box-shadow:0 0 20px rgba(124,58,237,.3);
+    }
+    .admin-submit:hover{transform:translateY(-2px);box-shadow:0 0 32px rgba(124,58,237,.5)}
+    .admin-err{font-size:.82rem;color:#f87171;text-align:center;min-height:18px}
+
+    /* Admin dashboard */
+    .admin-dash{display:none;flex-direction:column;gap:20px}
+    .admin-dash.show{display:flex}
+    .admin-section-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#a855f7;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(168,85,247,.2)}
+    .admin-status-row{display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2);border-radius:12px;padding:16px 20px}
+    .admin-status-info strong{display:block;font-size:.95rem;color:#f0f8ff;margin-bottom:2px}
+    .admin-status-info span{font-size:.8rem;color:var(--text-muted)}
+    .toggle-wrap{display:flex;align-items:center;gap:10px}
+    .toggle-label{font-size:.82rem;color:var(--text-muted)}
+    .toggle{position:relative;width:48px;height:26px;cursor:pointer}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{
+      position:absolute;inset:0;border-radius:26px;
+      background:rgba(74,106,138,.3);border:1px solid var(--border);
+      transition:all .3s;
+    }
+    .toggle-slider::before{
+      content:'';position:absolute;width:18px;height:18px;border-radius:50%;
+      background:#4a6a8a;left:3px;top:3px;transition:all .3s;
+    }
+    .toggle input:checked + .toggle-slider{background:rgba(168,85,247,.3);border-color:rgba(168,85,247,.5)}
+    .toggle input:checked + .toggle-slider::before{transform:translateX(22px);background:#a855f7;box-shadow:0 0 8px rgba(168,85,247,.6)}
+    .admin-log{
+      background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;
+      padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:.75rem;
+      color:var(--text-dim);max-height:120px;overflow-y:auto;line-height:1.7;
+    }
+    .admin-log span{display:block}
+    .log-ok{color:#4ade80}
+    .log-err{color:#f87171}
+    .log-info{color:#60a5fa}
+
+    /* SPINNER */
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spin{animation:spin .9s linear infinite;display:inline-block}
+
+    /* TOAST */
+    .toast{
+      position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);
+      background:var(--bg-card);border:1px solid rgba(0,170,255,.3);
+      color:var(--text);padding:14px 28px;border-radius:50px;
+      font-weight:600;font-size:.9rem;
+      box-shadow:0 8px 32px rgba(0,0,0,.5),var(--glow-blue);
+      transition:transform .4s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;
+    }
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast.error{border-color:rgba(239,68,68,.4)}
+
+    @media(max-width:480px){
+      .card{padding:36px 20px 28px}
+      .admin-panel{padding:28px 20px}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="particles" id="particles"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <!-- Retour au site -->
+  <a class="back-link" href="index.html">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
+      <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m0 0 7 7m-7-7 7-7"/>
+    </svg>
+    Retour au site
+  </a>
+
+  <!-- Bouton admin discret -->
+  <button class="admin-toggle" onclick="openAdmin()" title="Panel administrateur">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
+      <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+      <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+    Admin
+  </button>
+
+  <!-- ======= CARTE PRINCIPALE ======= -->
+  <div class="card">
+
+    <div class="logo-wrap">
+      <div class="logo-ring"></div>
+      <div class="logo-ring-2"></div>
+      <img class="logo-img" src="assets/logo.png" alt="Azuria"/>
+    </div>
+
+    <div class="server-name">Az<span class="gradient-text">uria</span></div>
+    <div class="server-tagline">Serveur Minecraft Moddé V3 · Mohist 1.20.1</div>
+
+    <div class="status-badge loading" id="status-badge">
+      <div class="bdot gray pulse" id="badge-dot"></div>
+      <span id="badge-text">Vérification du statut…</span>
+    </div>
+
+    <div class="players-info">
+      <div class="pstat">
+        <div class="val" id="online-count">—</div>
+        <div class="lbl">En ligne</div>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="pstat">
+        <div class="val">1.20.1</div>
+        <div class="lbl">Version</div>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="pstat">
+        <div class="val">24/7</div>
+        <div class="lbl">Uptime</div>
+      </div>
+    </div>
+
+    <div class="ip-box">
+      <div class="ip-lbl">IP</div>
+      <div class="ip-val">playazuria.astraltechnologie.fr</div>
+      <button class="ip-copy-btn" id="copy-btn" onclick="copyIP()">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M8 16H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-6 12h8a2 2 0 0 1 2-2v-8a2 2 0 0 1-2-2h-8a2 2 0 0 1-2 2v8a2 2 0 0 1 2 2z"/>
+        </svg>
+        Copier
+      </button>
+    </div>
+
+    <!-- Banner maintenance -->
+    <div class="maintenance-banner" id="maintenance-banner">
+      🔧 Le serveur est en maintenance.<br/>
+      <span style="font-weight:400;font-size:.82rem">Reviens dans quelques minutes !</span>
+    </div>
+
+    <!-- Bouton START -->
+    <button class="start-btn hidden" id="start-btn" onclick="startServer()">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+        <polygon fill="currentColor" points="5,3 19,12 5,21"/>
+      </svg>
+      Allumer le serveur
+    </button>
+
+    <div class="hint" id="hint-text">Rejoins-nous via <strong>le Launcher Azuria (V3)</strong> — obligatoire pour jouer !</div>
+  </div>
+
+  <!-- ======= ADMIN PANEL OVERLAY ======= -->
+  <div class="admin-overlay" id="admin-overlay" onclick="closeAdminIfOutside(event)">
+    <div class="admin-panel" id="admin-panel">
+      <button class="admin-close" onclick="closeAdmin()">✕</button>
+
+      <div class="admin-title">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+          <path stroke="#a855f7" stroke-width="2" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+          <path stroke="#a855f7" stroke-width="2" stroke-linecap="round" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Panel Admin
+      </div>
+      <div class="admin-subtitle">Accès réservé — Azuria</div>
+
+      <!-- Formulaire auth -->
+      <div class="admin-auth" id="admin-auth">
+        <div>
+          <label>Code d'accès</label>
+          <input class="admin-input" type="password" id="admin-code" placeholder="••••••" maxlength="10"
+            onkeydown="if(event.key==='Enter')submitAdmin()"/>
+        </div>
+        <div class="admin-err" id="admin-err"></div>
+        <button class="admin-submit" onclick="submitAdmin()">Accéder</button>
+      </div>
+
+      <!-- Dashboard (caché jusqu'à auth) -->
+      <div class="admin-dash" id="admin-dash">
+
+        <div>
+          <div class="admin-section-title">🔧 Maintenance</div>
+          <div class="admin-status-row">
+            <div class="admin-status-info">
+              <strong>Mode maintenance</strong>
+              <span id="maint-desc">Bloque le bouton Start pour tous les joueurs</span>
+            </div>
+            <div class="toggle-wrap">
+              <span class="toggle-label" id="maint-label">Off</span>
+              <label class="toggle">
+                <input type="checkbox" id="maint-toggle" onchange="toggleMaintenance()"/>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="admin-section-title">📋 Journal</div>
+          <div class="admin-log" id="admin-log">
+            <span class="log-info">Panel admin chargé.</span>
+          </div>
+        </div>
+
+        <button class="admin-submit" style="background:linear-gradient(135deg,#374151,#1f2937);box-shadow:none" onclick="closeAdmin()">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SERVER_IP = 'playazuria.astraltechnologie.fr';
+    let serverOnline   = false;
+    let isMaintenance  = false;
+    let pollInterval   = null;
+    let adminAuthed    = false;
+
+    // ── PARTICLES ────────────────────────────
+    (function(){
+      const c = document.getElementById('particles');
+      for(let i=0;i<55;i++){
+        const p=document.createElement('div'); p.className='particle';
+        const hue=Math.random()>.6?'200,100%,65%':Math.random()>.5?'210,80%,70%':'180,80%,60%';
+        const size=1+Math.random()*3;
+        p.style.cssText=`left:${Math.random()*100}%;width:${size}px;height:${size}px;
+          background:hsl(${hue});box-shadow:0 0 ${size*2}px hsl(${hue});
+          animation-duration:${10+Math.random()*20}s;animation-delay:-${Math.random()*15}s;
+          --drift:${(Math.random()-.5)*200}px`;
+        c.appendChild(p);
+      }
+    })();
+
+    // ── TOAST ──────────────────────────────
+    function showToast(msg,type=''){
+      const t=document.getElementById('toast');
+      t.textContent=msg; t.className='toast'+(type?' '+type:'');
+      t.classList.add('show');
+      clearTimeout(t._timer);
+      t._timer=setTimeout(()=>t.classList.remove('show'),3200);
+    }
+
+    // ── COPY IP ────────────────────────────
+    function copyIP(){
+      navigator.clipboard.writeText(SERVER_IP).then(()=>{
+        showToast('✅ IP copiée dans le presse-papiers !');
+        const btn=document.getElementById('copy-btn');
+        btn.textContent='✅ Copié !';
+        btn.style.background='linear-gradient(135deg,#10b981,#059669)';
+        setTimeout(()=>{
+          btn.innerHTML=`<svg width="13" height="13" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M8 16H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-6 12h8a2 2 0 0 1 2-2v-8a2 2 0 0 1-2-2h-8a2 2 0 0 1-2 2v8a2 2 0 0 1 2 2z"/></svg>Copier`;
+          btn.style.background='';
+        },2000);
+      });
+    }
+
+    // ── ADMIN ──────────────────────────────
+    function openAdmin(){
+      document.getElementById('admin-overlay').classList.add('show');
+      if(!adminAuthed) setTimeout(()=>document.getElementById('admin-code').focus(),100);
+    }
+    function closeAdmin(){
+      document.getElementById('admin-overlay').classList.remove('show');
+    }
+    function closeAdminIfOutside(e){
+      if(e.target===document.getElementById('admin-overlay')) closeAdmin();
+    }
+
+    function submitAdmin(){
+      const code=document.getElementById('admin-code').value;
+      const err=document.getElementById('admin-err');
+      if(code==='42130'){
+        adminAuthed=true;
+        document.getElementById('admin-auth').style.display='none';
+        document.getElementById('admin-dash').classList.add('show');
+        checkMaintenanceStatus();
+        err.textContent='';
+      } else {
+        err.textContent='Code incorrect.';
+        document.getElementById('admin-code').value='';
+        document.getElementById('admin-code').focus();
+      }
+    }
+
+    async function checkMaintenanceStatus(){
+      try{
+        const res  = await fetch('/.netlify/functions/start-server',{method:'POST',body:JSON.stringify({action:'status'})});
+        const data = await res.json();
+        isMaintenance=data.maintenance===true;
+        syncMaintenanceUI();
+      } catch(e){
+        addLog('Impossible de vérifier le statut maintenance.','err');
+      }
+    }
+
+    function syncMaintenanceUI(){
+      const toggle=document.getElementById('maint-toggle');
+      const label =document.getElementById('maint-label');
+      const banner=document.getElementById('maintenance-banner');
+      toggle.checked=isMaintenance;
+      label.textContent=isMaintenance?'On':'Off';
+      if(isMaintenance){
+        banner.classList.add('show');
+        document.getElementById('start-btn').classList.add('hidden');
+      } else {
+        banner.classList.remove('show');
+        // Réaffiche le bouton si le serveur est offline
+        if(!serverOnline) document.getElementById('start-btn').classList.remove('hidden');
+      }
+    }
+
+    async function toggleMaintenance(){
+      const val=document.getElementById('maint-toggle').checked;
+      try{
+        const res  = await fetch('/.netlify/functions/start-server',{
+          method:'POST',
+          body:JSON.stringify({action:'admin',code:'42130',maintenance:val})
+        });
+        const data = await res.json();
+        if(res.ok && data.success){
+          isMaintenance=data.maintenance;
+          syncMaintenanceUI();
+          addLog(data.message,'ok');
+          showToast(data.message);
+        } else {
+          addLog('Erreur: '+(data.error||'?'),'err');
+        }
+      } catch(e){
+        addLog('Erreur réseau.','err');
+      }
+    }
+
+    function addLog(msg,type='info'){
+      const log=document.getElementById('admin-log');
+      const span=document.createElement('span');
+      span.className='log-'+type;
+      const now=new Date();
+      const time=`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      span.textContent=`[${time}] ${msg}`;
+      log.appendChild(span);
+      log.scrollTop=log.scrollHeight;
+    }
+
+    // ── SERVER STATUS ─────────────────────
+    async function fetchStatus(){
+      const badge   = document.getElementById('status-badge');
+      const dot     = document.getElementById('badge-dot');
+      const text    = document.getElementById('badge-text');
+      const count   = document.getElementById('online-count');
+      const startBtn= document.getElementById('start-btn');
+      const hint    = document.getElementById('hint-text');
+
+      // D'abord check maintenance
+      await checkMaintenanceStatus();
+
+      try{
+        const res  = await fetch(`https://api.mcsrvstat.us/3/${SERVER_IP}`);
+        const data = await res.json();
+        serverOnline = data.online===true;
+        const players= data.players?.online??0;
+
+        count.textContent = serverOnline ? players : '0';
+
+        if(serverOnline){
+          badge.className='status-badge online';
+          dot.className='bdot green pulse';
+          text.textContent=`En ligne — ${players} joueur(s)`;
+          startBtn.classList.add('hidden');
+          hint.innerHTML='Ouvre le <strong>Launcher Azuria</strong> et connecte-toi !';
+          if(pollInterval){clearInterval(pollInterval);pollInterval=null;}
+        } else if(isMaintenance){
+          badge.className='status-badge maintenance';
+          dot.className='bdot purple pulse';
+          text.textContent='Maintenance en cours';
+          startBtn.classList.add('hidden');
+          hint.textContent='Le serveur est en maintenance. Reviens bientôt !';
+        } else {
+          badge.className='status-badge offline';
+          dot.className='bdot red pulse';
+          text.textContent='Serveur hors ligne';
+          startBtn.classList.remove('hidden');
+          hint.textContent='Le serveur est éteint — clique pour le démarrer !';
+        }
+      } catch(e){
+        badge.className='status-badge loading';
+        dot.className='bdot gray pulse';
+        text.textContent='Statut inconnu';
+      }
+    }
+
+    // ── START SERVER ──────────────────────
+    async function startServer(){
+      const btn=document.getElementById('start-btn');
+      btn.disabled=true;
+      btn.innerHTML=`<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg> Démarrage…`;
+
+      const badge=document.getElementById('status-badge');
+      const dot=document.getElementById('badge-dot');
+      const text=document.getElementById('badge-text');
+      badge.className='status-badge starting';
+      dot.className='bdot gold';
+      text.textContent='Démarrage du serveur…';
+      document.getElementById('hint-text').textContent='Le serveur démarre, ça prend ~30 secondes…';
+
+      try{
+        const res  = await fetch('/.netlify/functions/start-server',{method:'POST',body:JSON.stringify({action:'start'})});
+        const data = await res.json();
+
+        if(res.ok && data.success){
+          showToast('🚀 Serveur en cours de démarrage !');
+          pollInterval = setInterval(async()=>{
+            await fetchStatus();
+            if(serverOnline){clearInterval(pollInterval);pollInterval=null;showToast('✅ Serveur en ligne ! Connecte-toi !');}
+          },15000);
+          setTimeout(()=>{if(pollInterval){clearInterval(pollInterval);pollInterval=null;}fetchStatus();},180000);
+        } else if(data.error==='maintenance'){
+          showToast('🔧 '+data.message,'error');
+          fetchStatus();
+        } else {
+          showToast('❌ '+(data.error||'Impossible de démarrer.'),'error');
+          resetBtn(btn); fetchStatus();
+        }
+      } catch(e){
+        showToast('❌ Erreur réseau. Réessaie.','error');
+        resetBtn(btn); fetchStatus();
+      }
+    }
+
+    function resetBtn(btn){
+      btn.disabled=false;
+      btn.innerHTML=`<svg width="20" height="20" fill="none" viewBox="0 0 24 24"><polygon fill="currentColor" points="5,3 19,12 5,21"/></svg>Allumer le serveur`;
+    }
+
+    // ── INIT ──────────────────────────────
+    fetchStatus();
+    setInterval(fetchStatus,60000);
+
+    // Fermer admin avec Escape
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAdmin()});
+  </script>
+</body>
+</html>
