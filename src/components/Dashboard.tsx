@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Play, LogOut, ChevronDown, Gamepad2, CheckCircle2, Circle, AlertTriangle, Server, RefreshCw, StopCircle, Zap, HelpCircle, Send, Copy } from 'lucide-react'
 import logo from '../assets/logo.png'
+import astralLogo from '../assets/astral-logo.png'
 import { SkinViewer, IdleAnimation, WalkingAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
 
 const SERVERS = [
-  { id: 'v2', category: 'V2 ACTUELLE', name: 'Azuria V2', host: 'game2.northhost.fr', port: 26130, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur actuel (1.21.4)', mcVersion: '1.21.4', statusOverride: null as string | null },
-  { id: 'v3test', category: 'V3 EARLY ACCESS', name: 'Azuria V3 — Serveur de test', host: '91.197.6.19', port: 25854, displayHost: '91.197.6.19:25854', desc: '⚠️ Serveur de test — attention', mcVersion: '1.20.1', statusOverride: null as string | null },
-  { id: 'main', category: 'V3 EARLY ACCESS', name: 'Azuria V3', host: 'game2.northhost.fr', port: 26130, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.20.1', statusOverride: 'INDISPONIBLE' as string | null },
+  { id: 'main', category: 'SERVEUR PRINCIPAL', name: 'Azuria V3 (Mohist 1.20.1)', host: 'playazuria.astraltechnologie.fr', port: 25565, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.20.1', statusOverride: null as string | null }
 ]
 
 const SUPPORT_URL = 'https://azuria.astraltechnologie.fr/support'
@@ -53,7 +52,7 @@ const S = {
 
 export default function Dashboard({ profile, onLogout }: { profile: any; onLogout: () => void }) {
   const [tab, setTab] = useState<Tab>('home')
-  const [selectedServer, setSelectedServer] = useState('v3test')
+  const [selectedServer, setSelectedServer] = useState('main')
   const [showAccounts, setShowAccounts] = useState(false)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [controllable, setControllable] = useState(false)
@@ -73,8 +72,29 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
           results[srv.id] = { online: false }
           return
         }
+        // Try IPC ping first
         const res = await window.ipcRenderer.invoke('ping-server', srv.host, srv.port)
-        results[srv.id] = { ...res, ping: Date.now() - t0 }
+        if (res && res.online) {
+          results[srv.id] = { ...res, ping: Date.now() - t0 }
+        } else {
+          // Fallback: use external API (Mohist sometimes doesn't respond to direct pings)
+          try {
+            const apiRes = await fetch(`https://api.mcsrvstat.us/3/${srv.host}`)
+            const apiData = await apiRes.json()
+            if (apiData.online) {
+              results[srv.id] = {
+                online: true,
+                players: apiData.players ? { online: apiData.players.online, max: apiData.players.max } : undefined,
+                version: apiData.version,
+                ping: Date.now() - t0,
+              }
+            } else {
+              results[srv.id] = { online: false }
+            }
+          } catch {
+            results[srv.id] = { online: false }
+          }
+        }
       } catch {
         results[srv.id] = { online: false }
       }
@@ -242,7 +262,11 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
         </div>
 
         <div className="mt-auto p-3 flex-shrink-0" style={{ borderTop: `1px solid ${S.border}` }}>
-          <button onClick={onLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all hover:bg-red-500/10" style={{ color: S.red }}>
+          <div className="mb-3 flex flex-col items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
+            <img src={astralLogo} alt="Astral Technologie" className="h-10 object-contain mb-1" />
+            <span style={{ fontSize: 9, color: S.text3, fontWeight: 700, letterSpacing: 0.5 }}>Propriété d'Astral Technologie</span>
+          </div>
+          <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all hover:bg-red-500/10" style={{ color: S.red }}>
             <LogOut size={16} />Déconnexion
           </button>
         </div>
@@ -259,13 +283,13 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
             {/* Server selector with ping */}
             <div className="w-full max-w-md min-w-0">
               <div className="flex items-center justify-between mb-2">
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.text3 }}>Choisir le serveur</div>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.text3 }}>Serveur disponible</div>
                 <button onClick={pingAllServers} className="flex items-center gap-1 px-2 py-1 rounded transition-colors hover:bg-white/5" style={{ fontSize: 10, color: S.text3 }}>
                   <RefreshCw size={10} />Actualiser
                 </button>
               </div>
               <div className="flex flex-col gap-4">
-                {['V2 ACTUELLE', 'V3 EARLY ACCESS'].map(cat => (
+                {['SERVEUR PRINCIPAL'].map(cat => (
                   <div key={cat} className="flex flex-col gap-2">
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.text3 }}>{cat}</div>
                     {SERVERS.filter(s => s.category === cat).map(srv => {
@@ -338,7 +362,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                     <span className="font-black text-xl" style={{ color: S.accent }}>{ram}G</span>
                   </div>
                   <input type="range" min={2} max={16} step={1} value={ram} onChange={e => updateRam(Number(e.target.value))} className="w-full cursor-pointer" style={{ accentColor: S.accent }} />
-                  <div className="flex justify-between text-xs mt-1" style={{ color: S.text3 }}><span>2G</span><span>8G</span><span>16G</span></div>
+                  <div className="flex justify-between text-xs mt-1" style={{ color: S.text3 }}><span>2Go</span><span>8Go</span><span>16Go</span></div>
                 </div>
                 <button onClick={() => toggleSetting('controllable')} className="p-4 rounded-xl flex items-center gap-4 text-left transition-all" style={{ background: S.surface, border: `1px solid ${controllable ? S.accent : S.border}` }}>
                   <Gamepad2 size={26} style={{ color: controllable ? S.accent : S.text3 }} />
@@ -363,7 +387,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
               <div>
                 <div className="flex justify-between text-xs font-bold uppercase tracking-wider mb-1.5">
                   <span style={{ color: S.text }}>{progress.task}</span>
-                  <span style={{ color: S.accent }}>{Math.round(progress.percent)}%</span>
+                  <span style={{ color: S.accent }}>{Math.max(0, Math.min(100, Math.round(progress.percent || 0)))}%</span>
                 </div>
                 <div className="h-1.5 rounded-full overflow-hidden" style={{ background: S.surface3 }}>
                   <div className="h-full rounded-full transition-all duration-300 relative" style={{ width: `${progress.percent}%`, background: `linear-gradient(90deg, ${S.accent}, ${S.accent2})` }}>
@@ -438,8 +462,9 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
               <AlertTriangle size={18} />INDISPONIBLE
             </button>
           ) : status?.online === false ? (
-            <button disabled className="flex items-center gap-2 px-8 py-3.5 rounded-xl font-black text-base text-white/50 cursor-not-allowed" style={{ background: S.surface3 }}>
-              <AlertTriangle size={18} />SERVEUR HORS LIGNE
+            <button onClick={handleLaunch} className="group relative flex items-center gap-2 px-10 py-3.5 rounded-xl font-black text-base text-white transition-all hover:-translate-y-0.5 overflow-hidden" style={{ background: `linear-gradient(135deg, ${S.orange}, #ffaa00)`, boxShadow: `0 0 30px rgba(255,136,0,0.4)` }}>
+              <Play size={18} className="fill-current" />JOUER QUAND MÊME
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', transform: 'skewX(-12deg)' }} />
             </button>
           ) : isClosed ? (
             <button onClick={handleLaunch} className="group relative flex items-center gap-2 px-10 py-3.5 rounded-xl font-black text-base text-white transition-all hover:-translate-y-0.5 overflow-hidden" style={{ background: `linear-gradient(135deg, ${S.green}, #22aa44)`, boxShadow: `0 0 30px rgba(68,204,102,0.4)` }}>

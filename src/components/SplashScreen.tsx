@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import logo from '../assets/logo.png'
+import astralLogo from '../assets/astral-logo.png'
 
 interface Props { onReady: (hasUpdate?: boolean, downloadUrl?: string) => void }
 
@@ -111,6 +112,12 @@ export default function SplashScreen({ onReady }: Props) {
         <div style={{ fontSize: 11, color: '#5a5a7a', textAlign: 'center', letterSpacing: 0.5, height: 16 }}>
           {steps[stepIdx]?.label}
         </div>
+      </div>
+
+      {/* Footer Logo */}
+      <div style={{ position: 'absolute', bottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.6 }}>
+        <img src={astralLogo} alt="Astral Technologie" style={{ height: 32, objectFit: 'contain', marginBottom: 6 }} />
+        <div style={{ fontSize: 9, color: '#5a5a7a', fontWeight: 700, letterSpacing: 1 }}>Propriété d'Astral Technologie</div>
       </div>
 
       <style>{`
