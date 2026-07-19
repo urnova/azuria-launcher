@@ -242,6 +242,11 @@
                 color: var(--accent2);
             }
 
+            @keyframes ctaGlow {
+                0%, 100% { box-shadow: 0 4px 28px rgba(34,197,94,0.45); }
+                50% { box-shadow: 0 6px 40px rgba(34,197,94,0.7), 0 0 60px rgba(34,197,94,0.25); }
+            }
+
             @media (max-width: 768px) {
                 .grimoire-cta-inner {
                     flex-direction: column;
@@ -314,9 +319,9 @@
                         </p>
 
                         <div class="hero-btns">
-                            <a href="/grimoire" class="btn btn-primary">📖 Consulter le Grimoire</a>
+                            <a href="/download" class="btn btn-primary" style="background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 28px rgba(34,197,94,0.45); font-size: 1.05rem; padding: 14px 28px; animation: ctaGlow 2s ease-in-out infinite;">⬇️ Télécharger le Launcher</a>
+                            <a href="/grimoire" class="btn btn-secondary">📖 Consulter le Grimoire</a>
                             <a href="/discord" class="btn btn-secondary">💬 Rejoindre le Discord</a>
-                            <a href="/download" class="btn btn-primary" style="background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 24px rgba(34,197,94,0.35);">⬇️ Télécharger le Launcher</a>
                         </div>
 
                         <!-- Indicateur de statut Serveur -->
@@ -536,8 +541,8 @@
                     <a href="/support" class="footer-link">Support</a>
                 </div>
                 <p class="footer-copy">
-                    © 2025 Azuria — Serveur Minecraft communautaire •
-                    node2.northhost.fr:26132
+                    © 2026 Astral Technologie — Azuria V3 •
+                    playazuria.astraltechnologie.fr
                 </p>
             </div>
         </footer>

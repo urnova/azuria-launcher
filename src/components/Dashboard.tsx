@@ -86,7 +86,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                 online: true,
                 players: apiData.players ? { online: apiData.players.online, max: apiData.players.max } : undefined,
                 version: apiData.version,
-                ping: Date.now() - t0,
+                // Don't use HTTP API latency as MC ping — it's misleading
               }
             } else {
               results[srv.id] = { online: false }
@@ -263,8 +263,8 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
 
         <div className="mt-auto p-3 flex-shrink-0" style={{ borderTop: `1px solid ${S.border}` }}>
           <div className="mb-3 flex flex-col items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
-            <img src={astralLogo} alt="Astral Technologie" className="h-10 object-contain mb-1" />
-            <span style={{ fontSize: 9, color: S.text3, fontWeight: 700, letterSpacing: 0.5 }}>Propriété d'Astral Technologie</span>
+            <img src={astralLogo} alt="Astral Technologie" style={{ width: 120, objectFit: 'contain', marginBottom: 4, filter: 'drop-shadow(0 0 8px rgba(79,142,247,0.2))' }} />
+            <span style={{ fontSize: 8, color: S.text3, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase' }}>Technologie</span>
           </div>
           <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all hover:bg-red-500/10" style={{ color: S.red }}>
             <LogOut size={16} />Déconnexion
@@ -280,68 +280,69 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
             <h1 className="font-black mb-1" style={{ fontSize: 40, letterSpacing: -2, background: 'linear-gradient(135deg, #fff 0%, #4f8ef7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AZURIA</h1>
             <p className="mb-8" style={{ color: S.text2, fontSize: 14 }}>Prêt à rejoindre l'aventure ?</p>
 
-            {/* Server selector with ping */}
+            {/* Server card */}
             <div className="w-full max-w-md min-w-0">
-              <div className="flex items-center justify-between mb-2">
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.text3 }}>Serveur disponible</div>
+              <div className="flex items-center justify-between mb-3">
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.text3 }}>Serveur</div>
                 <button onClick={pingAllServers} className="flex items-center gap-1 px-2 py-1 rounded transition-colors hover:bg-white/5" style={{ fontSize: 10, color: S.text3 }}>
                   <RefreshCw size={10} />Actualiser
                 </button>
               </div>
-              <div className="flex flex-col gap-4">
-                {['SERVEUR PRINCIPAL'].map(cat => (
-                  <div key={cat} className="flex flex-col gap-2">
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.text3 }}>{cat}</div>
-                    {SERVERS.filter(s => s.category === cat).map(srv => {
-                      const st = serverStatuses[srv.id]
-                      const isOnline = srv.statusOverride ? false : st?.online === true
-                      const bars = getPingBars(st?.ping)
-                      return (
-                        <button key={srv.id} onClick={() => !isBusy && !isRunning && setSelectedServer(srv.id)}
-                          className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all w-full min-w-0 overflow-hidden"
-                          style={{ background: selectedServer === srv.id ? 'rgba(79,142,247,0.12)' : S.surface, border: `1px solid ${selectedServer === srv.id ? 'rgba(79,142,247,0.4)' : S.border}`, boxShadow: selectedServer === srv.id ? '0 0 20px rgba(79,142,247,0.15)' : 'none', opacity: isBusy && selectedServer !== srv.id ? 0.5 : 1 }}>
-                          
-                          {/* Server icon / status dot */}
-                          {st?.favicon && !srv.statusOverride ? (
-                            <img src={st.favicon} alt="" className="w-10 h-10 rounded" style={{ imageRendering: 'pixelated' }} />
-                          ) : (
-                            <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: S.surface3 }}>
-                              <Server size={18} style={{ color: srv.statusOverride ? S.text3 : (isOnline ? S.accent : S.text3) }} />
-                            </div>
-                          )}
-
-                          <div className="flex-1 min-w-0 overflow-hidden">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span style={{ fontWeight: 700, fontSize: 14, color: S.text }}>{srv.name}</span>
-                              {srv.statusOverride ? (
-                                <span style={{ fontSize: 9, color: S.text3, border: `1px solid ${S.border2}`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>{srv.statusOverride}</span>
-                              ) : st === undefined ? (
-                                <span style={{ fontSize: 9, color: S.text3, border: `1px solid ${S.border2}`, padding: '1px 6px', borderRadius: 4 }}>…</span>
-                              ) : isOnline ? (
-                                <span style={{ fontSize: 9, color: S.green, border: `1px solid rgba(68,204,102,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>EN LIGNE</span>
-                              ) : (
-                                <span style={{ fontSize: 9, color: S.red, border: `1px solid rgba(255,68,68,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>HORS LIGNE</span>
-                              )}
-                            </div>
-                            <div className="truncate" style={{ fontSize: 11, color: S.text3, marginBottom: 2 }}>{srv.displayHost}</div>
-                            {isOnline && st?.motd && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text2 }} className="truncate">{st.motd.replace(/§[0-9a-fk-or]/gi, '')}</div>}
-                            {isOnline && st?.players && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text3 }}>{st.players.online}/{st.players.max} joueurs · {srv.mcVersion}</div>}
+              <div className="flex flex-col gap-2">
+                {SERVERS.map(srv => {
+                  const st = serverStatuses[srv.id]
+                  const isOnline = srv.statusOverride ? false : st?.online === true
+                  const bars = getPingBars(st?.ping)
+                  return (
+                      <button key={srv.id} onClick={() => !isBusy && !isRunning && setSelectedServer(srv.id)}
+                        className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all w-full min-w-0 overflow-hidden"
+                        style={{ background: selectedServer === srv.id ? 'rgba(79,142,247,0.12)' : S.surface, border: `1px solid ${selectedServer === srv.id ? 'rgba(79,142,247,0.4)' : S.border}`, boxShadow: selectedServer === srv.id ? '0 0 20px rgba(79,142,247,0.15)' : 'none', opacity: isBusy && selectedServer !== srv.id ? 0.5 : 1 }}>
+                        
+                        {/* Server icon / status dot */}
+                        {st?.favicon && !srv.statusOverride ? (
+                          <img src={st.favicon} alt="" className="w-10 h-10 rounded" style={{ imageRendering: 'pixelated' }} />
+                        ) : (
+                          <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: S.surface3 }}>
+                            <Server size={18} style={{ color: srv.statusOverride ? S.text3 : (isOnline ? S.accent : S.text3) }} />
                           </div>
+                        )}
 
-                          {/* Ping bars */}
-                          {!srv.statusOverride && (
-                            <div className="flex items-end gap-0.5 shrink-0">
-                              {[1,2,3,4,5].map(b => (
-                                <div key={b} style={{ width: 3, height: 4 + b * 2, borderRadius: 1, background: isOnline && bars >= b ? getPingColor(st?.ping) : S.border2, opacity: isOnline && bars >= b ? 1 : 0.3 }} />
-                              ))}
-                              {isOnline && st?.ping && <span style={{ fontSize: 9, color: getPingColor(st?.ping), marginLeft: 4 }}>{st.ping}ms</span>}
-                            </div>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                ))}
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span style={{ fontWeight: 700, fontSize: 14, color: S.text }}>{srv.name}</span>
+                            {srv.statusOverride ? (
+                              <span style={{ fontSize: 9, color: S.text3, border: `1px solid ${S.border2}`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>{srv.statusOverride}</span>
+                            ) : st === undefined ? (
+                              <span style={{ fontSize: 9, color: S.text3, border: `1px solid ${S.border2}`, padding: '1px 6px', borderRadius: 4 }}>…</span>
+                            ) : isOnline ? (
+                              <span style={{ fontSize: 9, color: S.green, border: `1px solid rgba(68,204,102,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>EN LIGNE</span>
+                            ) : (
+                              <span style={{ fontSize: 9, color: S.red, border: `1px solid rgba(255,68,68,0.4)`, padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>HORS LIGNE</span>
+                            )}
+                          </div>
+                          <div className="truncate" style={{ fontSize: 11, color: S.text3, marginBottom: 2 }}>{srv.displayHost}</div>
+                          {isOnline && st?.motd && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text2 }} className="truncate">{st.motd.replace(/§[0-9a-fk-or]/gi, '')}</div>}
+                          {isOnline && st?.players && !srv.statusOverride && <div style={{ fontSize: 10, color: S.text3 }}>{st.players.online}/{st.players.max} joueurs · {srv.mcVersion}</div>}
+                        </div>
+
+                        {/* Ping indicator */}
+                        {!srv.statusOverride && (
+                          <div className="flex items-end gap-0.5 shrink-0">
+                            {st?.ping ? (
+                              <>
+                                {[1,2,3,4,5].map(b => (
+                                  <div key={b} style={{ width: 3, height: 4 + b * 2, borderRadius: 1, background: isOnline && bars >= b ? getPingColor(st?.ping) : S.border2, opacity: isOnline && bars >= b ? 1 : 0.3 }} />
+                                ))}
+                                <span style={{ fontSize: 9, color: getPingColor(st?.ping), marginLeft: 4 }}>{st.ping}ms</span>
+                              </>
+                            ) : isOnline ? (
+                              <span style={{ fontSize: 9, color: S.green, fontWeight: 600 }}>●</span>
+                            ) : null}
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
               </div>
             </div>
           </div>

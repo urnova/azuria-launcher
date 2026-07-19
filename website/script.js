@@ -349,7 +349,7 @@
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (data.online) {
-          statusText.textContent = (data.players ? data.players.online : 0) + " / " + (data.players ? data.players.max : 20) + " joueurs";
+          statusText.textContent = "En ligne";
           statusText.style.color = "#2ecc71";
           statusDot.style.background = "#2ecc71";
           statusDot.style.boxShadow = "0 0 10px #2ecc71";

@@ -115,9 +115,9 @@ export default function SplashScreen({ onReady }: Props) {
       </div>
 
       {/* Footer Logo */}
-      <div style={{ position: 'absolute', bottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.6 }}>
-        <img src={astralLogo} alt="Astral Technologie" style={{ height: 32, objectFit: 'contain', marginBottom: 6 }} />
-        <div style={{ fontSize: 9, color: '#5a5a7a', fontWeight: 700, letterSpacing: 1 }}>Propriété d'Astral Technologie</div>
+      <div style={{ position: 'absolute', bottom: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <img src={astralLogo} alt="Astral Technologie" style={{ width: 140, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(79,142,247,0.3))', opacity: 0.7 }} />
+        <div style={{ fontSize: 8, color: '#3a3a5a', fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase' }}>Technologie</div>
       </div>
 
       <style>{`
