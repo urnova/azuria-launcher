@@ -23,9 +23,6 @@
   "win": {
     "publisherName": "Astral Technologie",
     "icon": "build/icon.ico",
-    "certificateFile": "build/azuria-codesign.pfx",
-    "certificatePassword": "AzuriaLauncher2026!",
-    "signingHashAlgorithms": ["sha256"],
     "target": [
       {
         "target": "nsis",

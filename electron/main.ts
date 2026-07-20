@@ -554,11 +554,27 @@ function createWindow() {
               }
 
               if (extractionOk) {
+                // Deplacer les dossiers speciaux (shaders, ressource packs) vers la racine s'ils sont dans le zip
+                const dirsToMove = ['shaderpacks', 'resourcepacks', 'config', 'options.txt', 'optionsof.txt']
+                for (const d of dirsToMove) {
+                  const src = path.join(modsDir, d)
+                  const dst = path.join(rootPath, d)
+                  if (fs.existsSync(src)) {
+                    try {
+                      if (fs.existsSync(dst)) fs.rmSync(dst, { recursive: true, force: true })
+                      fs.renameSync(src, dst)
+                      console.log(`[Azuria] Moved ${d} from mods to rootPath`)
+                    } catch (e) {
+                      console.error(`[Azuria] Failed to move ${d}:`, e)
+                    }
+                  }
+                }
+
                 // Verify the extraction was successful by checking for at least one .jar file
-                const extractedFiles = fs.existsSync(modsDir) ? fs.readdirSync(modsDir) : []
-                console.log(`[Azuria] Extracted ${extractedFiles.length} files to mods dir`)
+                const extractedFiles = fs.existsSync(modsDir) ? fs.readdirSync(modsDir).filter((f: any) => f.endsWith('.jar')) : []
+                console.log(`[Azuria] Extracted ${extractedFiles.length} jar files to mods dir`)
                 if (extractedFiles.length === 0) {
-                  console.error('[Azuria] Extraction produced no files!')
+                  console.error('[Azuria] Extraction produced no jar files!')
                   win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur: le zip des mods est vide.' })
                   return { error: 'extract_empty', message: 'Le téléchargement des mods a produit un dossier vide.\nRéessaie en cliquant sur Jouer.' }
                 }
