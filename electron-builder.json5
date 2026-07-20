@@ -21,7 +21,6 @@
     }
   ],
   "win": {
-    "publisherName": "Astral Technologie",
     "icon": "build/icon.ico",
     "target": [
       {
