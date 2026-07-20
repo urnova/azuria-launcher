@@ -119,7 +119,7 @@ function pingServer(host: string, port: number): Promise<any> {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 950, height: 580, minWidth: 800, minHeight: 500,
+    width: 1100, height: 650, minWidth: 800, minHeight: 500,
     frame: false, resizable: true, transparent: true,
     icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
     webPreferences: {

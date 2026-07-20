@@ -10,6 +10,7 @@ export default function App() {
   const [activeProfile, setActiveProfile] = useState<any>(null)
   const [splashDone, setSplashDone] = useState(false)
   const [showUpdate, setShowUpdate] = useState(false)
+  const [initialStatuses, setInitialStatuses] = useState<Record<string, any>>({})
 
   useEffect(() => {
     // window.ipcRenderer.invoke('get-active-profile').then(saved => {
@@ -20,7 +21,11 @@ export default function App() {
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden" style={{ background: '#0a0a0f', color: '#e8e8f0', border: '1px solid #1c1c28' }}>
       {/* Splash screen */}
-      {!splashDone && <SplashScreen onReady={(hasUpdate) => { setSplashDone(true); if (hasUpdate) setShowUpdate(true) }} />}
+      {!splashDone && <SplashScreen onReady={(hasUpdate, _, statuses) => { 
+        if (statuses) setInitialStatuses(statuses);
+        setSplashDone(true); 
+        if (hasUpdate) setShowUpdate(true) 
+      }} />}
       {/* Update modal — shown at app level after splash */}
       {splashDone && showUpdate && <UpdateModal onClose={() => setShowUpdate(false)} />}
 
@@ -57,7 +62,7 @@ export default function App() {
       {/* Main */}
       <div className="flex-1 relative overflow-hidden">
         {activeProfile ? (
-          <Dashboard profile={activeProfile} onLogout={() => setActiveProfile(null)} />
+          <Dashboard profile={activeProfile} onLogout={() => setActiveProfile(null)} initialStatuses={initialStatuses} />
         ) : (
           <LoginScreen onLogin={p => setActiveProfile(p)} />
         )}

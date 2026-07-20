@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Play, LogOut, ChevronDown, Gamepad2, CheckCircle2, Circle, AlertTriangle, Server, RefreshCw, StopCircle, Zap, HelpCircle, Send, Copy } from 'lucide-react'
+import { Play, LogOut, ChevronDown, Gamepad2, CheckCircle2, Circle, AlertTriangle, Server, RefreshCw, StopCircle, Zap, HelpCircle, Send, Copy, Map } from 'lucide-react'
 import logo from '../assets/logo.png'
 import astralLogo from '../assets/astral-logo.png'
 import { SkinViewer, IdleAnimation, WalkingAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
 
 const SERVERS = [
-  { id: 'main', category: 'SERVEUR PRINCIPAL', name: 'Azuria V3 (Mohist 1.20.1)', host: 'playazuria.astraltechnologie.fr', port: 25565, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.20.1', statusOverride: null as string | null }
+  { id: 'main', category: 'SERVEUR PRINCIPAL', name: 'Azuria V3 (1.20.1)', host: 'playazuria.astraltechnologie.fr', port: 25565, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.20.1', statusOverride: null as string | null }
 ]
 
 const SUPPORT_URL = 'https://azuria.astraltechnologie.fr/support'
@@ -37,7 +37,7 @@ function openSupport(errorCode?: string, errorMsg?: string) {
   window.ipcRenderer.invoke('open-external', url)
 }
 
-type Tab = 'home' | 'settings'
+type Tab = 'home' | 'map' | 'settings'
 type GameState = 'IDLE' | 'SYNCING' | 'DOWNLOADING' | 'RUNNING' | 'CLOSED'
 
 interface ServerStatus { online: boolean; players?: { online: number; max: number }; motd?: string; favicon?: string; version?: string; ping?: number }
@@ -50,7 +50,7 @@ const S = {
   text: '#e8e8f0', text2: '#9999bb', text3: '#5a5a7a',
 }
 
-export default function Dashboard({ profile, onLogout }: { profile: any; onLogout: () => void }) {
+export default function Dashboard({ profile, onLogout, initialStatuses }: { profile: any; onLogout: () => void; initialStatuses?: Record<string, any> }) {
   const [tab, setTab] = useState<Tab>('home')
   const [selectedServer, setSelectedServer] = useState('main')
   const [showAccounts, setShowAccounts] = useState(false)
@@ -60,11 +60,11 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
   const [progress, setProgress] = useState({ state: 'IDLE' as GameState, percent: 0, task: '' })
   const [lastError, setLastError] = useState<{ key: string; code: string; label: string; message: string } | null>(null)
   const [profiles, setProfiles] = useState<any[]>([])
-  const [serverStatuses, setServerStatuses] = useState<Record<string, ServerStatus>>({})
+  const [serverStatuses, setServerStatuses] = useState<Record<string, ServerStatus>>(initialStatuses || {})
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const pingAllServers = useCallback(async () => {
-    const results: Record<string, ServerStatus> = {}
+    const results: Record<string, ServerStatus> = { ...serverStatuses }
     await Promise.all(SERVERS.map(async (srv) => {
       const t0 = Date.now()
       try {
@@ -77,7 +77,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
         if (res && res.online) {
           results[srv.id] = { ...res, ping: Date.now() - t0 }
         } else {
-          // Fallback: use external API (Mohist sometimes doesn't respond to direct pings)
+          // Fallback: use external API
           try {
             const apiRes = await fetch(`https://api.mcsrvstat.us/3/${srv.host}`)
             const apiData = await apiRes.json()
@@ -86,7 +86,6 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                 online: true,
                 players: apiData.players ? { online: apiData.players.online, max: apiData.players.max } : undefined,
                 version: apiData.version,
-                // Don't use HTTP API latency as MC ping — it's misleading
               }
             } else {
               results[srv.id] = { online: false }
@@ -110,12 +109,17 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
     window.ipcRenderer.invoke('get-all-profiles').then((ps: any) => {
       if (ps) setProfiles(ps.filter((p: any) => p.id !== profile.id))
     })
-    pingAllServers()
+    
+    // Only ping if we don't already have the initial statuses
+    if (!initialStatuses || Object.keys(initialStatuses).length === 0) {
+      pingAllServers()
+    }
+    
     const interval = setInterval(pingAllServers, 30000)
     // Check for updates 3s after launch
     const updateTimer = setTimeout(() => setShowUpdateModal(true), 3000)
     return () => { clearInterval(interval); clearTimeout(updateTimer) }
-  }, [profile.id, pingAllServers])
+  }, [profile.id, pingAllServers, initialStatuses])
 
   useEffect(() => {
     if (!canvasRef.current) return
@@ -243,15 +247,19 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
           </div>
 
           <nav className="flex flex-col gap-1 p-3 flex-shrink-0">
-            {([{ id: 'home' as Tab, icon: '⚔', label: 'Accueil' }, { id: 'settings' as Tab, icon: '⚙', label: 'Paramètres' }]).map(item => (
-              <button key={item.id} onClick={() => setTab(item.id)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
-                style={{ background: tab === item.id ? 'rgba(79,142,247,0.15)' : 'transparent', color: tab === item.id ? S.accent : S.text2, border: `1px solid ${tab === item.id ? 'rgba(79,142,247,0.3)' : 'transparent'}` }}>
-                <span>{item.icon}</span>{item.label}
-              </button>
-            ))}
+            <button onClick={() => setTab('home')} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all" style={{ background: tab === 'home' ? 'rgba(79,142,247,0.15)' : 'transparent', color: tab === 'home' ? S.accent : S.text2, border: `1px solid ${tab === 'home' ? 'rgba(79,142,247,0.3)' : 'transparent'}` }}>
+              <span>⚔</span>Accueil
+            </button>
+            <button onClick={() => setTab('map')} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all" style={{ background: tab === 'map' ? 'rgba(79,142,247,0.15)' : 'transparent', color: tab === 'map' ? S.accent : S.text2, border: `1px solid ${tab === 'map' ? 'rgba(79,142,247,0.3)' : 'transparent'}` }}>
+              <Map size={16} />Carte du Monde
+            </button>
+            <button onClick={() => setTab('settings')} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all" style={{ background: tab === 'settings' ? 'rgba(79,142,247,0.15)' : 'transparent', color: tab === 'settings' ? S.accent : S.text2, border: `1px solid ${tab === 'settings' ? 'rgba(79,142,247,0.3)' : 'transparent'}` }}>
+              <span>⚙</span>Paramètres
+            </button>
+
             <button
               onClick={() => openSupport()}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all mt-1"
               style={{ color: S.text2, border: '1px solid transparent' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLButtonElement).style.color = S.text }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = S.text2 }}
@@ -263,8 +271,7 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
 
         <div className="mt-auto p-3 flex-shrink-0" style={{ borderTop: `1px solid ${S.border}` }}>
           <div className="mb-3 flex flex-col items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
-            <img src={astralLogo} alt="Astral Technologie" style={{ width: 120, objectFit: 'contain', marginBottom: 4, filter: 'drop-shadow(0 0 8px rgba(79,142,247,0.2))' }} />
-            <span style={{ fontSize: 8, color: S.text3, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase' }}>Technologie</span>
+            <img src={astralLogo} alt="Astral" style={{ width: 120, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(79,142,247,0.2))' }} />
           </div>
           <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all hover:bg-red-500/10" style={{ color: S.red }}>
             <LogOut size={16} />Déconnexion
@@ -343,6 +350,22 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
                       </button>
                     )
                   })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'map' && (
+          <div className="flex-1 flex flex-col relative w-full h-full">
+            {/* BlueMap frame or Placeholder */}
+            <div className="absolute inset-0 z-0 bg-black/50 flex flex-col items-center justify-center">
+              <Map size={48} className="text-white/20 mb-4" />
+              <div className="text-xl font-bold text-white mb-2">Carte Indisponible</div>
+              <div className="text-sm text-gray-400 max-w-md text-center mb-6">
+                Le port de la carte interactive (BlueMap) n'est pas encore ouvert sur le serveur.
+              </div>
+              <div className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-400 text-center font-mono select-text">
+                URL cible : http://game03.octoheberg.fr:8100
               </div>
             </div>
           </div>
@@ -463,9 +486,8 @@ export default function Dashboard({ profile, onLogout }: { profile: any; onLogou
               <AlertTriangle size={18} />INDISPONIBLE
             </button>
           ) : status?.online === false ? (
-            <button onClick={handleLaunch} className="group relative flex items-center gap-2 px-10 py-3.5 rounded-xl font-black text-base text-white transition-all hover:-translate-y-0.5 overflow-hidden" style={{ background: `linear-gradient(135deg, ${S.orange}, #ffaa00)`, boxShadow: `0 0 30px rgba(255,136,0,0.4)` }}>
-              <Play size={18} className="fill-current" />JOUER QUAND MÊME
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', transform: 'skewX(-12deg)' }} />
+            <button disabled className="flex items-center gap-2 px-8 py-3.5 rounded-xl font-black text-base text-white/50 cursor-not-allowed transition-all" style={{ background: S.surface3 }}>
+              <AlertTriangle size={18} />INDISPONIBLE
             </button>
           ) : isClosed ? (
             <button onClick={handleLaunch} className="group relative flex items-center gap-2 px-10 py-3.5 rounded-xl font-black text-base text-white transition-all hover:-translate-y-0.5 overflow-hidden" style={{ background: `linear-gradient(135deg, ${S.green}, #22aa44)`, boxShadow: `0 0 30px rgba(68,204,102,0.4)` }}>

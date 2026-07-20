@@ -1,54 +1,97 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import logo from '../assets/logo.png'
 import astralLogo from '../assets/astral-logo.png'
 
-interface Props { onReady: (hasUpdate?: boolean, downloadUrl?: string) => void }
+interface Props {
+  onReady: (hasUpdate?: boolean, downloadUrl?: string, serverStatuses?: Record<string, any>) => void
+}
+
+const SERVERS = [
+  { id: 'main', host: 'playazuria.astraltechnologie.fr', port: 25565 },
+]
 
 const steps = [
   { label: 'Initialisation du launcher...', duration: 600 },
-  { label: 'Vérification des mises à jour...', duration: 0 },
+  { label: 'Vérification des mises à jour...', duration: 0, type: 'update' },
   { label: 'Chargement des profils...', duration: 500 },
-  { label: 'Ping des serveurs...', duration: 900 },
-  { label: 'Prêt !', duration: 300 },
+  { label: 'Ping des serveurs...', duration: 0, type: 'ping' },
+  { label: 'Prêt !', duration: 400 },
 ]
 
 export default function SplashScreen({ onReady }: Props) {
   const [stepIdx, setStepIdx] = useState(0)
   const [progress, setProgress] = useState(0)
   const [fadeOut, setFadeOut] = useState(false)
+  const resultRef = useRef<{
+    hasUpdate?: boolean
+    downloadUrl?: string
+    serverStatuses?: Record<string, any>
+  }>({})
 
   useEffect(() => {
     let current = 0
     let elapsed = 0
-    let updateResult: boolean | undefined = undefined
-    let updateDownloadUrl: string | undefined = undefined
-    const total = steps.reduce((s, x) => s + x.duration, 0) + 1500
+    const fixedTotal = steps.reduce((s, x) => s + (x.duration || 1500), 0)
 
     const run = () => {
       if (current >= steps.length) {
         setFadeOut(true)
-        setTimeout(() => onReady(updateResult, updateDownloadUrl), 400)
+        setTimeout(() =>
+          onReady(resultRef.current.hasUpdate, resultRef.current.downloadUrl, resultRef.current.serverStatuses),
+          400
+        )
         return
       }
-      setStepIdx(current)
-      const step = steps[current]
 
-      if (step.duration === 0) {
+      const step = steps[current]
+      setStepIdx(current)
+
+      // Async steps
+      if (step.type === 'update') {
         window.ipcRenderer.invoke('check-for-updates').then((res: any) => {
-          updateResult = res?.hasUpdate === true
-          if (res?.downloadUrl) updateDownloadUrl = res.downloadUrl
+          resultRef.current.hasUpdate = res?.hasUpdate === true
+          if (res?.downloadUrl) resultRef.current.downloadUrl = res.downloadUrl
           elapsed += 1500
           current++
           run()
-        }).catch(() => {
+        }).catch(() => { current++; run() })
+        return
+      }
+
+      if (step.type === 'ping') {
+        const results: Record<string, any> = {}
+        Promise.all(SERVERS.map(async srv => {
+          try {
+            const res = await window.ipcRenderer.invoke('ping-server', srv.host, srv.port)
+            if (res?.online) {
+              results[srv.id] = res
+            } else {
+              // Fallback API
+              try {
+                const apiRes = await fetch(`https://api.mcsrvstat.us/3/${srv.host}`)
+                const apiData = await apiRes.json()
+                results[srv.id] = apiData.online
+                  ? { online: true, players: apiData.players ? { online: apiData.players.online, max: apiData.players.max } : undefined }
+                  : { online: false }
+              } catch {
+                results[srv.id] = { online: false }
+              }
+            }
+          } catch {
+            results[srv.id] = { online: false }
+          }
+        })).then(() => {
+          resultRef.current.serverStatuses = results
+          elapsed += 1500
           current++
           run()
         })
         return
       }
 
-      const startProgress = (elapsed / (total)) * 100
-      const endProgress = ((elapsed + step.duration) / (total)) * 100
+      // Timed steps
+      const startProgress = (elapsed / fixedTotal) * 100
+      const endProgress = ((elapsed + step.duration) / fixedTotal) * 100
       const start = Date.now()
 
       const anim = setInterval(() => {
@@ -114,10 +157,9 @@ export default function SplashScreen({ onReady }: Props) {
         </div>
       </div>
 
-      {/* Footer Logo */}
-      <div style={{ position: 'absolute', bottom: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-        <img src={astralLogo} alt="Astral Technologie" style={{ width: 140, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(79,142,247,0.3))', opacity: 0.7 }} />
-        <div style={{ fontSize: 8, color: '#3a3a5a', fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase' }}>Technologie</div>
+      {/* Footer Logo — logo only, no "Technologie" text */}
+      <div style={{ position: 'absolute', bottom: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img src={astralLogo} alt="Astral" style={{ width: 120, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(79,142,247,0.3))', opacity: 0.6 }} />
       </div>
 
       <style>{`
