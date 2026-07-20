@@ -554,6 +554,25 @@ function createWindow() {
               }
 
               if (extractionOk) {
+                // Fix: if the zip had a 'mods/' subfolder, flatten it into modsDir
+                // (e.g. zip structured as mods/*.jar → extracted to modsDir/mods/*.jar)
+                const modsSubDir = path.join(modsDir, 'mods')
+                if (fs.existsSync(modsSubDir) && fs.statSync(modsSubDir).isDirectory()) {
+                  console.log('[Azuria] Detected mods/ subfolder in zip — flattening...')
+                  for (const f of fs.readdirSync(modsSubDir)) {
+                    const src = path.join(modsSubDir, f)
+                    const dst = path.join(modsDir, f)
+                    try {
+                      if (fs.existsSync(dst)) fs.rmSync(dst, { recursive: true, force: true })
+                      fs.renameSync(src, dst)
+                    } catch (e) {
+                      console.error(`[Azuria] Failed to flatten ${f}:`, e)
+                    }
+                  }
+                  try { fs.rmdirSync(modsSubDir) } catch {}
+                  console.log('[Azuria] Flattening done.')
+                }
+
                 // Deplacer les dossiers speciaux (shaders, ressource packs) vers la racine s'ils sont dans le zip
                 const dirsToMove = ['shaderpacks', 'resourcepacks', 'config', 'options.txt', 'optionsof.txt']
                 for (const d of dirsToMove) {
