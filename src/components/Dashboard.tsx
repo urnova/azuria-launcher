@@ -6,7 +6,7 @@ import { SkinViewer, IdleAnimation, WalkingAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
 
 const SERVERS = [
-  { id: 'main', category: 'SERVEUR PRINCIPAL', name: 'Azuria V3 (1.20.1)', host: 'playazuria.astraltechnologie.fr', port: 25565, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.20.1', statusOverride: null as string | null }
+  { id: 'main', category: 'SERVEUR PRINCIPAL', name: 'Azuria V3 (1.20.1)', host: 'game03.octoheberg.fr', port: 25570, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V3', mcVersion: '1.20.1', statusOverride: null as string | null }
 ]
 
 const SUPPORT_URL = 'https://azuria.astraltechnologie.fr/support'
@@ -20,6 +20,7 @@ const ERROR_CODES: Record<string, { code: string; label: string }> = {
   download_failed: { code: 'AZ-005', label: 'Téléchargement échoué' },
   extract_failed:  { code: 'AZ-006', label: 'Extraction des mods échouée' },
   extract_empty:   { code: 'AZ-007', label: 'Archive des mods vide' },
+  game_crash:      { code: 'AZ-008', label: 'Crash du jeu Minecraft' },
 }
 
 function getErrorInfo(errorKey?: string) {
@@ -50,7 +51,7 @@ const S = {
   text: '#e8e8f0', text2: '#9999bb', text3: '#5a5a7a',
 }
 
-export default function Dashboard({ profile, onLogout, initialStatuses }: { profile: any; onLogout: () => void; initialStatuses?: Record<string, any> }) {
+export default function Dashboard({ profile, onLogout, onProfileSwitch, initialStatuses }: { profile: any; onLogout: () => void; onProfileSwitch?: (p: any) => void; initialStatuses?: Record<string, any> }) {
   const [tab, setTab] = useState<Tab>('home')
   const [selectedServer, setSelectedServer] = useState('main')
   const [showAccounts, setShowAccounts] = useState(false)
@@ -103,6 +104,12 @@ export default function Dashboard({ profile, onLogout, initialStatuses }: { prof
 
   useEffect(() => {
     window.ipcRenderer.on('launch-progress', (_e: any, d: any) => setProgress(d))
+    window.ipcRenderer.on('launch-error', (_e: any, d: any) => {
+      if (d && d.error) {
+        const errInfo = getErrorInfo(d.error)
+        setLastError({ key: d.error, code: errInfo.code, label: errInfo.label, message: d.message || '' })
+      }
+    })
     window.ipcRenderer.invoke('get-settings').then((s: any) => {
       if (s) { setControllable(s.controllable ?? false); setRam(s.ram ?? 4) }
     })
@@ -186,7 +193,12 @@ export default function Dashboard({ profile, onLogout, initialStatuses }: { prof
 
   const switchProfile = async (p: any) => {
     await window.ipcRenderer.invoke('set-active-profile', p.id)
-    window.location.reload()
+    if (onProfileSwitch) {
+      onProfileSwitch(p)
+      setShowAccounts(false)
+    } else {
+      window.location.reload()
+    }
   }
 
   const getPingColor = (ping?: number) => {

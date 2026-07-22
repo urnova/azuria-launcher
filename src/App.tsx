@@ -62,7 +62,7 @@ export default function App() {
       {/* Main */}
       <div className="flex-1 relative overflow-hidden">
         {activeProfile ? (
-          <Dashboard profile={activeProfile} onLogout={() => setActiveProfile(null)} initialStatuses={initialStatuses} />
+          <Dashboard profile={activeProfile} onLogout={() => setActiveProfile(null)} onProfileSwitch={(p) => setActiveProfile(p)} initialStatuses={initialStatuses} />
         ) : (
           <LoginScreen onLogin={p => setActiveProfile(p)} />
         )}
