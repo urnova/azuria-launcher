@@ -57,7 +57,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
   const [showAccounts, setShowAccounts] = useState(false)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [controllable, setControllable] = useState(false)
-  const [ram, setRam] = useState(4)
+  const [ram, setRam] = useState(8)
   const [progress, setProgress] = useState({ state: 'IDLE' as GameState, percent: 0, task: '' })
   const [lastError, setLastError] = useState<{ key: string; code: string; label: string; message: string } | null>(null)
   const [profiles, setProfiles] = useState<any[]>([])
@@ -111,7 +111,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
       }
     })
     window.ipcRenderer.invoke('get-settings').then((s: any) => {
-      if (s) { setControllable(s.controllable ?? false); setRam(s.ram ?? 4) }
+      if (s) { setControllable(s.controllable ?? false); setRam(s.ram ?? 8) }
     })
     window.ipcRenderer.invoke('get-all-profiles').then((ps: any) => {
       if (ps) setProfiles(ps.filter((p: any) => p.id !== profile.id))
@@ -393,12 +393,12 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <div className="font-bold text-sm" style={{ color: S.text }}>Mémoire RAM allouée</div>
-                      <div className="text-xs mt-0.5" style={{ color: S.text3 }}>Recommandé : 4G minimum</div>
+                      <div className="text-xs mt-0.5" style={{ color: S.text3 }}>Recommandé : 8G minimum</div>
                     </div>
                     <span className="font-black text-xl" style={{ color: S.accent }}>{ram}G</span>
                   </div>
-                  <input type="range" min={2} max={16} step={1} value={ram} onChange={e => updateRam(Number(e.target.value))} className="w-full cursor-pointer" style={{ accentColor: S.accent }} />
-                  <div className="flex justify-between text-xs mt-1" style={{ color: S.text3 }}><span>2Go</span><span>8Go</span><span>16Go</span></div>
+                  <input type="range" min={8} max={16} step={1} value={ram} onChange={e => updateRam(Number(e.target.value))} className="w-full cursor-pointer" style={{ accentColor: S.accent }} />
+                  <div className="flex justify-between text-xs mt-1" style={{ color: S.text3 }}><span>8Go</span><span>12Go</span><span>16Go</span></div>
                 </div>
                 <button onClick={() => toggleSetting('controllable')} className="p-4 rounded-xl flex items-center gap-4 text-left transition-all" style={{ background: S.surface, border: `1px solid ${controllable ? S.accent : S.border}` }}>
                   <Gamepad2 size={26} style={{ color: controllable ? S.accent : S.text3 }} />

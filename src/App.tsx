@@ -11,8 +11,12 @@ export default function App() {
   const [splashDone, setSplashDone] = useState(false)
   const [showUpdate, setShowUpdate] = useState(false)
   const [initialStatuses, setInitialStatuses] = useState<Record<string, any>>({})
+  const [appVersion, setAppVersion] = useState<string>('')
 
   useEffect(() => {
+    window.ipcRenderer.invoke('get-app-version').then(v => {
+      if (v) setAppVersion(v)
+    })
     // window.ipcRenderer.invoke('get-active-profile').then(saved => {
     //   if (saved) setActiveProfile(saved)
     // })
@@ -35,6 +39,7 @@ export default function App() {
           <img src={logo} alt="" className="w-5 h-5 object-contain opacity-90" />
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', color: '#9999bb' }}>
             Azuria <span style={{ color: '#4f8ef7', fontWeight: 400 }}>Launcher</span>
+            {appVersion && <span style={{ marginLeft: 6, fontSize: 9, color: '#5a5a7a', letterSpacing: 1 }}>v{appVersion}</span>}
           </span>
         </div>
         <div className="flex no-drag-region">

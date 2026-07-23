@@ -139,6 +139,7 @@ function createWindow() {
     ipcMain.on('window-close', () => win?.close())
 
     // Profiles
+    ipcMain.handle('get-app-version', () => app.getVersion())
     ipcMain.handle('get-all-profiles', () => store.get('profiles'))
     ipcMain.handle('get-active-profile', () => {
       const profiles = store.get('profiles') as any[]
@@ -955,11 +956,16 @@ function createWindow() {
       })
 
       // Note: progress listener already registered above (no duplicate)
-      launcher.on('close', () => {
+      launcher.on('close', (code: number | null) => {
         if (!killPending) {
           gameProcess = null
-          win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Jeu fermé — Prêt à relancer !' })
-          // Launcher stays open (like official Minecraft launcher)
+          if (code !== 0 && code !== null) {
+            // Structured crash — rendered with AZ-008 error code + support/copy buttons in Dashboard
+            win?.webContents.send('launch-error', { error: 'game_crash', message: `Minecraft a quitté avec le code d'erreur ${code}.\nSi le crash se reproduit, envoie ce rapport au support.`, exitCode: code })
+            win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: '' })
+          } else {
+            win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Jeu fermé — Prêt à relancer !' })
+          }
         }
       })
 
@@ -972,7 +978,8 @@ function createWindow() {
         if (spawnedProcess && spawnedProcess.exitCode !== null) {
            console.log('[Azuria] Process died immediately with code', spawnedProcess.exitCode)
            gameProcess = null
-           win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Le jeu a planté au démarrage.' })
+           win?.webContents.send('launch-error', { error: 'game_crash', message: `Minecraft a quitté immédiatement (code ${spawnedProcess.exitCode}).\nVérifie les logs ou ré-essaie.`, exitCode: spawnedProcess.exitCode })
+           win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: '' })
         } else {
            gameProcess = spawnedProcess
            // Only set RUNNING here if not already set by the data listener
@@ -991,7 +998,20 @@ function createWindow() {
   if (VITE_DEV_SERVER_URL) win.loadURL(VITE_DEV_SERVER_URL)
   else win.loadFile(path.join(RENDERER_DIST, 'index.html'))
 }
+const gotTheLock = app.requestSingleInstanceLock()
 
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') { app.quit(); win = null } })
-app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
-app.whenReady().then(createWindow)
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    // Si une deuxième instance est lancée, on remet le focus sur la première
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      win.focus()
+    }
+  })
+  
+  app.on('window-all-closed', () => { if (process.platform !== 'darwin') { app.quit(); win = null } })
+  app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
+  app.whenReady().then(createWindow)
+}
