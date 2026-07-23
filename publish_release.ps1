@@ -1,10 +1,10 @@
 $token = "YOUR_GITHUB_TOKEN"
 $repo = "urnova/azuria-launcher"
-$tag = "v1.1.73"
+$tag = "v1.1.74"
 
 $releaseBody = @{
     tag_name = $tag
-    name = "Mise a jour 1.1.73"
+    name = "Mise a jour 1.1.74"
     body = "- Correctifs crash inventaire`n- Metier Aventurier: Progression et Homes gratuits/payants`n- Raccourci touche R (Menu Rapide)"
     draft = $false
     prerelease = $false
@@ -26,7 +26,7 @@ Write-Host "Upload URL is $uploadUrl"
 Write-Host "Release created!"
 
 $files = @(
-    "F:\code\azuria\azuriav3\azuria-launcher\release4\AzuriaSetup-1.1.73.exe",
+    "F:\code\azuria\azuriav3\azuria-launcher\release4\AzuriaSetup-1.1.74.exe",
     "F:\code\azuria\azuriav3\azuria-launcher\release4\latest.yml",
     "F:\code\azuria\azuriav3\mods-v3-update.zip"
 )
