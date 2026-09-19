@@ -66,6 +66,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
   const [lastError, setLastError] = useState<{ key: string; code: string; label: string; message: string } | null>(null)
   const [profiles, setProfiles] = useState<any[]>([])
   const [serverStatuses, setServerStatuses] = useState<Record<string, ServerStatus>>(initialStatuses || {})
+  const [appVersion, setAppVersion] = useState('')
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const pingAllServers = useCallback(async () => {
@@ -119,6 +120,9 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
     })
     window.ipcRenderer.invoke('get-playtime').then((sec: number) => {
       setTotalPlaySec(sec || 0)
+    })
+    window.ipcRenderer.invoke('get-app-version').then((v: string) => {
+      if (v) setAppVersion(v)
     })
     window.ipcRenderer.invoke('get-all-profiles').then((ps: any) => {
       if (ps) setProfiles(ps.filter((p: any) => p.id !== profile.id))
@@ -548,7 +552,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
                   <Shield size={14} style={{ color: S.green }} />
                   <span className="text-xs font-semibold" style={{ color: S.text2 }}>NeoForge 21.1.230 • Minecraft 1.21.1</span>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md" style={{ background: 'rgba(68,204,102,0.1)', color: S.green, border: '1px solid rgba(68,204,102,0.2)' }}>AZURIA V4.0.14</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md" style={{ background: 'rgba(68,204,102,0.1)', color: S.green, border: '1px solid rgba(68,204,102,0.2)' }}>AZURIA V{appVersion || '4.0.15'}</span>
               </div>
 
               {/* Logout */}
