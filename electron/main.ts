@@ -978,11 +978,12 @@ function createWindow() {
       function killGame(reason: string) {
         if (killPending) return
         killPending = true
-        console.log(`[Azuria] Auto-closing game: ${reason}`)
+        console.log(`[Azuria] Auto-closing game gracefully: ${reason}`)
+        // Laisser 4 secondes a Minecraft pour ecrire options.txt et clore proprement ses threads
         setTimeout(() => {
           if (gameProcess) { try { gameProcess.kill() } catch {} ; gameProcess = null }
           win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Jeu fermé — Prêt à relancer !' })
-        }, 500) // Fermeture très rapide (0.5s) pour éviter l'affichage du menu principal
+        }, 4000)
       }
 
       launcher.on('data', (e: any) => {
@@ -1025,11 +1026,9 @@ function createWindow() {
         // Detect disconnect from server (server kick, network drop, etc.)
         if (hasConnected && !killPending) {
           if (
-            line.includes('Client UDP channel inactive') ||
             line.includes('disconnect.loginFailed') ||
             line.includes('Connection lost') ||
             line.includes('Disconnected') ||
-            (line.includes('[Netty Client IO') && line.includes('channel inactive')) ||
             // Voluntary disconnect through Minecraft menu (Echap → Quitter le serveur)
             line.includes('Stopping multiplayer') ||
             line.includes('Leaving server') ||
@@ -1093,25 +1092,22 @@ function createWindow() {
           fs.writeFileSync(xaeroConfigPath, 'deathwaypoints:false\n', 'utf-8')
         }
 
-        // Fix AZ-008 JVM Native Crash (GL_OUT_OF_MEMORY / GL_INVALID_VALUE) 
-        // by forcing mipmapLevels to 0 and clamping renderDistance to 12 (reduces Texture Atlas and Chunk Builder buffers)
+        // Fix AZ-008 JVM Native Crash (GL_OUT_OF_MEMORY / GL_INVALID_VALUE)
+        // Ensure mipmapLevels is 0 to reduce Texture Atlas buffer, but respect user settings (sound, renderDistance, etc.)
         const optionsPath = path.join(rootPath, 'options.txt')
         if (fs.existsSync(optionsPath)) {
           let optionsStr = fs.readFileSync(optionsPath, 'utf-8')
-          optionsStr = optionsStr.replace(/mipmapLevels:[0-9]+/g, 'mipmapLevels:0')
-          optionsStr = optionsStr.replace(/graphicsMode:[a-zA-Z_]+/g, 'graphicsMode:FAST')
-          // Clamp renderDistance if it's too high (>8 causes memory issues on low end)
-          const rdMatch = optionsStr.match(/renderDistance:([0-9]+)/)
-          if (rdMatch && parseInt(rdMatch[1]) > 8) {
-            optionsStr = optionsStr.replace(/renderDistance:[0-9]+/g, 'renderDistance:8')
+          // Only fix mipmap if not already 0
+          if (!optionsStr.includes('mipmapLevels:0')) {
+            optionsStr = optionsStr.replace(/mipmapLevels:[0-9]+/g, 'mipmapLevels:0')
           }
-          const sdMatch = optionsStr.match(/simulationDistance:([0-9]+)/)
-          if (sdMatch && parseInt(sdMatch[1]) > 5) {
-            optionsStr = optionsStr.replace(/simulationDistance:[0-9]+/g, 'simulationDistance:5')
+          // Default soundCategory_music to 0.0 if not defined or if user muted it
+          if (!optionsStr.includes('soundCategory_music:')) {
+            optionsStr += '\nsoundCategory_music:0.0\n'
           }
           fs.writeFileSync(optionsPath, optionsStr, 'utf-8')
         } else {
-          fs.writeFileSync(optionsPath, 'mipmapLevels:0\ngraphicsMode:FAST\nrenderDistance:8\nsimulationDistance:5\n', 'utf-8')
+          fs.writeFileSync(optionsPath, 'mipmapLevels:0\ngraphicsMode:1\nrenderDistance:8\nsimulationDistance:5\nsoundCategory_music:0.0\n', 'utf-8')
         }
 
         // Inject SimpleRPC Azuria config
@@ -1273,6 +1269,7 @@ enabled = true
 version = 3
 [[entry]]
 \tname = "playazuria.astraltechnologie.fr"
+\tip = "playazuria.astraltechnologie.fr"
 \t[[entry.presence]]
 \t\ttype = "PLAYING"
 \t\tdescription = "{{player.name}} joue sur Azuria V3"

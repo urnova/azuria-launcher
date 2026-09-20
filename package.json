@@ -1,7 +1,7 @@
 {
     "name":  "azuria-launcher",
     "private":  true,
-    "version":  "4.0.17",
+    "version":  "4.0.18",
     "description":  "Lanceur custom pour Azuria V4",
     "type":  "module",
     "scripts":  {
