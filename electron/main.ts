@@ -42,6 +42,8 @@ const store = new Store({
   }
 })
 
+import { discordRpc } from './discordRpc'
+
 const { Client } = require('minecraft-launcher-core')
 const launcher = new Client()
 let gameProcess: any = null
@@ -146,6 +148,15 @@ function createWindow() {
   win.on('unmaximize', () => win?.webContents.send('window-unmaximized'))
 
 
+  // Initialize Discord RPC for the launcher
+  try {
+    const profiles = (store.get('profiles') as any[]) || []
+    const activeProfile = profiles.find(p => p.id === store.get('activeProfileId'))
+    discordRpc.setLauncherDefault(activeProfile?.name)
+  } catch (e) {
+    console.error('[Discord RPC] Init error:', e)
+  }
+
   import('electron').then(({ ipcMain }) => {
     ipcMain.removeAllListeners()
 
@@ -161,7 +172,12 @@ function createWindow() {
       const profiles = store.get('profiles') as any[]
       return profiles.find(p => p.id === store.get('activeProfileId')) || null
     })
-    ipcMain.handle('set-active-profile', (_e, id) => store.set('activeProfileId', id))
+    ipcMain.handle('set-active-profile', (_e, id) => {
+      store.set('activeProfileId', id)
+      const profiles = (store.get('profiles') as any[]) || []
+      const p = profiles.find(x => x.id === id)
+      discordRpc.setLauncherDefault(p?.name)
+    })
     ipcMain.handle('update-profile-avatar', (_e, { id, avatar }) => {
       const profiles = store.get('profiles') as any[]
       const idx = profiles.findIndex(p => p.id === id)
@@ -174,6 +190,7 @@ function createWindow() {
       const profiles = store.get('profiles') as any[]
       if (!profiles.find(p => p.id === profile.id)) store.set('profiles', [...profiles, profile])
       store.set('activeProfileId', profile.id)
+      discordRpc.setLauncherDefault(username)
       return profile
     })
 
@@ -231,6 +248,7 @@ function createWindow() {
         if (existing >= 0) profiles[existing] = profile; else profiles.push(profile)
         store.set('profiles', profiles)
         store.set('activeProfileId', profile.id)
+        discordRpc.setLauncherDefault(profile.name)
         return profile
       } catch (err: any) {
         return { error: err.message || 'Connexion impossible' }
@@ -240,7 +258,13 @@ function createWindow() {
     ipcMain.handle('delete-profile', (_e, id) => {
       let profiles = (store.get('profiles') as any[]).filter(p => p.id !== id)
       store.set('profiles', profiles)
-      if (store.get('activeProfileId') === id) store.set('activeProfileId', null)
+      if (store.get('activeProfileId') === id) {
+        store.set('activeProfileId', null)
+        discordRpc.setLauncherDefault()
+      } else {
+        const active = profiles.find(p => p.id === store.get('activeProfileId'))
+        discordRpc.setLauncherDefault(active?.name)
+      }
       return profiles
     })
 
@@ -961,6 +985,7 @@ function createWindow() {
         else if (t.includes('forge') || t.includes('neoforge')) label = `Installation de Forge (${pct}%)`
         else label = `Téléchargement : ${e.type} (${pct}%)`
         win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: pct, task: label })
+        discordRpc.setLaunching(label, pct)
       }
       launcher.on('download-status', onProgress)
       launcher.on('progress', onProgress)
@@ -973,6 +998,7 @@ function createWindow() {
         if (gameIsRunning) return
         gameIsRunning = true
         gameStartTime = Date.now()  // Start playtime counter
+        discordRpc.suspendForGame() // Yield Discord IPC to in-game SimpleRPC
         win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Jeu en cours !' })
       }
       function killGame(reason: string) {
@@ -982,6 +1008,8 @@ function createWindow() {
         // Laisser 4 secondes a Minecraft pour ecrire options.txt et clore proprement ses threads
         setTimeout(() => {
           if (gameProcess) { try { gameProcess.kill() } catch {} ; gameProcess = null }
+          const activeProf = (store.get('profiles') as any[])?.find(p => p.id === store.get('activeProfileId'))
+          discordRpc.restoreAfterGame(activeProf?.name)
           win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: 'Jeu fermé — Prêt à relancer !' })
         }, 4000)
       }
@@ -993,17 +1021,29 @@ function createWindow() {
         // --- Live status messages from Minecraft/NeoForge stdout (only before RUNNING) ---
         if (!gameIsRunning) {
           if (line.includes('Loading Minecraft')) {
-            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 50, task: 'Chargement de Minecraft...' })
+            const t = 'Chargement de Minecraft...'
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 50, task: t })
+            discordRpc.setLaunching(t, 50)
           } else if (line.includes('ModLauncher running') || line.includes('FML marker')) {
-            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 55, task: 'Initialisation de NeoForge...' })
+            const t = 'Initialisation de NeoForge...'
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 55, task: t })
+            discordRpc.setLaunching(t, 55)
           } else if (line.includes('Loading mods') || line.includes('Discovering mods') || line.includes('ModDiscoveryCompleted')) {
-            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 65, task: 'Chargement des mods...' })
+            const t = 'Chargement des mods...'
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 65, task: t })
+            discordRpc.setLaunching(t, 65)
           } else if (line.includes('Performing pre-initialization') || line.includes('PreInitialization')) {
-            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 70, task: 'Pré-initialisation des mods...' })
+            const t = 'Pré-initialisation des mods...'
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 70, task: t })
+            discordRpc.setLaunching(t, 70)
           } else if (line.includes('Performing initialization') || line.includes('FMLModIdMapping')) {
-            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 80, task: 'Initialisation des mods...' })
+            const t = 'Initialisation des mods...'
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 80, task: t })
+            discordRpc.setLaunching(t, 80)
           } else if (line.includes('Performing post-initialization') || line.includes('InterModComms')) {
-            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 90, task: 'Finalisation des mods...' })
+            const t = 'Finalisation des mods...'
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 90, task: t })
+            discordRpc.setLaunching(t, 90)
           } else if (line.includes('Trying GL version') || line.includes('Requested GL version') || line.includes('EARLYDISPLAY')) {
             // OpenGL window just appeared — game window is now visible to the user
             setRunning()
@@ -1011,7 +1051,9 @@ function createWindow() {
             // Game fully loaded — switch to RUNNING immediately
             setRunning()
           } else if (line.includes('[Worker-Main-') || line.includes('sound engine')) {
-            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 99, task: 'Lancement du jeu... Presque prêt !' })
+            const t = 'Lancement du jeu... Presque prêt !'
+            win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 99, task: t })
+            discordRpc.setLaunching(t, 99)
           }
         }
 
@@ -1066,6 +1108,8 @@ function createWindow() {
             gameStartTime = null
           }
           gameProcess = null
+          const activeProf = (store.get('profiles') as any[])?.find(p => p.id === store.get('activeProfileId'))
+          discordRpc.restoreAfterGame(activeProf?.name)
           if (code !== 0 && code !== null) {
             // Structured crash — rendered with AZ-008 error code + support/copy buttons in Dashboard
             win?.webContents.send('launch-error', { error: 'game_crash', message: `Minecraft a quitté avec le code d'erreur ${code}.\nSi le crash se reproduit, envoie ce rapport au support.`, exitCode: code })
@@ -1115,7 +1159,7 @@ function createWindow() {
         if (!fs.existsSync(rpcConfigDir)) fs.mkdirSync(rpcConfigDir, { recursive: true })
         const rpcMainConfig = path.join(rpcConfigDir, 'simple-rpc.toml')
         const rpcServerConfig = path.join(rpcConfigDir, 'server-entries.toml')
-        // Always overwrite to ensure correct app ID
+        // Always overwrite to ensure correct app ID and rich presence configuration
         const AZURIA_RPC_CONFIG = `
 #General Config Section.
 [general]
@@ -1123,7 +1167,7 @@ function createWindow() {
 \tenabled = true
 \tdebugging = false
 \tlauncherIntegration = false
-\trpcImageServer = false
+\trpcImageServer = true
 \trpcImageServerUrl = "https://rpcavatar.firstdark.dev"
 \tversion = 27
 
@@ -1131,27 +1175,33 @@ function createWindow() {
 \tenabled = true
 \t[[init.presence]]
 \t\ttype = "PLAYING"
-\t\tdescription = "Azuria démarre..."
-\t\tstate = "Chargement du jeu..."
+\t\tdescription = "Azuria V4 démarre..."
+\t\tstate = "En attente de connexion au serveur"
 \t\tlargeImageKey = ["azuria_logo"]
 \t\tlargeImageText = "Azuria V4 - 1.21.1"
 \t\tsmallImageKey = ["azuria_logo"]
-\t\tsmallImageText = "Azuria V3"
+\t\tsmallImageText = "Azuria V4"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
+\t\tbuttons = [
+\t\t\t{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
+\t\t\t{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
+\t\t]
 
 [main_menu]
 \tenabled = true
 \t[[main_menu.presence]]
 \t\ttype = "PLAYING"
-\t\tdescription = "{{player.name}} est dans le menu"
-\t\tstate = "Menu principal"
+\t\tdescription = "{{player.name}} • Menu Principal"
+\t\tstate = "En attente de connexion au serveur"
 \t\tlargeImageKey = ["azuria_logo"]
 \t\tlargeImageText = "Azuria V4 - 1.21.1"
-\t\tsmallImageKey = ["{{images.player}}"]
+\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
 \t\tsmallImageText = "{{player.name}}"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
+\t\tbuttons = [
+\t\t\t{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
+\t\t\t{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
+\t\t]
 
 [server_list]
 \tenabled = true
@@ -1161,100 +1211,85 @@ function createWindow() {
 \t\tstate = "Liste des serveurs"
 \t\tlargeImageKey = ["azuria_logo"]
 \t\tlargeImageText = "Azuria V4 - 1.21.1"
-\t\tsmallImageKey = ["{{images.player}}"]
+\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
 \t\tsmallImageText = "{{player.name}}"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
+\t\tbuttons = [
+\t\t\t{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
+\t\t\t{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
+\t\t]
 
 [realms_list]
 \tenabled = false
-\t[[realms_list.presence]]
-\t\ttype = "PLAYING"
-\t\tdescription = "Browsing Realms"
-\t\tstate = ""
-\t\tlargeImageKey = ["azuria_logo"]
-\t\tlargeImageText = "Azuria V3"
-\t\tsmallImageKey = ["azuria_logo"]
-\t\tsmallImageText = "Azuria V3"
-\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
 
 [join_game]
 \tenabled = true
 \t[[join_game.presence]]
 \t\ttype = "PLAYING"
 \t\tdescription = "{{player.name}} rejoint Azuria..."
-\t\tstate = "Connexion en cours..."
+\t\tstate = "Connexion au serveur..."
 \t\tlargeImageKey = ["azuria_logo"]
 \t\tlargeImageText = "Azuria V4 - 1.21.1"
-\t\tsmallImageKey = ["{{images.player}}"]
+\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
 \t\tsmallImageText = "{{player.name}}"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
+\t\tbuttons = [
+\t\t\t{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
+\t\t\t{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
+\t\t]
 
 [single_player]
 \tenabled = false
-\t[[single_player.presence]]
-\t\ttype = "PLAYING"
-\t\tdescription = "Mode solo"
-\t\tstate = ""
-\t\tlargeImageKey = ["azuria_logo"]
-\t\tlargeImageText = "Azuria V3"
-\t\tsmallImageKey = ["azuria_logo"]
-\t\tsmallImageText = "Azuria V3"
-\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
 
 [multi_player]
 \tenabled = true
 \t[[multi_player.presence]]
 \t\ttype = "PLAYING"
-\t\tdescription = "{{player.name}} joue sur Azuria"
-\t\tstate = "En jeu sur Azuria V3"
+\t\tdescription = "{{player.name}} • {{world.name}} ({{world.biome}})"
+\t\tstate = "Jour {{world.time.day}} ({{world.time.24}}) • {{server.players.count}}/{{server.players.max}} joueurs"
 \t\tlargeImageKey = ["azuria_logo"]
-\t\tlargeImageText = "Azuria V4 - 1.21.1"
-\t\tsmallImageKey = ["{{images.player}}"]
+\t\tlargeImageText = "Azuria V4 • ❤️ {{player.health.percent}}%"
+\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
 \t\tsmallImageText = "{{player.name}}"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
+\t\tbuttons = [
+\t\t\t{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
+\t\t\t{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
+\t\t]
 
 [realms]
 \tenabled = false
-\t[[realms.presence]]
-\t\ttype = "PLAYING"
-\t\tdescription = "Playing on a Realm"
-\t\tstate = ""
-\t\tlargeImageKey = ["azuria_logo"]
-\t\tlargeImageText = "Azuria V3"
-\t\tsmallImageKey = ["azuria_logo"]
-\t\tsmallImageText = "Azuria V3"
-\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
 
 [paused]
 \tenabled = true
 \t[[paused.presence]]
 \t\ttype = "PLAYING"
-\t\tdescription = "{{player.name}} a mis le jeu en pause"
-\t\tstate = "Jeu en pause"
+\t\tdescription = "{{player.name}} • En pause"
+\t\tstate = "{{world.name}} ({{world.biome}}) • Jour {{world.time.day}}"
 \t\tlargeImageKey = ["azuria_logo"]
-\t\tlargeImageText = "Azuria V4 - 1.21.1"
-\t\tsmallImageKey = ["{{images.player}}"]
-\t\tsmallImageText = "{{player.name}}"
+\t\tlargeImageText = "Azuria V4 - Jeu en pause"
+\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
+\t\tsmallImageText = "{{player.name}} • ❤️ {{player.health.percent}}%"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
+\t\tbuttons = [
+\t\t\t{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
+\t\t\t{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
+\t\t]
 
 [generic]
 \t[[generic.presence]]
 \t\ttype = "PLAYING"
-\t\tdescription = "Joue sur Azuria V3"
-\t\tstate = ""
+\t\tdescription = "Joue sur Azuria V4"
+\t\tstate = "En jeu"
 \t\tlargeImageKey = ["azuria_logo"]
 \t\tlargeImageText = "Azuria V4 - 1.21.1"
 \t\tsmallImageKey = ["azuria_logo"]
-\t\tsmallImageText = "Azuria V3"
+\t\tsmallImageText = "Azuria V4"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
+\t\tbuttons = [
+\t\t\t{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
+\t\t\t{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
+\t\t]
 
 [custom]
 \tenabled = true
@@ -1267,19 +1302,22 @@ function createWindow() {
         const AZURIA_SERVER_ENTRIES = `#Enable/Disable Server Entries overrides
 enabled = true
 version = 3
+
 [[entry]]
-\tname = "playazuria.astraltechnologie.fr"
-\tip = "playazuria.astraltechnologie.fr"
-\t[[entry.presence]]
-\t\ttype = "PLAYING"
-\t\tdescription = "{{player.name}} joue sur Azuria V3"
-\t\tstate = "En ligne sur Azuria"
-\t\tlargeImageKey = ["azuria_logo"]
-\t\tlargeImageText = "Azuria V4 - 1.21.1"
-\t\tsmallImageKey = ["{{images.player}}"]
-\t\tsmallImageText = "{{player.name}}"
-\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
-\t\tbuttons = []
+ip = "playazuria.astraltechnologie.fr"
+[[entry.presence]]
+type = "PLAYING"
+description = "{{player.name}} • {{world.name}} ({{world.biome}})"
+state = "Jour {{world.time.day}} ({{world.time.24}}) • {{server.players.count}}/{{server.players.max}} joueurs"
+largeImageKey = ["azuria_logo"]
+largeImageText = "Azuria V4 • ❤️ {{player.health.percent}}%"
+smallImageKey = ["{{images.player.head}}", "azuria_logo"]
+smallImageText = "{{player.name}}"
+streamingActivityUrl = "https://twitch.tv/twitch"
+buttons = [
+\t{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
+\t{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
+]
 `
         fs.writeFileSync(rpcServerConfig, AZURIA_SERVER_ENTRIES, 'utf-8')
 
@@ -1287,7 +1325,7 @@ version = 3
         const kubejsClientDir = path.join(rootPath, 'kubejs', 'client_scripts')
         if (!fs.existsSync(kubejsClientDir)) fs.mkdirSync(kubejsClientDir, { recursive: true })
         const soloBlockScript = path.join(kubejsClientDir, 'azuria_no_solo.js')
-        fs.writeFileSync(soloBlockScript, `// Azuria V3 - Blocage du mode solo
+        fs.writeFileSync(soloBlockScript, `// Azuria V4 - Blocage du mode solo
 // Ce script ferme Minecraft si le joueur essaie d'ouvrir un monde solo
 onEvent('client.world.load', event => {
   if (event.world && event.world.isClientSide && !event.world.isRemote) {
@@ -1305,6 +1343,8 @@ onEvent('client.world.load', event => {
         if (spawnedProcess && spawnedProcess.exitCode !== null) {
            console.log('[Azuria] Process died immediately with code', spawnedProcess.exitCode)
            gameProcess = null
+           const activeProf = (store.get('profiles') as any[])?.find(p => p.id === store.get('activeProfileId'))
+           discordRpc.restoreAfterGame(activeProf?.name)
            win?.webContents.send('launch-error', { error: 'game_crash', message: `Minecraft a quitté immédiatement (code ${spawnedProcess.exitCode}).\nVérifie les logs ou ré-essaie.`, exitCode: spawnedProcess.exitCode })
            win?.webContents.send('launch-progress', { state: 'CLOSED', percent: 0, task: '' })
         } else {
@@ -1317,6 +1357,8 @@ onEvent('client.world.load', event => {
 
         console.error('[Azuria] Launch error:', error)
         gameProcess = null
+        const activeProf = (store.get('profiles') as any[])?.find(p => p.id === store.get('activeProfileId'))
+        discordRpc.restoreAfterGame(activeProf?.name)
         win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: `Erreur: ${error?.message || 'inconnue'}` })
       }
     })
