@@ -24,3 +24,9 @@ release
 *.njsproj
 *.sln
 *.sw?
+publish_*.ps1
+upload_*.ps1
+run_curl.cmd
+*.zip
+*.exe
+

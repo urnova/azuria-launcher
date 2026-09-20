@@ -1,43 +1,53 @@
-$token = "YOUR_GITHUB_TOKEN"
+$token = if ($env:GITHUB_TOKEN) { $env:GITHUB_TOKEN } else { "" }
 $repo = "urnova/azuria-launcher"
-$tag = "v1.1.75"
-
-$releaseBody = @{
-    tag_name = $tag
-    name = "Mise a jour 1.1.75"
-    body = "- Correctifs crash inventaire`n- Metier Aventurier: Progression et Homes gratuits/payants`n- Raccourci touche R (Menu Rapide)"
-    draft = $false
-    prerelease = $false
-} | ConvertTo-Json
+$tagName = "1.1.98"
+$releaseName = "Azuria Launcher 1.1.98"
+$body = "Mise a jour (1.1.98) : Correction du crash AZ-008 (GL_OUT_OF_MEMORY) pour tous les joueurs en optimisant les parametres graphiques."
+$repoUrl = "https://api.github.com/repos/$repo/releases"
 
 $headers = @{
     Authorization = "token $token"
     Accept = "application/vnd.github.v3+json"
 }
 
+# --- Créer la release (Draft = false, Prerelease = false) ---
+$releaseData = @{
+    tag_name = $tagName
+    name = $releaseName
+    body = $body
+    draft = $false
+    prerelease = $false
+} | ConvertTo-Json
+
 try {
-    $releaseRes = Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$repo/releases" -Headers $headers -Body $releaseBody -ContentType "application/json"
+    $response = Invoke-RestMethod -Uri $repoUrl -Method Post -Headers $headers -Body $releaseData -ContentType "application/json" -Proxy $null
 } catch {
     Write-Host "Release already exists, fetching..."
-    $releaseRes = Invoke-RestMethod -Method Get -Uri "https://api.github.com/repos/$repo/releases/tags/$tag" -Headers $headers
+    $response = Invoke-RestMethod -Method Get -Uri "https://api.github.com/repos/$repo/releases/tags/$tagName" -Headers $headers -Proxy $null
 }
-$uploadUrl = $releaseRes.upload_url.Split('{')[0]
+
+$uploadUrl = $response.upload_url -replace '\{.*\}', ''
 Write-Host "Upload URL is $uploadUrl"
 Write-Host "Release created!"
 
-$files = @(
-    "F:\code\azuria\azuriav3\azuria-launcher\release5\AzuriaSetup-1.1.75.exe",
-    "F:\code\azuria\azuriav3\azuria-launcher\release5\latest.yml",
-    "F:\code\azuria\azuriav3\mods-v3-update.zip"
+$filesToUpload = @(
+    "F:\code\azuria\azuriav3\azuria-launcher\release_build5\AzuriaSetup-$tagName.exe",
+    "F:\code\azuria\azuriav3\azuria-launcher\release_build5\latest.yml",
+    "F:\code\azuria\azuriav3\mods-v3.zip"
 )
 
-foreach ($file in $files) {
+foreach ($file in $filesToUpload) {
     if (Test-Path $file) {
         $name = [System.IO.Path]::GetFileName($file)
-        $uri = "$uploadUrl?name=$name"
-        Write-Host "Uploading $name with curl..."
-        $curlArgs = "-L", "-X", "POST", "-H", "Accept: application/vnd.github+json", "-H", "Authorization: Bearer $token", "-H", "X-GitHub-Api-Version: 2022-11-28", "-H", "Content-Type: application/octet-stream", "$uri", "--data-binary", "@$file"
-        & curl.exe $curlArgs
+        $uri = "${uploadUrl}?name=$name"
+        Write-Host "Uploading $name with Invoke-RestMethod..."
+        Write-Host ">>>$uri<<<"
+        $uploadHeaders = @{
+            Authorization = "token $token"
+            Accept = "application/vnd.github.v3+json"
+            "Content-Type" = "application/octet-stream"
+        }
+        Invoke-RestMethod -Uri $uri -Method Post -Headers $uploadHeaders -InFile $file -Proxy $null
     } else {
         Write-Host "File not found: $file"
     }

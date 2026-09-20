@@ -4,10 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== ROUNDED WINDOW — CRITICAL for transparent Electron window ===== */
+html, body, #root {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent;
+}
+
 @layer base {
   body {
-    @apply bg-mc-bg text-mc-text overflow-hidden select-none;
-    margin: 0;
+    @apply text-mc-text select-none;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
   * { box-sizing: border-box; }

@@ -38,16 +38,17 @@ const store = new Store({
   defaults: {
     profiles: [],
     activeProfileId: null,
-    settings: { controllable: false, ram: 6 }
+    settings: { controllable: false, ram: 6, enableVisuals: true }
   }
 })
 
 const { Client } = require('minecraft-launcher-core')
 const launcher = new Client()
 let gameProcess: any = null
+let gameStartTime: number | null = null  // Track when game starts for playtime
 
 // Java 21 from official Minecraft launcher (compatible with Forge 1.20.1 + NeoForge 1.21.x)
-const MC_JAVA_PATH = 'C:\\Users\\zozoo\\AppData\\Local\\Packages\\Microsoft.4297127D64EC6_8wekyb3d8bbwe\\LocalCache\\Local\\runtime\\java-runtime-delta\\windows-x64\\java-runtime-delta\\bin\\javaw.exe'
+// const MC_JAVA_PATH = 'C:\\Users\\zozoo\\AppData\\Local\\Packages\\Microsoft.4297127D64EC6_8wekyb3d8bbwe\\LocalCache\\Local\\runtime\\java-runtime-delta\\windows-x64\\java-runtime-delta\\bin\\javaw.exe'
 
 // --- Minecraft Server List Ping (SLP) ---
 function pingServer(host: string, port: number): Promise<any> {
@@ -117,6 +118,18 @@ function pingServer(host: string, port: number): Promise<any> {
   })
 }
 
+// --- Cleanup legacy .azuria-v2 folder (v2 is no longer supported) ---
+try {
+  const legacyV2Path = path.join(app.getPath('appData'), '.azuria-v2')
+  if (require('fs').existsSync(legacyV2Path)) {
+    require('fs').rmSync(legacyV2Path, { recursive: true, force: true })
+    console.log('[Cleanup] Ancien dossier .azuria-v2 supprimé.')
+  }
+} catch (e) {
+  console.log('[Cleanup] Impossible de supprimer .azuria-v2 :', e)
+}
+// ---
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1100, height: 650, minWidth: 800, minHeight: 500,
@@ -128,14 +141,17 @@ function createWindow() {
     },
   })
 
-  // Maximize events removed (maximize button disabled)
+  // Notify renderer when window is maximized/restored (for border-radius toggling)
+  win.on('maximize', () => win?.webContents.send('window-maximized'))
+  win.on('unmaximize', () => win?.webContents.send('window-unmaximized'))
+
 
   import('electron').then(({ ipcMain }) => {
     ipcMain.removeAllListeners()
 
     // Window controls
     ipcMain.on('window-minimize', () => win?.minimize())
-    ipcMain.on('window-maximize', () => win?.isMaximized() ? win.restore() : win?.maximize())
+    ipcMain.on('window-maximize', () => win?.isMaximized() ? win.unmaximize() : win?.maximize())
     ipcMain.on('window-close', () => win?.close())
 
     // Profiles
@@ -234,6 +250,9 @@ function createWindow() {
       store.set('settings', { ...(store.get('settings') as any), ...newSettings })
       return store.get('settings')
     })
+
+    // Playtime
+    ipcMain.handle('get-playtime', () => (store.get('totalPlayTimeSec') as number) || 0)
 
     // Stop Game
     ipcMain.handle('stop-game', () => {
@@ -341,7 +360,7 @@ function createWindow() {
             res.on('error', reject)
           }).on('error', reject)
         }
-        
+        // Download JDK 21 (required for NeoForge 1.21.1)
         doRequest('https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse?project=jdk')
       })
     }
@@ -456,11 +475,10 @@ function createWindow() {
       if (!profile) return
 
       const settings = store.get('settings') as any
-      const v = mcVersion || '1.20.1'
-      const isV2 = v === '1.21.4'
-      const rootPath = path.join(app.getPath('appData'), isV2 ? '.azuria-v2' : '.azuria')
+      const v = mcVersion || '1.21.1'
+      const rootPath = path.join(app.getPath('appData'), '.azuria')
       const launchHost = serverHost || 'playazuria.astraltechnologie.fr'
-      const launchPort = serverPort || 25565
+      const launchPort = serverPort || 25570
       const fs = require('node:fs')
 
       // --- Mod sync ---
@@ -493,12 +511,15 @@ function createWindow() {
         let localModTag = ''
         try { localModTag = fs.readFileSync(localModVersionPath, 'utf-8').trim() } catch {}
 
-        if (localModTag !== expectedModTag) {
-          const expectedAssetName = isV2 ? 'mods-v2.zip' : 'mods-v3.zip'
+        let modsExist = false;
+        try { modsExist = fs.readdirSync(modsDir).length > 0; } catch {}
+
+        if (localModTag !== expectedModTag || !modsExist) {
+          const expectedAssetName = 'mods-v4.zip'
           const asset = releaseInfo.assets?.find((a: any) => a.name === expectedAssetName)
           if (asset) {
             win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 10, task: 'Téléchargement des mods...' })
-            const assetUrl = asset.url
+            const assetUrl = asset.browser_download_url || asset.url
             
             // Download the zip
             const tmpZip = path.join(app.getPath('temp'), expectedAssetName)
@@ -509,9 +530,7 @@ function createWindow() {
 
               function doRequest(url: string, redirects = 0) {
                 const parsedUrl = new URL(url)
-                const headers: any = redirects === 0
-                  ? { 'Authorization': `token ${GH_TOKEN}`, 'User-Agent': 'azuria-launcher', 'Accept': 'application/octet-stream' }
-                  : { 'User-Agent': 'azuria-launcher', 'Accept': 'application/octet-stream' }
+                const headers: any = { 'User-Agent': 'azuria-launcher' }
                 
                 https.request({ hostname: parsedUrl.hostname, path: parsedUrl.pathname + parsedUrl.search, method: 'GET', headers }, (res: any) => {
                   if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
@@ -611,64 +630,160 @@ function createWindow() {
         }
       }
 
-      // Ensure Forge installer is correctly positioned
-      // V2 uses NeoForge, V3 uses Forge 1.20.1
-      const forgeInstallerFilename = isV2 ? 'neoforge-installer.jar' : 'forge-installer.jar'
-      const forgeInstallerSource = path.join(modsDir, forgeInstallerFilename)
-      const forgeInstallerTarget = path.join(rootPath, forgeInstallerFilename)
-      if (fs.existsSync(forgeInstallerSource)) {
-        try { 
-          fs.copyFileSync(forgeInstallerSource, forgeInstallerTarget)
-          fs.unlinkSync(forgeInstallerSource) 
-        } catch {}
+      // NeoForge 1.21.1 — l'installateur est téléchargé directement plus bas si absent
+
+      // Configuration optimale Xaero's Minimap (Cercle, suppression balises de mort, position en haut à droite)
+      const configureXaeroMinimap = (cfgPath: string) => {
+        try {
+          const dir = path.dirname(cfgPath)
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+
+          let content = fs.existsSync(cfgPath) ? fs.readFileSync(cfgPath, 'utf-8') : ''
+
+          // 1. Désactiver les points de mort
+          if (content.includes('deathpoints:')) {
+            content = content.replace(/deathpoints:(true|false)/g, 'deathpoints:false')
+          } else {
+            content += 'deathpoints:false\n'
+          }
+          if (content.includes('oldDeathpoints:')) {
+            content = content.replace(/oldDeathpoints:(true|false)/g, 'oldDeathpoints:false')
+          } else {
+            content += 'oldDeathpoints:false\n'
+          }
+          if (content.includes('deleteReachedDeathpoints:')) {
+            content = content.replace(/deleteReachedDeathpoints:(true|false)/g, 'deleteReachedDeathpoints:true')
+          } else {
+            content += 'deleteReachedDeathpoints:true\n'
+          }
+
+          // 2. Minimap ronde
+          if (content.includes('minimapShape:')) {
+            content = content.replace(/minimapShape:\d+/g, 'minimapShape:1')
+          } else {
+            content += 'minimapShape:1\n'
+          }
+
+          // 3. Emplacement précis (Haut à droite)
+          if (content.includes('interface:gui.xaero_minimap:')) {
+            content = content.replace(/interface:gui\.xaero_minimap:[^\r\n]+/g, 'interface:gui.xaero_minimap:0:0:false:false:true:false')
+          } else {
+            content += 'interface:gui.xaero_minimap:0:0:false:false:true:false\n'
+          }
+
+          fs.writeFileSync(cfgPath, content, 'utf-8')
+        } catch (e) {
+          console.error('[Azuria] Failed to configure Xaero Minimap:', e)
+        }
       }
 
-      // NeoForge 1.21.1 installertools fix (V2 only)
-      if (isV2) {
-        const installerToolsSource = path.join(modsDir, 'installertools')
-        if (fs.existsSync(installerToolsSource)) {
-          const installerToolsTarget = path.join(rootPath, 'libraries', 'net', 'neoforged', 'installertools')
-          try {
-            if (!fs.existsSync(installerToolsTarget)) fs.mkdirSync(installerToolsTarget, { recursive: true })
-            const cpSyncRecursive = (src: string, dest: string) => {
-              if (fs.statSync(src).isDirectory()) {
-                if (!fs.existsSync(dest)) fs.mkdirSync(dest)
-                for (const child of fs.readdirSync(src)) cpSyncRecursive(path.join(src, child), path.join(dest, child))
-              } else {
-                fs.copyFileSync(src, dest)
-              }
-            }
-            cpSyncRecursive(installerToolsSource, installerToolsTarget)
-            fs.rmSync(installerToolsSource, { recursive: true, force: true })
-            console.log('[Azuria] Successfully copied bundled installertools for NeoForge')
-          } catch (e) {
-            console.error('[Azuria] Failed to copy bundled installertools', e)
+      configureXaeroMinimap(path.join(rootPath, 'xaerominimap.txt'))
+      configureXaeroMinimap(path.join(rootPath, 'config', 'xaerominimap.txt'))
+      configureXaeroMinimap(path.join(rootPath, 'defaultconfigs', 'xaerominimap.txt'))
+
+      // Support Manette (Controlify + YACL)
+      const isGamepadEnabled = !!(settings.enableGamepad || settings.controllable)
+      const gamepadFiles = ['controlify', 'yet_another_config_lib']
+      const allModJars = [
+        ...(fs.existsSync(modsDir) ? fs.readdirSync(modsDir) : []),
+        ...(fs.existsSync(modsDisabledDir) ? fs.readdirSync(modsDisabledDir) : [])
+      ]
+      const uniqueJars = Array.from(new Set(allModJars)) as string[]
+      for (const prefix of gamepadFiles) {
+        const matched = uniqueJars.filter((f: string) => f.toLowerCase().includes(prefix) && f.endsWith('.jar'))
+        for (const file of matched) {
+          const ep = path.join(modsDir, file), dp = path.join(modsDisabledDir, file)
+          if (isGamepadEnabled && fs.existsSync(dp) && !fs.existsSync(ep)) {
+            try { fs.renameSync(dp, ep) } catch {}
+          } else if (!isGamepadEnabled && fs.existsSync(ep)) {
+            try { if (fs.existsSync(dp)) fs.unlinkSync(dp); fs.renameSync(ep, dp) } catch {}
           }
         }
       }
 
-      // Forcer Xaero's Minimap en Cercle par défaut
-      const xaeroConfigPath = path.join(rootPath, 'xaerominimap.txt')
-      if (!fs.existsSync(xaeroConfigPath)) {
-        try { fs.writeFileSync(xaeroConfigPath, 'minimapShape:1\n') } catch(e) {}
-      }
+      win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 95, task: 'Préparation des paramètres visuels...' })
 
-      const optionalMods = [
-        { file: isV2 ? 'controlify-3.0.0+lts+1.21.4-neoforge.jar' : 'controlify-forgified-2.1.9-mc1.20.1-forge.jar', enabled: settings.controllable === true },
-        { file: isV2 ? 'yet_another_config_lib_v3-3.8.2+1.21.4-neoforge.jar' : '', enabled: false },
+      // Toggle Visuals (Shaders + Resource Packs)
+      const isVisualsEnabled = settings.enableVisuals !== false
+      const shadersDir = path.join(rootPath, 'shaderpacks')
+      const shadersDisabledDir = path.join(rootPath, 'shaderpacks-disabled')
+      const rpDir = path.join(rootPath, 'resourcepacks')
+      const rpDisabledDir = path.join(rootPath, 'resourcepacks-disabled')
+      
+      const setVisuals = (dir: string, disabledDir: string, enable: boolean) => {
+        if (enable) {
+          if (fs.existsSync(disabledDir)) {
+            if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true })
+            fs.renameSync(disabledDir, dir)
+          }
+        } else {
+          if (fs.existsSync(dir)) {
+            if (fs.existsSync(disabledDir)) fs.rmSync(disabledDir, { recursive: true, force: true })
+            fs.renameSync(dir, disabledDir)
+          }
+        }
+      }
+      setVisuals(shadersDir, shadersDisabledDir, isVisualsEnabled)
+      setVisuals(rpDir, rpDisabledDir, isVisualsEnabled)
+
+      // Manage Iris mod (enabled with visuals, disabled without)
+      const allJarsForVisuals = [
+        ...(fs.existsSync(modsDir) ? fs.readdirSync(modsDir) : []),
+        ...(fs.existsSync(modsDisabledDir) ? fs.readdirSync(modsDisabledDir) : [])
       ]
-      for (const { file, enabled } of optionalMods) {
-        if (!file) continue
-        const ep = path.join(modsDir, file), dp = path.join(modsDisabledDir, file)
-        if (enabled && fs.existsSync(dp) && !fs.existsSync(ep)) {
-          try { if (fs.existsSync(ep)) fs.unlinkSync(ep); fs.renameSync(dp, ep) } catch {}
-        }
-        else if (!enabled && fs.existsSync(ep)) {
-          try { if (fs.existsSync(dp)) fs.unlinkSync(dp); fs.renameSync(ep, dp) } catch {}
+      for (const file of allJarsForVisuals) {
+        if (file.toLowerCase().includes('iris') && file.endsWith('.jar')) {
+          const ep = path.join(modsDir, file), dp = path.join(modsDisabledDir, file)
+          if (isVisualsEnabled && fs.existsSync(dp) && !fs.existsSync(ep)) {
+            try { fs.renameSync(dp, ep) } catch {}
+          } else if (!isVisualsEnabled && fs.existsSync(ep)) {
+            try { if (fs.existsSync(dp)) fs.unlinkSync(dp); fs.renameSync(ep, dp) } catch {}
+          }
         }
       }
 
-      win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 95, task: 'Lancement en cours...' })
+      // Configure shader and texture options
+      try {
+        const shaderOptPath = path.join(rootPath, 'optionsshaders.txt')
+        const irisConfigDir = path.join(rootPath, 'config')
+        if (!fs.existsSync(irisConfigDir)) fs.mkdirSync(irisConfigDir, { recursive: true })
+        const irisPropPath = path.join(irisConfigDir, 'iris.properties')
+
+        if (isVisualsEnabled) {
+          fs.writeFileSync(shaderOptPath, 'shaderPack=ComplementaryReimagined_r5.9.3.zip\nenableShaders=true\n', 'utf-8')
+          fs.writeFileSync(irisPropPath, 'enableShaders=true\nshaderPack=ComplementaryReimagined_r5.9.3.zip\n', 'utf-8')
+        } else {
+          fs.writeFileSync(shaderOptPath, 'shaderPack=OFF\nenableShaders=false\n', 'utf-8')
+          fs.writeFileSync(irisPropPath, 'enableShaders=false\nshaderPack=\n', 'utf-8')
+        }
+
+        const optPath = path.join(rootPath, 'options.txt')
+        if (fs.existsSync(optPath)) {
+          let opts = fs.readFileSync(optPath, 'utf-8')
+          if (isVisualsEnabled) {
+            if (/resourcePacks:\[(.*?)\]/.test(opts)) {
+              opts = opts.replace(/resourcePacks:\[(.*?)\]/, (_m: string, p: string) => {
+                const list = p ? JSON.parse(`[${p}]`) : ["vanilla"]
+                if (!list.includes("file/Dramatic_Skys.zip")) list.push("file/Dramatic_Skys.zip")
+                if (!list.includes("file/Faithful_32x.zip")) list.push("file/Faithful_32x.zip")
+                return `resourcePacks:${JSON.stringify(list)}`
+              })
+            } else {
+              opts += '\nresourcePacks:["vanilla","file/Dramatic_Skys.zip","file/Faithful_32x.zip"]\n'
+            }
+            fs.writeFileSync(optPath, opts, 'utf-8')
+          } else {
+            if (/resourcePacks:\[(.*?)\]/.test(opts)) {
+              opts = opts.replace(/resourcePacks:\[(.*?)\]/, 'resourcePacks:["vanilla"]')
+            }
+            fs.writeFileSync(optPath, opts, 'utf-8')
+          }
+        }
+      } catch (e) {
+        console.warn('[Azuria] Failed to update options.txt/optionsshaders.txt/iris.properties:', e)
+      }
+
+      win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 98, task: 'Lancement en cours...' })
 
       // Auto-refresh Microsoft token (obligatoire pour compte premium)
       if (profile.type === 'premium') {
@@ -711,23 +826,27 @@ function createWindow() {
         meta: profile.type === 'crack' ? { type: 'legacy', demo: false } : { type: 'msa', demo: false }
       }
 
-      let javaPath = fs.existsSync(MC_JAVA_PATH) ? MC_JAVA_PATH : undefined
+      let javaPath = undefined // Use our portable Java 21 for NeoForge 1.21.1
       
       const cp = require('node:child_process')
       
-      // We ALWAYS use our own portable Java 21 if Official Minecraft Launcher Java is not found.
-      // We do NOT trust the system 'java' command, because it might be Java 8 (causes instant crash).
+      // We ALWAYS use our own portable Java 21 for NeoForge 1.21.1.
+      // We do NOT trust the system 'java' command (might be wrong version).
+      // Java 21 is required by NeoForge 1.21.x.
       if (!javaPath) {
           // System java missing, we need to download it
           const localJavaDir = path.join(rootPath, 'runtime', 'java-21')
           const findJava = (dir: string): string | null => {
             if (!fs.existsSync(dir)) return null
-            for (const f of fs.readdirSync(dir)) {
-              const full = path.join(dir, f)
+            const jw = path.join(dir, 'bin', 'javaw.exe')
+            if (fs.existsSync(jw)) return jw
+            const children = fs.readdirSync(dir)
+            for (const c of children) {
+              const full = path.join(dir, c)
               if (fs.statSync(full).isDirectory()) {
-                const res = findJava(full)
-                if (res) return res
-              } else if (f.toLowerCase() === 'javaw.exe') return full
+                const f = findJava(full)
+                if (f) return f
+              }
             }
             return null
           }
@@ -735,7 +854,7 @@ function createWindow() {
           let localJava = findJava(localJavaDir)
           if (!localJava) {
             try {
-              win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: 0, task: 'Préparation téléchargement Java...' })
+              win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: 0, task: 'Préparation téléchargement Java 21...' })
               localJava = await downloadAndExtractJava(localJavaDir, win)
             } catch (je: any) {
               win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur Java' })
@@ -761,49 +880,27 @@ function createWindow() {
         return originalSpawn.apply(this, [command, args, options])
       }
 
-      const qpIdentifier = launchPort === 25565 ? launchHost : `${launchHost}:${launchPort}`
+      const qpIdentifier = `${launchHost}:${launchPort}`
 
-      // Vérifier si l'installateur Forge/NeoForge existe bien
-      const forgeInstallerTargetToRun = path.join(rootPath, isV2 ? 'neoforge-installer.jar' : 'forge-installer.jar')
+      // Vérifier si l'installateur NeoForge existe bien
+      const forgeInstallerTargetToRun = path.join(rootPath, 'neoforge-installer-21.1.230.jar')
 
       if (!fs.existsSync(forgeInstallerTargetToRun)) {
-        if (isV2) {
-          win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur NeoForge' })
-          return { error: 'no_forge', message: `L'installateur NeoForge est introuvable.\nFichier attendu : ${forgeInstallerTargetToRun}` }
+        win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 90, task: 'Téléchargement de NeoForge...' })
+        const forgeUrl = "https://maven.neoforged.net/releases/net/neoforged/neoforge/21.1.230/neoforge-21.1.230-installer.jar"
+        try {
+          const https = require('https')
+          await new Promise<void>((resolve, reject) => {
+            https.get(forgeUrl, (res: any) => {
+              const fileStream = fs.createWriteStream(forgeInstallerTargetToRun)
+              res.pipe(fileStream)
+              fileStream.on('finish', () => { fileStream.close(); resolve() })
+              fileStream.on('error', reject)
+            }).on('error', reject)
+          })
+        } catch (e) {
+          return { error: 'no_forge', message: `Le téléchargement de l'installateur NeoForge a échoué.\nErreur: ${e}` }
         }
-        // V3: téléchargement automatique de Forge 1.20.1-47.4.20
-        win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: 0, task: 'Téléchargement de Forge 1.20.1...' })
-        const forgeUrl = 'https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.4.20/forge-1.20.1-47.4.20-installer.jar'
-        const forgeDownloaded = await new Promise<boolean>((resolve) => {
-          const file = fs.createWriteStream(forgeInstallerTargetToRun)
-          function doReq(url: string, redirects = 0) {
-            const parsed = new URL(url)
-            const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, method: 'GET', headers: { 'User-Agent': 'azuria-launcher' } }
-            require('https').request(opts, (res: any) => {
-              if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-                if (redirects > 5) { file.close(); resolve(false); return }
-                return doReq(res.headers.location, redirects + 1)
-              }
-              if (res.statusCode !== 200) { file.close(); resolve(false); return }
-              const total = parseInt(res.headers['content-length'] || '0')
-              let received = 0
-              res.on('data', (chunk: any) => {
-                received += chunk.length
-                if (total > 0) win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: Math.round(received / total * 100), task: `Téléchargement de Forge 1.20.1 (${Math.round(received/1024)}KB)...` })
-              })
-              res.pipe(file)
-              res.on('end', () => file.close(() => resolve(true)))
-              res.on('error', () => file.close(() => resolve(false)))
-            }).on('error', () => { file.close(); resolve(false) }).end()
-          }
-          doReq(forgeUrl)
-        })
-        if (!forgeDownloaded) {
-          try { fs.unlinkSync(forgeInstallerTargetToRun) } catch {}
-          win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: 'Erreur téléchargement Forge' })
-          return { error: 'no_forge', message: 'Impossible de télécharger l\'installateur Forge 1.20.1.\nVérifie ta connexion internet et réessaie.' }
-        }
-        win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 95, task: 'Forge téléchargé, lancement...' })
       }
 
       const opts: any = {
@@ -861,7 +958,7 @@ function createWindow() {
         else if (t === 'natives') label = `Installation des bibliothèques natives (${pct}%)`
         else if (t === 'classes' || t === 'libraries') label = `Téléchargement des librairies (${pct}%)`
         else if (t === 'client') label = `Téléchargement de Minecraft ${v} (${pct}%)`
-        else if (t.includes('forge') || t.includes('neoforge')) label = `Installation de ${isV2 ? 'NeoForge' : 'Forge'} (${pct}%)`
+        else if (t.includes('forge') || t.includes('neoforge')) label = `Installation de Forge (${pct}%)`
         else label = `Téléchargement : ${e.type} (${pct}%)`
         win?.webContents.send('launch-progress', { state: 'DOWNLOADING', percent: pct, task: label })
       }
@@ -875,6 +972,7 @@ function createWindow() {
       function setRunning() {
         if (gameIsRunning) return
         gameIsRunning = true
+        gameStartTime = Date.now()  // Start playtime counter
         win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Jeu en cours !' })
       }
       function killGame(reason: string) {
@@ -905,6 +1003,9 @@ function createWindow() {
             win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 80, task: 'Initialisation des mods...' })
           } else if (line.includes('Performing post-initialization') || line.includes('InterModComms')) {
             win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 90, task: 'Finalisation des mods...' })
+          } else if (line.includes('Trying GL version') || line.includes('Requested GL version') || line.includes('EARLYDISPLAY')) {
+            // OpenGL window just appeared — game window is now visible to the user
+            setRunning()
           } else if (line.includes('Minecraft finished loading') || line.includes('Setting user:')) {
             // Game fully loaded — switch to RUNNING immediately
             setRunning()
@@ -958,6 +1059,13 @@ function createWindow() {
       // Note: progress listener already registered above (no duplicate)
       launcher.on('close', (code: number | null) => {
         if (!killPending) {
+          // Accumulate playtime
+          if (gameStartTime !== null) {
+            const sessionSec = Math.floor((Date.now() - gameStartTime) / 1000)
+            const prev = (store.get('totalPlayTimeSec') as number) || 0
+            store.set('totalPlayTimeSec', prev + sessionSec)
+            gameStartTime = null
+          }
           gameProcess = null
           if (code !== 0 && code !== null) {
             // Structured crash — rendered with AZ-008 error code + support/copy buttons in Dashboard
@@ -971,6 +1079,228 @@ function createWindow() {
 
       try {
         win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 98, task: 'Initialisation de Minecraft...' })
+        
+        // Force disable Xaero's Minimap death waypoints
+        const xaeroConfigPath = path.join(rootPath, 'config', 'xaerominimap.txt')
+        if (fs.existsSync(xaeroConfigPath)) {
+          let xaeroConfig = fs.readFileSync(xaeroConfigPath, 'utf-8')
+          xaeroConfig = xaeroConfig.replace(/deathwaypoints:true/g, 'deathwaypoints:false')
+          fs.writeFileSync(xaeroConfigPath, xaeroConfig, 'utf-8')
+        } else {
+          if (!fs.existsSync(path.join(rootPath, 'config'))) {
+            fs.mkdirSync(path.join(rootPath, 'config'), { recursive: true })
+          }
+          fs.writeFileSync(xaeroConfigPath, 'deathwaypoints:false\n', 'utf-8')
+        }
+
+        // Fix AZ-008 JVM Native Crash (GL_OUT_OF_MEMORY / GL_INVALID_VALUE) 
+        // by forcing mipmapLevels to 0 and clamping renderDistance to 12 (reduces Texture Atlas and Chunk Builder buffers)
+        const optionsPath = path.join(rootPath, 'options.txt')
+        if (fs.existsSync(optionsPath)) {
+          let optionsStr = fs.readFileSync(optionsPath, 'utf-8')
+          optionsStr = optionsStr.replace(/mipmapLevels:[0-9]+/g, 'mipmapLevels:0')
+          optionsStr = optionsStr.replace(/graphicsMode:[a-zA-Z_]+/g, 'graphicsMode:FAST')
+          // Clamp renderDistance if it's too high (>8 causes memory issues on low end)
+          const rdMatch = optionsStr.match(/renderDistance:([0-9]+)/)
+          if (rdMatch && parseInt(rdMatch[1]) > 8) {
+            optionsStr = optionsStr.replace(/renderDistance:[0-9]+/g, 'renderDistance:8')
+          }
+          const sdMatch = optionsStr.match(/simulationDistance:([0-9]+)/)
+          if (sdMatch && parseInt(sdMatch[1]) > 5) {
+            optionsStr = optionsStr.replace(/simulationDistance:[0-9]+/g, 'simulationDistance:5')
+          }
+          fs.writeFileSync(optionsPath, optionsStr, 'utf-8')
+        } else {
+          fs.writeFileSync(optionsPath, 'mipmapLevels:0\ngraphicsMode:FAST\nrenderDistance:8\nsimulationDistance:5\n', 'utf-8')
+        }
+
+        // Inject SimpleRPC Azuria config
+        const rpcConfigDir = path.join(rootPath, 'config', 'simple-rpc')
+        if (!fs.existsSync(rpcConfigDir)) fs.mkdirSync(rpcConfigDir, { recursive: true })
+        const rpcMainConfig = path.join(rpcConfigDir, 'simple-rpc.toml')
+        const rpcServerConfig = path.join(rpcConfigDir, 'server-entries.toml')
+        // Always overwrite to ensure correct app ID
+        const AZURIA_RPC_CONFIG = `
+#General Config Section.
+[general]
+\tapplicationID = "1529915049425244242"
+\tenabled = true
+\tdebugging = false
+\tlauncherIntegration = false
+\trpcImageServer = false
+\trpcImageServerUrl = "https://rpcavatar.firstdark.dev"
+\tversion = 27
+
+[init]
+\tenabled = true
+\t[[init.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "Azuria démarre..."
+\t\tstate = "Chargement du jeu..."
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V4 - 1.21.1"
+\t\tsmallImageKey = ["azuria_logo"]
+\t\tsmallImageText = "Azuria V3"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[main_menu]
+\tenabled = true
+\t[[main_menu.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "{{player.name}} est dans le menu"
+\t\tstate = "Menu principal"
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V4 - 1.21.1"
+\t\tsmallImageKey = ["{{images.player}}"]
+\t\tsmallImageText = "{{player.name}}"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[server_list]
+\tenabled = true
+\t[[server_list.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "{{player.name}} cherche un serveur"
+\t\tstate = "Liste des serveurs"
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V4 - 1.21.1"
+\t\tsmallImageKey = ["{{images.player}}"]
+\t\tsmallImageText = "{{player.name}}"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[realms_list]
+\tenabled = false
+\t[[realms_list.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "Browsing Realms"
+\t\tstate = ""
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V3"
+\t\tsmallImageKey = ["azuria_logo"]
+\t\tsmallImageText = "Azuria V3"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[join_game]
+\tenabled = true
+\t[[join_game.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "{{player.name}} rejoint Azuria..."
+\t\tstate = "Connexion en cours..."
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V4 - 1.21.1"
+\t\tsmallImageKey = ["{{images.player}}"]
+\t\tsmallImageText = "{{player.name}}"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[single_player]
+\tenabled = false
+\t[[single_player.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "Mode solo"
+\t\tstate = ""
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V3"
+\t\tsmallImageKey = ["azuria_logo"]
+\t\tsmallImageText = "Azuria V3"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[multi_player]
+\tenabled = true
+\t[[multi_player.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "{{player.name}} joue sur Azuria"
+\t\tstate = "En jeu sur Azuria V3"
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V4 - 1.21.1"
+\t\tsmallImageKey = ["{{images.player}}"]
+\t\tsmallImageText = "{{player.name}}"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[realms]
+\tenabled = false
+\t[[realms.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "Playing on a Realm"
+\t\tstate = ""
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V3"
+\t\tsmallImageKey = ["azuria_logo"]
+\t\tsmallImageText = "Azuria V3"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[paused]
+\tenabled = true
+\t[[paused.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "{{player.name}} a mis le jeu en pause"
+\t\tstate = "Jeu en pause"
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V4 - 1.21.1"
+\t\tsmallImageKey = ["{{images.player}}"]
+\t\tsmallImageText = "{{player.name}}"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[generic]
+\t[[generic.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "Joue sur Azuria V3"
+\t\tstate = ""
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V4 - 1.21.1"
+\t\tsmallImageKey = ["azuria_logo"]
+\t\tsmallImageText = "Azuria V3"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+
+[custom]
+\tenabled = true
+\tvariables = []
+
+[dimension_overrides]
+\tenabled = false
+`
+        fs.writeFileSync(rpcMainConfig, AZURIA_RPC_CONFIG, 'utf-8')
+        const AZURIA_SERVER_ENTRIES = `#Enable/Disable Server Entries overrides
+enabled = true
+version = 3
+[[entry]]
+\tname = "playazuria.astraltechnologie.fr"
+\t[[entry.presence]]
+\t\ttype = "PLAYING"
+\t\tdescription = "{{player.name}} joue sur Azuria V3"
+\t\tstate = "En ligne sur Azuria"
+\t\tlargeImageKey = ["azuria_logo"]
+\t\tlargeImageText = "Azuria V4 - 1.21.1"
+\t\tsmallImageKey = ["{{images.player}}"]
+\t\tsmallImageText = "{{player.name}}"
+\t\tstreamingActivityUrl = "https://twitch.tv/twitch"
+\t\tbuttons = []
+`
+        fs.writeFileSync(rpcServerConfig, AZURIA_SERVER_ENTRIES, 'utf-8')
+
+        // Inject KubeJS client script to block singleplayer
+        const kubejsClientDir = path.join(rootPath, 'kubejs', 'client_scripts')
+        if (!fs.existsSync(kubejsClientDir)) fs.mkdirSync(kubejsClientDir, { recursive: true })
+        const soloBlockScript = path.join(kubejsClientDir, 'azuria_no_solo.js')
+        fs.writeFileSync(soloBlockScript, `// Azuria V3 - Blocage du mode solo
+// Ce script ferme Minecraft si le joueur essaie d'ouvrir un monde solo
+onEvent('client.world.load', event => {
+  if (event.world && event.world.isClientSide && !event.world.isRemote) {
+    // On est en solo - fermer le jeu
+    Client.tell('§c[Azuria] Le mode solo est désactivé sur ce launcher.')
+    java('net.minecraft.client.Minecraft').getInstance().stop()
+  }
+})
+`, 'utf-8')
+
         const spawnedProcess: any = await launcher.launch(opts)
         cp.spawn = originalSpawn // restore spawn
         

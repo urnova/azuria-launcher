@@ -79,7 +79,7 @@ export default function UpdateModal({ onClose }: { onClose?: () => void }) {
   if (!info?.hasUpdate) { onClose?.(); return null }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', borderRadius: 12, overflow: 'hidden' }}>
       <div className="w-full max-w-md rounded-2xl p-6 flex flex-col gap-4" style={{ background: S.surface, border: `1px solid ${S.border2}`, boxShadow: '0 24px 60px rgba(0,0,0,0.8)' }}>
 
         {/* Header */}

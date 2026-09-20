@@ -10,12 +10,12 @@ const SERVERS = [
   { id: 'main', host: 'playazuria.astraltechnologie.fr', port: 25565 },
 ]
 
-const steps = [
+const STEPS = [
   { label: 'Initialisation du launcher...', duration: 600 },
   { label: 'Vérification des mises à jour...', duration: 0, type: 'update' },
   { label: 'Chargement des profils...', duration: 500 },
-  { label: 'Ping des serveurs...', duration: 0, type: 'ping' },
-  { label: 'Prêt !', duration: 400 },
+  { label: 'Connexion aux serveurs...', duration: 0, type: 'ping' },
+  { label: 'Prêt !', duration: 350 },
 ]
 
 export default function SplashScreen({ onReady }: Props) {
@@ -31,22 +31,22 @@ export default function SplashScreen({ onReady }: Props) {
   useEffect(() => {
     let current = 0
     let elapsed = 0
-    const fixedTotal = steps.reduce((s, x) => s + (x.duration || 1500), 0)
+    const fixedTotal = STEPS.reduce((s, x) => s + (x.duration || 1500), 0)
 
     const run = () => {
-      if (current >= steps.length) {
+      if (current >= STEPS.length) {
+        setProgress(100)
         setFadeOut(true)
         setTimeout(() =>
           onReady(resultRef.current.hasUpdate, resultRef.current.downloadUrl, resultRef.current.serverStatuses),
-          400
+          450
         )
         return
       }
 
-      const step = steps[current]
+      const step = STEPS[current]
       setStepIdx(current)
 
-      // Async steps
       if (step.type === 'update') {
         window.ipcRenderer.invoke('check-for-updates').then((res: any) => {
           resultRef.current.hasUpdate = res?.hasUpdate === true
@@ -66,20 +66,15 @@ export default function SplashScreen({ onReady }: Props) {
             if (res?.online) {
               results[srv.id] = res
             } else {
-              // Fallback API
               try {
                 const apiRes = await fetch(`https://api.mcsrvstat.us/3/${srv.host}`)
                 const apiData = await apiRes.json()
                 results[srv.id] = apiData.online
                   ? { online: true, players: apiData.players ? { online: apiData.players.online, max: apiData.players.max } : undefined }
                   : { online: false }
-              } catch {
-                results[srv.id] = { online: false }
-              }
+              } catch { results[srv.id] = { online: false } }
             }
-          } catch {
-            results[srv.id] = { online: false }
-          }
+          } catch { results[srv.id] = { online: false } }
         })).then(() => {
           resultRef.current.serverStatuses = results
           elapsed += 1500
@@ -89,7 +84,6 @@ export default function SplashScreen({ onReady }: Props) {
         return
       }
 
-      // Timed steps
       const startProgress = (elapsed / fixedTotal) * 100
       const endProgress = ((elapsed + step.duration) / fixedTotal) * 100
       const start = Date.now()
@@ -108,64 +102,77 @@ export default function SplashScreen({ onReady }: Props) {
     run()
   }, [])
 
+  const pct = Math.max(0, Math.min(100, Math.round(progress)))
+
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'linear-gradient(135deg, #06060e 0%, #0d0d1a 100%)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        transition: 'opacity 0.4s ease',
-        opacity: fadeOut ? 0 : 1,
-        pointerEvents: fadeOut ? 'none' : 'all',
-      }}
-    >
-      {/* Glow background */}
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 40% at 50% 40%, rgba(79,142,247,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 9999, borderRadius: 12, overflow: 'hidden',
+      background: 'linear-gradient(145deg, #06060d 0%, #0c0c1a 60%, #080810 100%)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      transition: 'opacity 0.45s ease',
+      opacity: fadeOut ? 0 : 1,
+      pointerEvents: fadeOut ? 'none' : 'all',
+    }}>
+      {/* Ambient glows */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)', width: 500, height: 400, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(79,142,247,0.1) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', bottom: '-5%', left: '20%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(170,68,255,0.06) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', bottom: '-5%', right: '15%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,212,255,0.05) 0%, transparent 70%)' }} />
+      </div>
 
       {/* Logo */}
-      <img
-        src={logo}
-        alt="Azuria"
-        style={{
-          width: 110, height: 110, objectFit: 'contain', marginBottom: 24,
-          filter: 'drop-shadow(0 0 40px rgba(79,142,247,0.6))',
-          animation: 'splashFloat 3s ease-in-out infinite',
-        }}
-      />
+      <img src={logo} alt="Azuria" style={{
+        width: 100, height: 100, objectFit: 'contain',
+        marginBottom: 22,
+        filter: 'drop-shadow(0 0 40px rgba(79,142,247,0.65))',
+        animation: 'splashFloat 3.5s ease-in-out infinite',
+      }} />
 
       {/* Title */}
-      <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: -1, marginBottom: 4, background: 'linear-gradient(135deg, #fff 0%, #4f8ef7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-        AZURIA
-      </div>
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase', color: '#5a5a7a', marginBottom: 48 }}>
-        Launcher
+      <div style={{
+        fontSize: 30, fontWeight: 900, letterSpacing: -0.5, marginBottom: 5,
+        background: 'linear-gradient(135deg, #ffffff 20%, #4f8ef7 100%)',
+        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+      }}>AZURIA</div>
+
+      {/* Subtitle */}
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase', color: '#3a3a58', marginBottom: 52 }}>
+        L'ÈRE MÉCANIQUE · V4
       </div>
 
-      {/* Progress bar */}
-      <div style={{ width: 280 }}>
-        <div style={{ height: 3, background: '#1c1c28', borderRadius: 999, overflow: 'hidden', marginBottom: 12 }}>
+      {/* Progress section */}
+      <div style={{ width: 300 }}>
+        {/* Bar */}
+        <div style={{ height: 3, background: '#141422', borderRadius: 999, overflow: 'hidden', marginBottom: 10 }}>
           <div style={{
             height: '100%', borderRadius: 999,
-            background: 'linear-gradient(90deg, #4f8ef7, #00d4ff)',
-            width: `${progress}%`,
-            transition: 'width 0.1s linear',
-            boxShadow: '0 0 10px rgba(79,142,247,0.6)',
+            background: 'linear-gradient(90deg, #3d7fff, #00d4ff)',
+            width: `${pct}%`,
+            transition: 'width 0.12s linear',
+            boxShadow: '0 0 10px rgba(79,142,247,0.7), 0 0 20px rgba(0,212,255,0.3)',
           }} />
         </div>
-        <div style={{ fontSize: 11, color: '#5a5a7a', textAlign: 'center', letterSpacing: 0.5, height: 16 }}>
-          {steps[stepIdx]?.label}
+
+        {/* Label + percentage */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: 11, color: '#4a4a6e', letterSpacing: 0.3 }}>
+            {STEPS[stepIdx]?.label}
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#4f8ef7' }}>
+            {pct}%
+          </div>
         </div>
       </div>
 
-      {/* Footer Logo — logo only, no "Technologie" text */}
-      <div style={{ position: 'absolute', bottom: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img src={astralLogo} alt="Astral" style={{ width: 120, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(79,142,247,0.3))', opacity: 0.6 }} />
+      {/* Footer */}
+      <div style={{ position: 'absolute', bottom: 20 }}>
+        <img src={astralLogo} alt="Astral" style={{ width: 100, opacity: 0.35, filter: 'drop-shadow(0 0 6px rgba(79,142,247,0.2))' }} />
       </div>
 
       <style>{`
         @keyframes splashFloat {
           0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
+          50% { transform: translateY(-9px); }
         }
       `}</style>
     </div>

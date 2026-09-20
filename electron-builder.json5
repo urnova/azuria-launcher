@@ -6,11 +6,12 @@
   "productName": "Azuria",
   "copyright": "Copyright © 2026 Azuria",
   "directories": {
-    "output": "release4"
+    "output": "release_build5",
+    "buildResources": "build"
   },
   "files": [
-    "dist",
-    "dist-electron"
+    "dist/**/*",
+    "dist-electron/**/*"
   ],
   "publish": [
     {
@@ -26,6 +27,10 @@
       {
         "target": "nsis",
         "arch": ["x64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["x64"]
       }
     ],
     "artifactName": "AzuriaSetup-${version}.${ext}"
@@ -37,8 +42,13 @@
     "uninstallerIcon": "build/icon.ico",
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": true,
+    "include": "build/installer.nsh",
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
     "shortcutName": "Azuria Launcher"
   }
 }
+
+
+
+
