@@ -766,6 +766,17 @@ function createWindow() {
         }
       }
 
+      // Remove Waystones mod completely if still present on client
+      for (const d of [modsDir, modsDisabledDir]) {
+        if (fs.existsSync(d)) {
+          for (const f of fs.readdirSync(d)) {
+            if (f.toLowerCase().includes('waystones') && f.endsWith('.jar')) {
+              try { fs.unlinkSync(path.join(d, f)); console.log('[Azuria] Removed deprecated mod:', f) } catch {}
+            }
+          }
+        }
+      }
+
       // Configure shader and texture options
       try {
         const shaderOptPath = path.join(rootPath, 'optionsshaders.txt')
@@ -784,24 +795,47 @@ function createWindow() {
         const optPath = path.join(rootPath, 'options.txt')
         if (fs.existsSync(optPath)) {
           let opts = fs.readFileSync(optPath, 'utf-8')
+
+          // Unbind Iris shader keybindings (K: toggle, O: select pack, R: reload) so shaders are strictly launcher-controlled
+          const irisKeys = [
+            'key_iris.keybind.toggleShaders',
+            'key_iris.keybind.shaderPackSelection',
+            'key_iris.keybind.reload',
+            'key_key.iris.toggleShaders',
+            'key_key.iris.shaderPackSelection',
+            'key_key.iris.reload',
+          ]
+          for (const k of irisKeys) {
+            const regex = new RegExp(`^${k}:.*$`, 'gm')
+            if (regex.test(opts)) {
+              opts = opts.replace(regex, `${k}:key.keyboard.unknown`)
+            } else {
+              opts += `\n${k}:key.keyboard.unknown`
+            }
+          }
+
           if (isVisualsEnabled) {
+            const defaultPacks = ["vanilla", "file/Dramatic_Skys.zip", "file/Stay_True.zip", "file/Faithful_32x.zip"]
             if (/resourcePacks:\[(.*?)\]/.test(opts)) {
               opts = opts.replace(/resourcePacks:\[(.*?)\]/, (_m: string, p: string) => {
                 const list = p ? JSON.parse(`[${p}]`) : ["vanilla"]
-                if (!list.includes("file/Dramatic_Skys.zip")) list.push("file/Dramatic_Skys.zip")
-                if (!list.includes("file/Faithful_32x.zip")) list.push("file/Faithful_32x.zip")
+                for (const pack of defaultPacks) {
+                  if (!list.includes(pack)) list.push(pack)
+                }
                 return `resourcePacks:${JSON.stringify(list)}`
               })
             } else {
-              opts += '\nresourcePacks:["vanilla","file/Dramatic_Skys.zip","file/Faithful_32x.zip"]\n'
+              opts += `\nresourcePacks:${JSON.stringify(defaultPacks)}\n`
             }
-            fs.writeFileSync(optPath, opts, 'utf-8')
+            if (/incompatibleResourcePacks:\[(.*?)\]/.test(opts)) {
+              opts = opts.replace(/incompatibleResourcePacks:\[(.*?)\]/, 'incompatibleResourcePacks:[]')
+            }
           } else {
             if (/resourcePacks:\[(.*?)\]/.test(opts)) {
               opts = opts.replace(/resourcePacks:\[(.*?)\]/, 'resourcePacks:["vanilla"]')
             }
-            fs.writeFileSync(optPath, opts, 'utf-8')
           }
+          fs.writeFileSync(optPath, opts, 'utf-8')
         }
       } catch (e) {
         console.warn('[Azuria] Failed to update options.txt/optionsshaders.txt/iris.properties:', e)
@@ -1149,9 +1183,26 @@ function createWindow() {
           if (!optionsStr.includes('soundCategory_music:')) {
             optionsStr += '\nsoundCategory_music:0.0\n'
           }
+          // Unbind Iris shader keybindings (K: toggle, O: select pack, R: reload)
+          const irisKeys = [
+            'key_iris.keybind.toggleShaders',
+            'key_iris.keybind.shaderPackSelection',
+            'key_iris.keybind.reload',
+            'key_key.iris.toggleShaders',
+            'key_key.iris.shaderPackSelection',
+            'key_key.iris.reload',
+          ]
+          for (const k of irisKeys) {
+            const regex = new RegExp(`^${k}:.*$`, 'gm')
+            if (regex.test(optionsStr)) {
+              optionsStr = optionsStr.replace(regex, `${k}:key.keyboard.unknown`)
+            } else {
+              optionsStr += `\n${k}:key.keyboard.unknown`
+            }
+          }
           fs.writeFileSync(optionsPath, optionsStr, 'utf-8')
         } else {
-          fs.writeFileSync(optionsPath, 'mipmapLevels:0\ngraphicsMode:1\nrenderDistance:8\nsimulationDistance:5\nsoundCategory_music:0.0\n', 'utf-8')
+          fs.writeFileSync(optionsPath, 'mipmapLevels:0\ngraphicsMode:1\nrenderDistance:8\nsimulationDistance:5\nsoundCategory_music:0.0\nkey_iris.keybind.toggleShaders:key.keyboard.unknown\nkey_iris.keybind.shaderPackSelection:key.keyboard.unknown\nkey_iris.keybind.reload:key.keyboard.unknown\n', 'utf-8')
         }
 
         // Inject SimpleRPC Azuria config
@@ -1195,7 +1246,7 @@ function createWindow() {
 \t\tstate = "En attente de connexion au serveur"
 \t\tlargeImageKey = ["azuria_logo"]
 \t\tlargeImageText = "Azuria V4 - 1.21.1"
-\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
+\t\tsmallImageKey = ["{{images.player.head}}"]
 \t\tsmallImageText = "{{player.name}}"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
 \t\tbuttons = [
@@ -1211,7 +1262,7 @@ function createWindow() {
 \t\tstate = "Liste des serveurs"
 \t\tlargeImageKey = ["azuria_logo"]
 \t\tlargeImageText = "Azuria V4 - 1.21.1"
-\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
+\t\tsmallImageKey = ["{{images.player.head}}"]
 \t\tsmallImageText = "{{player.name}}"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
 \t\tbuttons = [
@@ -1230,7 +1281,7 @@ function createWindow() {
 \t\tstate = "Connexion au serveur..."
 \t\tlargeImageKey = ["azuria_logo"]
 \t\tlargeImageText = "Azuria V4 - 1.21.1"
-\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
+\t\tsmallImageKey = ["{{images.player.head}}"]
 \t\tsmallImageText = "{{player.name}}"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
 \t\tbuttons = [
@@ -1245,11 +1296,11 @@ function createWindow() {
 \tenabled = true
 \t[[multi_player.presence]]
 \t\ttype = "PLAYING"
-\t\tdescription = "{{player.name}} • {{world.name}} ({{world.biome}})"
-\t\tstate = "Jour {{world.time.day}} ({{world.time.24}}) • {{server.players.count}}/{{server.players.max}} joueurs"
+\t\tdescription = "{{player.name}} • {{world.name}}"
+\t\tstate = "Jour {{world.time.day}} ({{world.time.24}}) • ❤️ {{player.health.percent}}%"
 \t\tlargeImageKey = ["azuria_logo"]
-\t\tlargeImageText = "Azuria V4 • ❤️ {{player.health.percent}}%"
-\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
+\t\tlargeImageText = "Azuria V4 - 1.21.1"
+\t\tsmallImageKey = ["{{images.player.head}}"]
 \t\tsmallImageText = "{{player.name}}"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
 \t\tbuttons = [
@@ -1265,10 +1316,10 @@ function createWindow() {
 \t[[paused.presence]]
 \t\ttype = "PLAYING"
 \t\tdescription = "{{player.name}} • En pause"
-\t\tstate = "{{world.name}} ({{world.biome}}) • Jour {{world.time.day}}"
+\t\tstate = "{{world.name}} • Jour {{world.time.day}}"
 \t\tlargeImageKey = ["azuria_logo"]
 \t\tlargeImageText = "Azuria V4 - Jeu en pause"
-\t\tsmallImageKey = ["{{images.player.head}}", "azuria_logo"]
+\t\tsmallImageKey = ["{{images.player.head}}"]
 \t\tsmallImageText = "{{player.name}} • ❤️ {{player.health.percent}}%"
 \t\tstreamingActivityUrl = "https://twitch.tv/twitch"
 \t\tbuttons = [
@@ -1307,11 +1358,11 @@ version = 3
 ip = "playazuria.astraltechnologie.fr"
 [[entry.presence]]
 type = "PLAYING"
-description = "{{player.name}} • {{world.name}} ({{world.biome}})"
-state = "Jour {{world.time.day}} ({{world.time.24}}) • {{server.players.count}}/{{server.players.max}} joueurs"
+description = "{{player.name}} • {{world.name}}"
+state = "Jour {{world.time.day}} ({{world.time.24}}) • ❤️ {{player.health.percent}}%"
 largeImageKey = ["azuria_logo"]
-largeImageText = "Azuria V4 • ❤️ {{player.health.percent}}%"
-smallImageKey = ["{{images.player.head}}", "azuria_logo"]
+largeImageText = "Azuria V4 - 1.21.1"
+smallImageKey = ["{{images.player.head}}"]
 smallImageText = "{{player.name}}"
 streamingActivityUrl = "https://twitch.tv/twitch"
 buttons = [
