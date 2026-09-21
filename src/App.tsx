@@ -86,7 +86,7 @@ export default function App() {
       {/* Main content */}
       <div className="flex-1 relative overflow-hidden" style={{ borderRadius: `0 0 ${br}px ${br}px` }}>
         {activeProfile ? (
-          <Dashboard profile={activeProfile} onLogout={() => setActiveProfile(null)} onProfileSwitch={(p) => setActiveProfile(p)} initialStatuses={initialStatuses} />
+          <Dashboard profile={activeProfile} onLogout={() => { setActiveProfile(null); window.ipcRenderer.invoke('logout') }} onProfileSwitch={(p) => setActiveProfile(p)} initialStatuses={initialStatuses} />
         ) : (
           <LoginScreen onLogin={p => setActiveProfile(p)} />
         )}

@@ -148,11 +148,9 @@ function createWindow() {
   win.on('unmaximize', () => win?.webContents.send('window-unmaximized'))
 
 
-  // Initialize Discord RPC for the launcher
+  // Initialize Discord RPC for the launcher (no profile selected at startup / splash screen)
   try {
-    const profiles = (store.get('profiles') as any[]) || []
-    const activeProfile = profiles.find(p => p.id === store.get('activeProfileId'))
-    discordRpc.setLauncherDefault(activeProfile?.name)
+    discordRpc.setLauncherDefault()
   } catch (e) {
     console.error('[Discord RPC] Init error:', e)
   }
@@ -177,6 +175,10 @@ function createWindow() {
       const profiles = (store.get('profiles') as any[]) || []
       const p = profiles.find(x => x.id === id)
       discordRpc.setLauncherDefault(p?.name)
+    })
+    ipcMain.handle('logout', () => {
+      store.set('activeProfileId', null)
+      discordRpc.setLauncherDefault()
     })
     ipcMain.handle('update-profile-avatar', (_e, { id, avatar }) => {
       const profiles = store.get('profiles') as any[]
@@ -617,20 +619,70 @@ function createWindow() {
                   console.log('[Azuria] Flattening done.')
                 }
 
-                // Deplacer les dossiers speciaux (shaders, ressource packs) vers la racine s'ils sont dans le zip
-                const dirsToMove = ['shaderpacks', 'resourcepacks', 'config', 'options.txt', 'optionsof.txt']
-                for (const d of dirsToMove) {
+                // Deplacer les dossiers speciaux vers la racine s'ils sont dans le zip
+                // shaderpacks + resourcepacks: toujours remplacés (assets du jeu)
+                for (const d of ['shaderpacks', 'resourcepacks']) {
                   const src = path.join(modsDir, d)
                   const dst = path.join(rootPath, d)
                   if (fs.existsSync(src)) {
                     try {
                       if (fs.existsSync(dst)) fs.rmSync(dst, { recursive: true, force: true })
                       fs.renameSync(src, dst)
-                      console.log(`[Azuria] Moved ${d} from mods to rootPath`)
+                      console.log(`[Azuria] Replaced ${d} from zip`)
                     } catch (e) {
-                      console.error(`[Azuria] Failed to move ${d}:`, e)
+                      console.error(`[Azuria] Failed to replace ${d}:`, e)
                     }
                   }
+                }
+
+                // config/: fusionner — copier les nouveaux fichiers du zip, mais conserver les configs
+                // existantes (voicechat, mods tiers, etc.) pour ne pas détruire les réglages joueur
+                const configSrc = path.join(modsDir, 'config')
+                const configDst = path.join(rootPath, 'config')
+                if (fs.existsSync(configSrc)) {
+                  try {
+                    if (!fs.existsSync(configDst)) fs.mkdirSync(configDst, { recursive: true })
+                    const mergeDir = (src: string, dst: string) => {
+                      for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+                        const srcPath = path.join(src, entry.name)
+                        const dstPath = path.join(dst, entry.name)
+                        if (entry.isDirectory()) {
+                          if (!fs.existsSync(dstPath)) fs.mkdirSync(dstPath, { recursive: true })
+                          mergeDir(srcPath, dstPath)
+                        } else {
+                          // Ne pas écraser les fichiers de config mod déjà présents
+                          if (!fs.existsSync(dstPath)) {
+                            try { fs.copyFileSync(srcPath, dstPath) } catch {}
+                          }
+                        }
+                      }
+                    }
+                    mergeDir(configSrc, configDst)
+                    fs.rmSync(configSrc, { recursive: true, force: true })
+                    console.log('[Azuria] Merged config from zip (existing files preserved)')
+                  } catch (e) {
+                    console.error('[Azuria] Failed to merge config:', e)
+                  }
+                }
+
+                // options.txt: ne pas écraser si déjà présent — le bloc plus bas gère les
+                // réglages nécessaires (mipmapLevels, iris keys, resource packs, etc.)
+                const optsSrc = path.join(modsDir, 'options.txt')
+                const optsDst = path.join(rootPath, 'options.txt')
+                if (fs.existsSync(optsSrc)) {
+                  if (!fs.existsSync(optsDst)) {
+                    try { fs.renameSync(optsSrc, optsDst); console.log('[Azuria] Installed default options.txt') } catch {}
+                  } else {
+                    try { fs.unlinkSync(optsSrc) } catch {}
+                    console.log('[Azuria] Preserved existing options.txt (player settings kept)')
+                  }
+                }
+
+                // optionsof.txt: même logique
+                const optofSrc = path.join(modsDir, 'optionsof.txt')
+                const optofDst = path.join(rootPath, 'optionsof.txt')
+                if (fs.existsSync(optofSrc) && !fs.existsSync(optofDst)) {
+                  try { fs.renameSync(optofSrc, optofDst) } catch {}
                 }
 
                 // Verify the extraction was successful by checking for at least one .jar file
@@ -748,7 +800,16 @@ function createWindow() {
         }
       }
       setVisuals(shadersDir, shadersDisabledDir, isVisualsEnabled)
-      setVisuals(rpDir, rpDisabledDir, isVisualsEnabled)
+      // NB: resource packs sont toujours actifs — décorrélés du toggle shader
+      // S'assurer que le dossier resourcepacks existe (jamais déplacé vers resourcepacks-disabled)
+      if (!fs.existsSync(rpDir)) {
+        // Si par un ancien lancement ils ont été déplacés, les remettre
+        if (fs.existsSync(rpDisabledDir)) {
+          try { fs.renameSync(rpDisabledDir, rpDir); console.log('[Azuria] Restored resourcepacks from disabled folder') } catch {}
+        } else {
+          fs.mkdirSync(rpDir, { recursive: true })
+        }
+      }
 
       // Manage Iris mod (enabled with visuals, disabled without)
       const allJarsForVisuals = [
@@ -814,26 +875,28 @@ function createWindow() {
             }
           }
 
-          if (isVisualsEnabled) {
-            const defaultPacks = ["vanilla", "file/Dramatic_Skys.zip", "file/Stay_True.zip", "file/Faithful_32x.zip"]
-            if (/resourcePacks:\[(.*?)\]/.test(opts)) {
-              opts = opts.replace(/resourcePacks:\[(.*?)\]/, (_m: string, p: string) => {
-                const list = p ? JSON.parse(`[${p}]`) : ["vanilla"]
-                for (const pack of defaultPacks) {
-                  if (!list.includes(pack)) list.push(pack)
-                }
-                return `resourcePacks:${JSON.stringify(list)}`
-              })
-            } else {
-              opts += `\nresourcePacks:${JSON.stringify(defaultPacks)}\n`
-            }
-            if (/incompatibleResourcePacks:\[(.*?)\]/.test(opts)) {
-              opts = opts.replace(/incompatibleResourcePacks:\[(.*?)\]/, 'incompatibleResourcePacks:[]')
-            }
+          // Resource packs: toujours actifs quelle que soit l'option shader
+          // Faithful_32x: police lissée + GUI amélioré (le "bon" pack de texture)
+          // Dramatic_Skys, Stay_True: packs visuels (toujours actifs)
+          const defaultPacks = [
+            "vanilla",
+            "file/Faithful_32x.zip",
+            "file/Dramatic_Skys.zip",
+            "file/Stay_True.zip"
+          ]
+          if (/resourcePacks:\[(.*?)\]/.test(opts)) {
+            opts = opts.replace(/resourcePacks:\[(.*?)\]/, (_m: string, p: string) => {
+              const list = p ? JSON.parse(`[${p}]`) : ["vanilla"]
+              for (const pack of defaultPacks) {
+                if (!list.includes(pack)) list.push(pack)
+              }
+              return `resourcePacks:${JSON.stringify(list)}`
+            })
           } else {
-            if (/resourcePacks:\[(.*?)\]/.test(opts)) {
-              opts = opts.replace(/resourcePacks:\[(.*?)\]/, 'resourcePacks:["vanilla"]')
-            }
+            opts += `\nresourcePacks:${JSON.stringify(defaultPacks)}\n`
+          }
+          if (/incompatibleResourcePacks:\[(.*?)\]/.test(opts)) {
+            opts = opts.replace(/incompatibleResourcePacks:\[(.*?)\]/, 'incompatibleResourcePacks:[]')
           }
           fs.writeFileSync(optPath, opts, 'utf-8')
         }

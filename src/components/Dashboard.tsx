@@ -528,7 +528,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
                     <Globe size={18} style={{ color: enableVisuals ? S.accent : S.text3 }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-xs" style={{ color: S.text }}>Shaders & Packs de textures</div>
+                    <div className="font-bold text-xs" style={{ color: S.text }}>Shaders</div>
                     <div className="text-xs" style={{ color: S.text3 }}>{enableVisuals ? 'Activé (Complementary HD)' : 'Désactivé'}</div>
                   </div>
                   {enableVisuals ? <CheckCircle2 size={18} style={{ color: S.accent }} /> : <div className="w-4 h-4 rounded-full shrink-0" style={{ border: `2px solid ${S.border2}` }} />}

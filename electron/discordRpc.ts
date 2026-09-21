@@ -139,7 +139,7 @@ class DiscordRpcClient {
     this.isSuspendedForGame = false
     this.setActivity({
       details: 'Se trouve dans le launcher',
-      state: username ? `Profil : ${username}` : 'Prêt à explorer Azuria V4',
+      state: username ? `Profil : ${username}` : 'Sélection du compte',
       timestamps: { start: LAUNCHER_START_TIME },
       assets: {
         large_image: 'azuria_logo',
