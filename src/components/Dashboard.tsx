@@ -85,7 +85,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
         } else {
           // Fallback: use external API
           try {
-            const apiRes = await fetch(`https://api.mcsrvstat.us/3/${srv.host}`)
+            const apiRes = await fetch(`https://api.mcsrvstat.us/3/${srv.host}:${srv.port}`)
             const apiData = await apiRes.json()
             if (apiData.online) {
               results[srv.id] = {
@@ -128,8 +128,8 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
       if (ps) setProfiles(ps.filter((p: any) => p.id !== profile.id))
     })
     
-    // Only ping if we don't already have the initial statuses
-    if (!initialStatuses || Object.keys(initialStatuses).length === 0) {
+    // Ping immediately if no initial status or if main is not marked online yet
+    if (!initialStatuses?.main?.online) {
       pingAllServers()
     }
     

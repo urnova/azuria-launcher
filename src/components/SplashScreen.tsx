@@ -7,7 +7,7 @@ interface Props {
 }
 
 const SERVERS = [
-  { id: 'main', host: 'playazuria.astraltechnologie.fr', port: 25565 },
+  { id: 'main', host: 'game03.octoheberg.fr', port: 25570 },
 ]
 
 const STEPS = [
@@ -67,7 +67,7 @@ export default function SplashScreen({ onReady }: Props) {
               results[srv.id] = res
             } else {
               try {
-                const apiRes = await fetch(`https://api.mcsrvstat.us/3/${srv.host}`)
+                const apiRes = await fetch(`https://api.mcsrvstat.us/3/${srv.host}:${srv.port}`)
                 const apiData = await apiRes.json()
                 results[srv.id] = apiData.online
                   ? { online: true, players: apiData.players ? { online: apiData.players.online, max: apiData.players.max } : undefined }
