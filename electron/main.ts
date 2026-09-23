@@ -593,10 +593,18 @@ function createWindow() {
                 await extractZip(tmpZip, { dir: modsDir })
                 extractionOk = true
               } catch (e: any) {
-                console.error('[Azuria] extract-zip failed:', e)
-                win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: `Erreur extraction des mods: ${e?.message || 'inconnue'}` })
-                try { fs.unlinkSync(tmpZip) } catch {}
-                return { error: 'extract_failed', message: `Impossible d'extraire les mods.\nErreur: ${e?.message || 'inconnue'}` }
+                console.warn('[Azuria] extract-zip failed, attempting native tar fallback:', e)
+                try {
+                  const { execSync } = require('child_process')
+                  execSync(`tar -xf "${tmpZip}" -C "${modsDir}"`, { stdio: 'ignore' })
+                  extractionOk = true
+                  console.log('[Azuria] Native tar fallback extraction succeeded!')
+                } catch (e2: any) {
+                  console.error('[Azuria] Both extract-zip and fallback failed:', e2)
+                  win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: `Erreur extraction des mods: ${e2?.message || 'inconnue'}` })
+                  try { fs.unlinkSync(tmpZip) } catch {}
+                  return { error: 'extract_failed', message: `Impossible d'extraire les mods.\nErreur: ${e2?.message || 'inconnue'}` }
+                }
               }
 
               if (extractionOk) {
@@ -1329,7 +1337,11 @@ function createWindow() {
             'key_key.iris.shaderPackSelection',
             'key_key.iris.reload',
             'key_key.sophisticatedbackpacks.inventory_interaction',
-            'key_key.mute_microphone'
+            'key_key.mute_microphone',
+            'key_key.plasmovoice.general.mute_microphone',
+            'key_key.plasmovoice.general.disable_voice',
+            'key_plasmovoice.general.mute_microphone',
+            'key_plasmovoice.general.disable_voice'
           ]
           for (const k of unbindKeys) {
             const regex = new RegExp(`^${k}:.*$`, 'gm')
