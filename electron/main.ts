@@ -650,8 +650,10 @@ function createWindow() {
                           if (!fs.existsSync(dstPath)) fs.mkdirSync(dstPath, { recursive: true })
                           mergeDir(srcPath, dstPath)
                         } else {
-                          // Ne pas écraser les fichiers de config mod déjà présents
-                          if (!fs.existsSync(dstPath)) {
+                          // Toujours écraser les configs système obligatoires (overrides de packs, defaultoptions)
+                          const isForcedSystemConfig = entry.name === 'resourcepackoverrides.json' || 
+                                                       srcPath.includes('defaultoptions');
+                          if (!fs.existsSync(dstPath) || isForcedSystemConfig) {
                             try { fs.copyFileSync(srcPath, dstPath) } catch {}
                           }
                         }
@@ -662,6 +664,42 @@ function createWindow() {
                     console.log('[Azuria] Merged config from zip (existing files preserved)')
                   } catch (e) {
                     console.error('[Azuria] Failed to merge config:', e)
+                  }
+                }
+
+                // xaero/: fusionner la carte du monde et les waypoints sans détruire l'exploration locale
+                const xaeroSrc = path.join(modsDir, 'xaero')
+                const xaeroDst = path.join(rootPath, 'xaero')
+                if (fs.existsSync(xaeroSrc)) {
+                  try {
+                    if (!fs.existsSync(xaeroDst)) fs.mkdirSync(xaeroDst, { recursive: true })
+                    const mergeXaero = (src: string, dst: string) => {
+                      for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+                        const srcPath = path.join(src, entry.name)
+                        const dstPath = path.join(dst, entry.name)
+                        if (entry.isDirectory()) {
+                          if (!fs.existsSync(dstPath)) fs.mkdirSync(dstPath, { recursive: true })
+                          mergeXaero(srcPath, dstPath)
+                        } else {
+                          if (!fs.existsSync(dstPath)) {
+                            try { fs.copyFileSync(srcPath, dstPath) } catch {}
+                          } else if (entry.name.endsWith('.zip')) {
+                            try {
+                              const srcStat = fs.statSync(srcPath)
+                              const dstStat = fs.statSync(dstPath)
+                              if (srcStat.size > dstStat.size * 1.2) {
+                                fs.copyFileSync(srcPath, dstPath)
+                              }
+                            } catch {}
+                          }
+                        }
+                      }
+                    }
+                    mergeXaero(xaeroSrc, xaeroDst)
+                    fs.rmSync(xaeroSrc, { recursive: true, force: true })
+                    console.log('[Azuria] Merged xaero world-map & minimap from zip')
+                  } catch (e) {
+                    console.error('[Azuria] Failed to merge xaero from zip:', e)
                   }
                 }
 
@@ -683,6 +721,13 @@ function createWindow() {
                 const optofDst = path.join(rootPath, 'optionsof.txt')
                 if (fs.existsSync(optofSrc) && !fs.existsSync(optofDst)) {
                   try { fs.renameSync(optofSrc, optofDst) } catch {}
+                }
+
+                // servers.dat: initialiser avec le serveur Azuria si absent
+                const srvDst = path.join(rootPath, 'servers.dat')
+                const defaultSrv = path.join(rootPath, 'config', 'defaultoptions', 'servers.dat')
+                if (!fs.existsSync(srvDst) && fs.existsSync(defaultSrv)) {
+                  try { fs.copyFileSync(defaultSrv, srvDst); console.log('[Azuria] Initialized servers.dat from defaultoptions') } catch {}
                 }
 
                 // Verify the extraction was successful by checking for at least one .jar file
@@ -756,6 +801,47 @@ function createWindow() {
       configureXaeroMinimap(path.join(rootPath, 'xaerominimap.txt'))
       configureXaeroMinimap(path.join(rootPath, 'config', 'xaerominimap.txt'))
       configureXaeroMinimap(path.join(rootPath, 'defaultconfigs', 'xaerominimap.txt'))
+
+      // Migration & fusion automatique de l'ancienne carte Xaero (Octoheberg -> Astraltechnologie)
+      const migrateXaeroWorldMap = () => {
+        try {
+          const xaeroWmDir = path.join(rootPath, 'xaero', 'world-map')
+          const oldServerDir = path.join(xaeroWmDir, 'Multiplayer_game03.octoheberg.fr')
+          const newServerDir = path.join(xaeroWmDir, 'Multiplayer_playazuria.Astraltechnologie.fr')
+
+          if (fs.existsSync(oldServerDir)) {
+            if (!fs.existsSync(newServerDir)) fs.mkdirSync(newServerDir, { recursive: true })
+
+            const copyMissingRecursive = (src: string, dst: string) => {
+              for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+                const srcPath = path.join(src, entry.name)
+                const dstPath = path.join(dst, entry.name)
+                if (entry.isDirectory()) {
+                  if (!fs.existsSync(dstPath)) fs.mkdirSync(dstPath, { recursive: true })
+                  copyMissingRecursive(srcPath, dstPath)
+                } else {
+                  if (!fs.existsSync(dstPath)) {
+                    try { fs.copyFileSync(srcPath, dstPath) } catch {}
+                  } else if (entry.name.endsWith('.zip')) {
+                    try {
+                      const oldStat = fs.statSync(srcPath)
+                      const newStat = fs.statSync(dstPath)
+                      if (oldStat.size > newStat.size * 1.2) {
+                        fs.copyFileSync(srcPath, dstPath)
+                      }
+                    } catch {}
+                  }
+                }
+              }
+            }
+            copyMissingRecursive(oldServerDir, newServerDir)
+            console.log('[Azuria] Migrated Xaero world-map from Octoheberg to Astraltechnologie')
+          }
+        } catch (e) {
+          console.error('[Azuria] Failed to migrate Xaero World Map:', e)
+        }
+      }
+      migrateXaeroWorldMap()
 
       // Support Manette (Controlify + YACL)
       const isGamepadEnabled = !!(settings.enableGamepad || settings.controllable)
@@ -853,53 +939,8 @@ function createWindow() {
           fs.writeFileSync(irisPropPath, 'enableShaders=false\nshaderPack=\n', 'utf-8')
         }
 
-        const optPath = path.join(rootPath, 'options.txt')
-        if (fs.existsSync(optPath)) {
-          let opts = fs.readFileSync(optPath, 'utf-8')
-
-          // Unbind Iris shader keybindings (K: toggle, O: select pack, R: reload) so shaders are strictly launcher-controlled
-          const irisKeys = [
-            'key_iris.keybind.toggleShaders',
-            'key_iris.keybind.shaderPackSelection',
-            'key_iris.keybind.reload',
-            'key_key.iris.toggleShaders',
-            'key_key.iris.shaderPackSelection',
-            'key_key.iris.reload',
-          ]
-          for (const k of irisKeys) {
-            const regex = new RegExp(`^${k}:.*$`, 'gm')
-            if (regex.test(opts)) {
-              opts = opts.replace(regex, `${k}:key.keyboard.unknown`)
-            } else {
-              opts += `\n${k}:key.keyboard.unknown`
-            }
-          }
-
-          // Resource packs: toujours actifs quelle que soit l'option shader
-          // Faithful_32x: police lissée + GUI amélioré (le "bon" pack de texture)
-          // Dramatic_Skys, Stay_True: packs visuels (toujours actifs)
-          const defaultPacks = [
-            "vanilla",
-            "file/Faithful_32x.zip",
-            "file/Dramatic_Skys.zip",
-            "file/Stay_True.zip"
-          ]
-          if (/resourcePacks:\[(.*?)\]/.test(opts)) {
-            opts = opts.replace(/resourcePacks:\[(.*?)\]/, (_m: string, p: string) => {
-              const list = p ? JSON.parse(`[${p}]`) : ["vanilla"]
-              for (const pack of defaultPacks) {
-                if (!list.includes(pack)) list.push(pack)
-              }
-              return `resourcePacks:${JSON.stringify(list)}`
-            })
-          } else {
-            opts += `\nresourcePacks:${JSON.stringify(defaultPacks)}\n`
-          }
-          if (/incompatibleResourcePacks:\[(.*?)\]/.test(opts)) {
-            opts = opts.replace(/incompatibleResourcePacks:\[(.*?)\]/, 'incompatibleResourcePacks:[]')
-          }
-          fs.writeFileSync(optPath, opts, 'utf-8')
-        }
+        // Note: Default Options et Resource Pack Overrides gèrent nativement les touches et textures côté Java.
+        // options.txt est préservé comme user-owned pour ne pas déclencher l'écran de narrateur/accessibilité.
       } catch (e) {
         console.warn('[Azuria] Failed to update options.txt/optionsshaders.txt/iris.properties:', e)
       }
@@ -1024,12 +1065,34 @@ function createWindow() {
         }
       }
 
+      // Detect if NeoForge is already installed (avoid re-running installer every launch)
+      const neoForgeVersionsDir = path.join(rootPath, 'versions')
+      let installedNeoForgeId: string | null = null
+      if (fs.existsSync(neoForgeVersionsDir)) {
+        const dirs = fs.readdirSync(neoForgeVersionsDir).filter((d: string) => {
+          const jsonPath = path.join(neoForgeVersionsDir, d, `${d}.json`)
+          return (d.startsWith('neoforge') || d.includes('neoforge')) && fs.existsSync(jsonPath)
+        })
+        if (dirs.length > 0) {
+          // Pick the most recently modified
+          installedNeoForgeId = dirs.sort((a: string, b: string) => {
+            const aTime = fs.statSync(path.join(neoForgeVersionsDir, a)).mtimeMs
+            const bTime = fs.statSync(path.join(neoForgeVersionsDir, b)).mtimeMs
+            return bTime - aTime
+          })[0]
+        }
+      }
+
       const opts: any = {
         clientPackage: null,
         authorization: authObj,
         root: rootPath,
-        version: { number: v, type: 'release' },
-        forge: forgeInstallerTargetToRun,
+        // If NeoForge already installed, use its custom version ID (no reinstall)
+        // Otherwise pass forge installer so MCLC installs it once
+        version: installedNeoForgeId
+          ? { number: v, type: 'release', custom: installedNeoForgeId }
+          : { number: v, type: 'release' },
+        forge: installedNeoForgeId ? undefined : forgeInstallerTargetToRun,
         javaPath,
         memory: {
           max: `${settings.ram || 6}G`,
@@ -1242,20 +1305,33 @@ function createWindow() {
           if (!optionsStr.includes('mipmapLevels:0')) {
             optionsStr = optionsStr.replace(/mipmapLevels:[0-9]+/g, 'mipmapLevels:0')
           }
-          // Default soundCategory_music to 0.0 if not defined or if user muted it
+          // Default soundCategory_music to 0.0 if not defined
           if (!optionsStr.includes('soundCategory_music:')) {
             optionsStr += '\nsoundCategory_music:0.0\n'
           }
-          // Unbind Iris shader keybindings (K: toggle, O: select pack, R: reload)
-          const irisKeys = [
+          // Ensure narrator is strictly disabled and Ctrl+B hotkey is disabled to avoid accidental triggers
+          if (optionsStr.includes('narrator:')) {
+            optionsStr = optionsStr.replace(/^narrator:[1-9]+/gm, 'narrator:0')
+          } else {
+            optionsStr += '\nnarrator:0\n'
+          }
+          if (optionsStr.includes('narratorHotkey:')) {
+            optionsStr = optionsStr.replace(/^narratorHotkey:true/gm, 'narratorHotkey:false')
+          } else {
+            optionsStr += '\nnarratorHotkey:false\n'
+          }
+          // Unbind conflicting keybindings (Iris shaders, Sophisticated Backpacks sur C, Voice chat sur M)
+          const unbindKeys = [
             'key_iris.keybind.toggleShaders',
             'key_iris.keybind.shaderPackSelection',
             'key_iris.keybind.reload',
             'key_key.iris.toggleShaders',
             'key_key.iris.shaderPackSelection',
             'key_key.iris.reload',
+            'key_key.sophisticatedbackpacks.inventory_interaction',
+            'key_key.mute_microphone'
           ]
-          for (const k of irisKeys) {
+          for (const k of unbindKeys) {
             const regex = new RegExp(`^${k}:.*$`, 'gm')
             if (regex.test(optionsStr)) {
               optionsStr = optionsStr.replace(regex, `${k}:key.keyboard.unknown`)
@@ -1263,9 +1339,35 @@ function createWindow() {
               optionsStr += `\n${k}:key.keyboard.unknown`
             }
           }
+          // S'assurer que le Combat Roll est configuré sur C et Offhand sur F
+          if (!optionsStr.includes('key_keybinds.combat_roll.roll:')) {
+            optionsStr += '\nkey_keybinds.combat_roll.roll:key.keyboard.c'
+          }
+          if (!optionsStr.includes('key_key.swapOffhand:')) {
+            optionsStr += '\nkey_key.swapOffhand:key.keyboard.f'
+          }
+          if (!optionsStr.includes('key_gui.xaero_open_map:')) {
+            optionsStr += '\nkey_gui.xaero_open_map:key.keyboard.m'
+          }
           fs.writeFileSync(optionsPath, optionsStr, 'utf-8')
         } else {
-          fs.writeFileSync(optionsPath, 'mipmapLevels:0\ngraphicsMode:1\nrenderDistance:8\nsimulationDistance:5\nsoundCategory_music:0.0\nkey_iris.keybind.toggleShaders:key.keyboard.unknown\nkey_iris.keybind.shaderPackSelection:key.keyboard.unknown\nkey_iris.keybind.reload:key.keyboard.unknown\n', 'utf-8')
+          // Ne JAMAIS écrire un options.txt tronqué de 5 lignes qui corrompt le profil vanilla et active le narrateur
+          const defaultOpt = path.join(rootPath, 'config', 'defaultoptions', 'options.txt')
+          if (fs.existsSync(defaultOpt)) {
+            try {
+              fs.copyFileSync(defaultOpt, optionsPath)
+              console.log('[Azuria] Copied complete options.txt from defaultoptions')
+            } catch (e) {
+              console.warn('[Azuria] Failed to copy defaultoptions options.txt:', e)
+            }
+          }
+        }
+
+        // S'assurer que servers.dat est présent
+        const srvDst = path.join(rootPath, 'servers.dat')
+        const srvSrc = path.join(rootPath, 'config', 'defaultoptions', 'servers.dat')
+        if (!fs.existsSync(srvDst) && fs.existsSync(srvSrc)) {
+          try { fs.copyFileSync(srvSrc, srvDst); console.log('[Azuria] Initialized servers.dat from defaultoptions') } catch {}
         }
 
         // Inject SimpleRPC Azuria config
