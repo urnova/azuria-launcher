@@ -643,6 +643,34 @@ function createWindow() {
                   }
                 }
 
+                // libraries/: copier les fichiers de bibliothèques s'ils sont dans le zip
+                const libsSrc = path.join(modsDir, 'libraries')
+                const libsDst = path.join(rootPath, 'libraries')
+                if (fs.existsSync(libsSrc)) {
+                  try {
+                    if (!fs.existsSync(libsDst)) fs.mkdirSync(libsDst, { recursive: true })
+                    const mergeLibs = (src: string, dst: string) => {
+                      for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+                        const sPath = path.join(src, entry.name)
+                        const dPath = path.join(dst, entry.name)
+                        if (entry.isDirectory()) {
+                          if (!fs.existsSync(dPath)) fs.mkdirSync(dPath, { recursive: true })
+                          mergeLibs(sPath, dPath)
+                        } else {
+                          if (!fs.existsSync(dPath)) {
+                            try { fs.copyFileSync(sPath, dPath) } catch {}
+                          }
+                        }
+                      }
+                    }
+                    mergeLibs(libsSrc, libsDst)
+                    fs.rmSync(libsSrc, { recursive: true, force: true })
+                    console.log('[Azuria] Merged libraries from zip')
+                  } catch (e) {
+                    console.error('[Azuria] Failed to merge libraries:', e)
+                  }
+                }
+
                 // config/: fusionner — copier les nouveaux fichiers du zip, mais conserver les configs
                 // existantes (voicechat, mods tiers, etc.) pour ne pas détruire les réglages joueur
                 const configSrc = path.join(modsDir, 'config')
@@ -1052,12 +1080,13 @@ function createWindow() {
 
       const qpIdentifier = `${launchHost}:${launchPort}`
 
-      // Vérifier si l'installateur NeoForge existe bien
-      const forgeInstallerTargetToRun = path.join(rootPath, 'neoforge-installer-21.1.230.jar')
+      // --- Installation & Vérification NeoForge 1.21.1 ---
+      const NEOFORGE_VER = '21.1.230'
+      const forgeInstallerTargetToRun = path.join(rootPath, `neoforge-installer-${NEOFORGE_VER}.jar`)
 
       if (!fs.existsSync(forgeInstallerTargetToRun)) {
         win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 90, task: 'Téléchargement de NeoForge...' })
-        const forgeUrl = "https://maven.neoforged.net/releases/net/neoforged/neoforge/21.1.230/neoforge-21.1.230-installer.jar"
+        const forgeUrl = `https://maven.neoforged.net/releases/net/neoforged/neoforge/${NEOFORGE_VER}/neoforge-${NEOFORGE_VER}-installer.jar`
         try {
           const https = require('https')
           await new Promise<void>((resolve, reject) => {
@@ -1073,21 +1102,49 @@ function createWindow() {
         }
       }
 
-      // Detect if NeoForge is already installed (avoid re-running installer every launch)
-      const neoForgeVersionsDir = path.join(rootPath, 'versions')
-      let installedNeoForgeId: string | null = null
-      if (fs.existsSync(neoForgeVersionsDir)) {
-        const dirs = fs.readdirSync(neoForgeVersionsDir).filter((d: string) => {
-          const jsonPath = path.join(neoForgeVersionsDir, d, `${d}.json`)
-          return (d.startsWith('neoforge') || d.includes('neoforge')) && fs.existsSync(jsonPath)
+      // Vérification essentielle : NeoForge requiert les jars client srg et neoforge client générés par les processeurs de l'installateur.
+      // Sur une machine neuve, ForgeWrapper ne les génère pas, causant le crash AZ-008 (Mod ID: 'minecraft' [MISSING]).
+      const srgClientJar = path.join(rootPath, 'libraries', 'net', 'minecraft', 'client', '1.21.1-20240808.144430', 'client-1.21.1-20240808.144430-srg.jar')
+      const neoClientJar = path.join(rootPath, 'libraries', 'net', 'neoforged', 'neoforge', NEOFORGE_VER, `neoforge-${NEOFORGE_VER}-client.jar`)
+
+      if (!fs.existsSync(srgClientJar) || !fs.existsSync(neoClientJar)) {
+        win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 92, task: 'Installation de NeoForge (configuration initiale)...' })
+        console.log('[Azuria] Client SRG jar ou NeoForge client jar manquant ! Lancement de l\'installateur headless...')
+
+        // L'installateur NeoForge requiert la présence de launcher_profiles.json
+        const lpPath = path.join(rootPath, 'launcher_profiles.json')
+        if (!fs.existsSync(lpPath)) {
+          try { fs.writeFileSync(lpPath, JSON.stringify({ profiles: {} }), 'utf-8') } catch {}
+        }
+
+        // Nettoyer l'ancien dossier forge corrompu si présent
+        const legacyForgeDir = path.join(rootPath, 'forge')
+        if (fs.existsSync(legacyForgeDir)) {
+          try { fs.rmSync(legacyForgeDir, { recursive: true, force: true }) } catch {}
+        }
+
+        let javaExec = javaPath || 'java'
+        if (typeof javaExec === 'string' && javaExec.toLowerCase().endsWith('javaw.exe')) {
+          const jExe = javaExec.slice(0, -9) + 'java.exe'
+          if (fs.existsSync(jExe)) javaExec = jExe
+        }
+
+        const installResult = cp.spawnSync(javaExec, ['-jar', forgeInstallerTargetToRun, '--installClient', rootPath], {
+          windowsHide: true,
+          stdio: 'pipe',
+          encoding: 'utf-8'
         })
-        if (dirs.length > 0) {
-          // Pick the most recently modified
-          installedNeoForgeId = dirs.sort((a: string, b: string) => {
-            const aTime = fs.statSync(path.join(neoForgeVersionsDir, a)).mtimeMs
-            const bTime = fs.statSync(path.join(neoForgeVersionsDir, b)).mtimeMs
-            return bTime - aTime
-          })[0]
+
+        console.log('[Azuria] NeoForge installer code de sortie :', installResult.status)
+        if (installResult.status !== 0) {
+          const errDetail = (installResult.stderr || installResult.stdout || '').slice(-400)
+          console.error('[Azuria] Échec installation NeoForge :', errDetail)
+          try { fs.unlinkSync(forgeInstallerTargetToRun) } catch {}
+          win?.webContents.send('launch-progress', { state: 'IDLE', percent: 0, task: '' })
+          return {
+            error: 'neoforge_install_failed',
+            message: `L'installation initiale de NeoForge a échoué.\nErreur: ${errDetail}`
+          }
         }
       }
 
@@ -1095,12 +1152,11 @@ function createWindow() {
         clientPackage: null,
         authorization: authObj,
         root: rootPath,
-        // If NeoForge already installed, use its custom version ID (no reinstall)
-        // Otherwise pass forge installer so MCLC installs it once
-        version: installedNeoForgeId
-          ? { number: v, type: 'release', custom: installedNeoForgeId }
-          : { number: v, type: 'release' },
-        forge: installedNeoForgeId ? undefined : forgeInstallerTargetToRun,
+        overrides: {
+          assetIndex: v
+        },
+        version: { number: v, type: 'release' },
+        forge: forgeInstallerTargetToRun,
         javaPath,
         memory: {
           max: `${settings.ram || 6}G`,
