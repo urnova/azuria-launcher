@@ -3,11 +3,12 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Azuria — Serveur Minecraft Économie & PvP</title>
+        <title>Azuria V4 — Serveur Minecraft 1.21.1 NeoForge · Ryzen 9 Edition</title>
         <meta
             name="description"
-            content="Azuria est un serveur Minecraft médiéval avec économie, PvP, boss légendaires, quêtes et métiers. Rejoignez l'aventure !"
+            content="Azuria V4 est le serveur Minecraft Java 1.21.1 NeoForge propulsé par Ryzen 9. Même monde V3 préservé, 60+ items custom, boss légendaires, économie, quêtes, launcher gratuit et carte 3D temps réel."
         />
+        <link rel="icon" type="image/png" href="assets/logo.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -16,22 +17,23 @@
         />
         <link rel="stylesheet" href="style.css" />
         <style>
-            /* ── Fade-in ── */
+            /* Fade-in */
             .fade-in {
                 opacity: 0;
                 transform: translateY(20px);
-                transition:
-                    opacity 0.6s ease,
-                    transform 0.6s ease;
+                transition: opacity 0.6s ease, transform 0.6s ease;
             }
             .fade-in.visible {
                 opacity: 1;
                 transform: translateY(0);
             }
 
-            /* ── Index-specific ── */
             .hero {
-                padding-top: 64px;
+                padding-top: 70px;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                position: relative;
             }
             .hero-particles {
                 position: absolute;
@@ -40,243 +42,152 @@
                 pointer-events: none;
             }
 
-            .features-section {
-                padding: 80px 0;
+            /* V4 What's new banner */
+            .v4-highlight-section {
+                padding: 40px 0;
+                background: linear-gradient(180deg, rgba(56, 189, 248, 0.05) 0%, transparent 100%);
             }
-            .features-section .section-title {
-                margin-bottom: 4px;
+            .v4-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 18px;
             }
-
-            .feature-card {
-                cursor: default;
+            .v4-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 24px;
+                position: relative;
+                overflow: hidden;
+                transition: all var(--trans);
             }
-            .feature-icon {
-                font-size: 2.2rem;
-                margin-bottom: 14px;
+            .v4-card:hover {
+                border-color: rgba(56, 189, 248, 0.4);
+                transform: translateY(-3px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             }
-            .feature-title {
+            .v4-card-icon {
+                font-size: 2rem;
+                margin-bottom: 12px;
+            }
+            .v4-card h3 {
                 font-size: 1.05rem;
-                font-weight: 700;
-                margin-bottom: 8px;
+                font-weight: 800;
                 color: var(--text);
+                margin-bottom: 6px;
             }
-            .feature-desc {
-                font-size: 0.875rem;
+            .v4-card p {
+                font-size: 0.85rem;
                 color: var(--text2);
-                line-height: 1.65;
-            }
-            .feature-tags {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-                margin-top: 14px;
-            }
-            .feature-tag {
-                display: inline-block;
-                padding: 3px 10px;
-                border-radius: 999px;
-                font-size: 0.72rem;
-                font-weight: 600;
-                background: var(--surface3);
-                border: 1px solid var(--border2);
-                color: var(--text2);
+                line-height: 1.6;
             }
 
-            /* ── Grimoire CTA ── */
-            .grimoire-cta-section {
+            /* Server status box */
+            .server-status-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 14px;
+                background: rgba(10, 21, 37, 0.85);
+                border: 1px solid var(--border);
+                border-radius: 999px;
+                padding: 10px 24px;
+                margin-top: 36px;
+                backdrop-filter: blur(12px);
+                box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+                cursor: pointer;
+                transition: all var(--trans);
+            }
+            .server-status-pill:hover {
+                border-color: rgba(56, 189, 248, 0.5);
+                transform: translateY(-1px);
+            }
+            .status-indicator-dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #5a5a7a;
+                box-shadow: 0 0 10px #5a5a7a;
+            }
+
+            /* BlueMap showcase section */
+            .bluemap-cta-section {
                 padding: 80px 0;
-                background: linear-gradient(
-                    135deg,
-                    rgba(170, 68, 255, 0.06) 0%,
-                    rgba(79, 142, 247, 0.06) 100%
-                );
+                background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
                 border-top: 1px solid var(--border);
                 border-bottom: 1px solid var(--border);
+                position: relative;
             }
-            .grimoire-cta-inner {
+            .bluemap-cta-inner {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 32px;
+                gap: 36px;
                 flex-wrap: wrap;
             }
-            .grimoire-cta-text {
+            .bluemap-cta-text {
                 flex: 1;
+                min-width: 300px;
             }
-            .grimoire-cta-title {
-                font-size: clamp(1.4rem, 3vw, 2rem);
-                font-weight: 800;
-                letter-spacing: -0.3px;
-                margin-bottom: 8px;
+            .bluemap-cta-title {
+                font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+                font-weight: 900;
+                letter-spacing: -0.4px;
+                margin-bottom: 10px;
             }
-            .grimoire-cta-sub {
+            .bluemap-cta-sub {
                 font-size: 0.95rem;
                 color: var(--text2);
-                max-width: 480px;
-                line-height: 1.6;
+                max-width: 540px;
+                line-height: 1.65;
             }
-            .grimoire-cta-btn {
+            .bluemap-cta-btn {
                 display: inline-flex;
                 align-items: center;
-                gap: 10px;
-                padding: 14px 28px;
+                gap: 12px;
+                padding: 16px 32px;
                 border-radius: var(--radius);
-                background: linear-gradient(135deg, #aa44ff 0%, #4f8ef7 100%);
+                background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
                 color: #fff;
-                font-size: 1rem;
-                font-weight: 700;
-                box-shadow: 0 4px 24px rgba(170, 68, 255, 0.35);
+                font-size: 1.05rem;
+                font-weight: 800;
+                box-shadow: 0 6px 28px rgba(56, 189, 248, 0.4);
                 transition: all var(--trans);
                 white-space: nowrap;
+                text-decoration: none;
             }
-            .grimoire-cta-btn:hover {
+            .bluemap-cta-btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 8px 32px rgba(170, 68, 255, 0.5);
-            }
-
-            /* ── Discord ── */
-            .discord-section {
-                padding: 80px 0;
-            }
-            .discord-card {
-                display: flex;
-                align-items: center;
-                gap: 24px;
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: var(--radius);
-                padding: 28px 32px;
-                transition:
-                    border-color var(--trans),
-                    transform var(--trans);
-                flex-wrap: wrap;
-            }
-            .discord-card:hover {
-                border-color: rgba(88, 101, 242, 0.45);
-                transform: translateY(-2px);
-            }
-            .discord-icon {
-                font-size: 3rem;
-                flex-shrink: 0;
-            }
-            .discord-text {
-                flex: 1;
-                min-width: 200px;
-            }
-            .discord-text strong {
-                display: block;
-                font-size: 1.1rem;
-                font-weight: 800;
-                margin-bottom: 4px;
-            }
-            .discord-text span {
-                font-size: 0.88rem;
-                color: var(--text2);
-            }
-            .discord-btn {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                padding: 12px 24px;
-                border-radius: var(--radius-sm);
-                background: #5865f2;
-                color: #fff;
-                font-size: 0.9rem;
-                font-weight: 700;
-                transition: all var(--trans);
-                flex-shrink: 0;
-            }
-            .discord-btn:hover {
-                background: #4752c4;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 20px rgba(88, 101, 242, 0.4);
-            }
-
-            /* ── How to join ── */
-            .join-section {
-                padding: 80px 0;
-            }
-            .steps {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 16px;
-                margin-top: 40px;
-            }
-            .step-card {
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: var(--radius);
-                padding: 24px 20px;
-                text-align: center;
-                position: relative;
-            }
-            .step-num {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                background: var(--accent);
-                color: #fff;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 0.9rem;
-                font-weight: 800;
-                margin: 0 auto 14px;
-            }
-            .step-card h3 {
-                font-size: 0.95rem;
-                font-weight: 700;
-                margin-bottom: 6px;
-            }
-            .step-card p {
-                font-size: 0.82rem;
-                color: var(--text2);
-                line-height: 1.55;
-            }
-            .step-card code {
-                font-family: var(--mono);
-                font-size: 0.8rem;
-                background: var(--surface3);
-                padding: 2px 8px;
-                border-radius: var(--radius-xs);
-                color: var(--accent2);
+                box-shadow: 0 10px 36px rgba(56, 189, 248, 0.6);
             }
 
             @keyframes ctaGlow {
-                0%, 100% { box-shadow: 0 4px 28px rgba(34,197,94,0.45); }
-                50% { box-shadow: 0 6px 40px rgba(34,197,94,0.7), 0 0 60px rgba(34,197,94,0.25); }
+                0%, 100% { box-shadow: 0 4px 28px rgba(34, 197, 94, 0.45); }
+                50% { box-shadow: 0 6px 40px rgba(34, 197, 94, 0.75), 0 0 60px rgba(34, 197, 94, 0.3); }
             }
 
             @media (max-width: 768px) {
-                .grimoire-cta-inner {
+                .bluemap-cta-inner {
                     flex-direction: column;
                     align-items: flex-start;
-                }
-                .discord-card {
-                    flex-direction: column;
-                    align-items: flex-start;
-                    text-align: left;
                 }
             }
         </style>
     </head>
     <body>
-        <!-- ══════════════════════════════════════════
-       NAVBAR
-  ══════════════════════════════════════════ -->
+        <!-- NAVBAR -->
         <header class="navbar" id="navbar">
             <div class="nav-container">
                 <a href="/" class="nav-logo">
-                    <img src="assets/logo.png" alt="Azuria" />
+                    <img src="assets/logo.png" alt="Azuria V4" />
                     <span>
                         <span class="logo-name">Azuria</span>
-                        <span class="logo-tag">Minecraft</span>
+                        <span class="logo-tag">V4</span>
                     </span>
                 </a>
 
                 <nav class="nav-links" id="nav-links">
                     <a href="/" class="nav-link active">Accueil</a>
-                    <a href="/grimoire" class="nav-link">📖 Grimoire</a>
+                    <a href="/map" class="nav-link">🗺️ Carte 3D</a>
                     <a href="/discord" class="nav-link">Discord</a>
                     <a href="/support" class="nav-link">Support</a>
                     <a href="/download" class="nav-cta">⬇ Télécharger →</a>
@@ -288,19 +199,9 @@
             </div>
         </header>
 
-        <!-- ══════════════════════════════════════════
-       HERO
-  ══════════════════════════════════════════ -->
+        <!-- HERO -->
         <main>
-            <section
-                class="hero section"
-                style="
-                    min-height: 100vh;
-                    display: flex;
-                    align-items: center;
-                    padding-top: 64px;
-                "
-            >
+            <section class="hero section">
                 <div class="hero-bg"></div>
                 <div class="hero-grid"></div>
                 <div class="hero-particles"></div>
@@ -308,198 +209,209 @@
                 <div class="container" style="width: 100%">
                     <div class="hero-content">
                         <div class="hero-badge">
-                            Serveur Minecraft Java Edition 1.20.1
+                            🚀 NOUVEAU · AZURIA V4 · NEOFORGE 1.21.1 · RYZEN 9
                         </div>
 
-                        <h1 class="hero-title">Azuria</h1>
+                        <h1 class="hero-title">Azuria V4</h1>
                         <p class="hero-sub">
-                            Un serveur Minecraft <strong style="color: var(--text)">moddé V3</strong> (Mohist 1.20.1) unique —
-                            économie, nouveaux boss, et exploration.
-                            Chaque session compte.
+                            L'expérience Minecraft Java ultime sur un serveur <strong style="color: var(--text)">haute performance AMD Ryzen 9</strong>. 
+                            Vos bases et votre monde de la V3 sont <strong>100% conservés</strong>, propulsés par une économie dynamique, de nouveaux boss et plus de 60 items rituels.
                         </p>
 
                         <div class="hero-btns">
-                            <a href="/download" class="btn btn-primary" style="background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 28px rgba(34,197,94,0.45); font-size: 1.05rem; padding: 14px 28px; animation: ctaGlow 2s ease-in-out infinite;">⬇️ Télécharger le Launcher</a>
-                            <a href="/grimoire" class="btn btn-secondary">📖 Consulter le Grimoire</a>
-                            <a href="/discord" class="btn btn-secondary">💬 Rejoindre le Discord</a>
+                            <a href="/download" class="btn btn-primary" style="background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 28px rgba(34,197,94,0.45); font-size: 1.05rem; padding: 15px 30px; animation: ctaGlow 2.2s ease-in-out infinite;">⬇️ Télécharger le Launcher V4</a>
+                            <a href="/map" class="btn btn-secondary">🗺️ Carte 3D BlueMap</a>
+                            <a href="/discord" class="btn btn-secondary">💬 Discord Officiel</a>
                         </div>
 
                         <!-- Indicateur de statut Serveur -->
-                        <div id="server-status-container" style="margin-top: 40px; display: inline-flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 12px 24px; border-radius: var(--radius); gap: 12px;">
-                            <div id="server-status-dot" style="width: 12px; height: 12px; border-radius: 50%; background: #5a5a7a; box-shadow: 0 0 10px #5a5a7a;"></div>
+                        <div id="server-status-container" class="server-status-pill" data-ip="playazuria.astraltechnologie.fr:25570" title="Cliquez pour copier l'IP">
+                            <div id="server-status-dot" class="status-indicator-dot"></div>
                             <div style="text-align: left;">
-                                <div style="font-size: 0.8rem; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Statut Azuria V3</div>
-                                <div id="server-status-text" style="font-weight: 800; font-size: 1.1rem; color: #fff;">Chargement...</div>
+                                <div style="font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">Serveur Azuria V4 (Ryzen 9)</div>
+                                <div id="server-status-text" style="font-weight: 800; font-size: 1rem; color: #fff;">Vérification du statut...</div>
                             </div>
+                            <div class="ip-copy" style="font-size: 0.8rem; color: #38bdf8; font-weight: 700; margin-left: 8px;">Copier l'IP</div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ══════════════════════════════════════════
-         FEATURES
-    ══════════════════════════════════════════ -->
+            <!-- HIGHLIGHTS V4 (Ce qui a changé) -->
+            <section class="v4-highlight-section">
+                <div class="container">
+                    <h2 class="section-title fade-in" style="font-size: 1.6rem; margin-bottom: 8px;">De la V3 à la V4 : Ce qui a changé</h2>
+                    <p class="section-sub fade-in" style="margin-bottom: 28px;">Une transition fluide pensée pour respecter le temps et les accomplissements des joueurs.</p>
+
+                    <div class="v4-grid">
+                        <div class="v4-card fade-in">
+                            <div class="v4-card-icon">🏰</div>
+                            <h3>Même Map Préservée</h3>
+                            <p>Vous ne perdez rien de vos constructions ! Vos forteresses, bases souterraines et claims de la V3 restent en place.</p>
+                        </div>
+
+                        <div class="v4-card fade-in">
+                            <div class="v4-card-icon">⚡</div>
+                            <h3>Puissance AMD Ryzen 9</h3>
+                            <p>Un processeur haute fréquence garantissant 20 TPS constant et une fluidité totale malgré des dizaines de mods actifs.</p>
+                        </div>
+
+                        <div class="v4-card fade-in">
+                            <div class="v4-card-icon">💰</div>
+                            <h3>Économie Recommencée</h3>
+                            <p>L'argent et les métiers redémarrent pour une aventure équitable et une compétition saine entre toutes les factions.</p>
+                        </div>
+
+                        <div class="v4-card fade-in">
+                            <div class="v4-card-icon">🆓</div>
+                            <h3>100% Gratuit & Hors-Ligne</h3>
+                            <p>Jouez avec votre compte Microsoft officiel ou utilisez le mode Hors-Ligne (Crack) sans débourser un seul centime.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FEATURES AZURIA V4 -->
             <section class="features-section section">
                 <div class="container">
-                    <h2 class="section-title fade-in">
-                        Tout ce qui fait Azuria
-                    </h2>
-                    <p class="section-sub fade-in">
-                        Un écosystème complet pensé pour durer.
-                    </p>
+                    <h2 class="section-title fade-in">Un Univers Complet & Unique</h2>
+                    <p class="section-sub fade-in">Tout ce que vous pouvez explorer sur Azuria V4.</p>
 
                     <div class="features-grid" style="margin-top: 36px">
                         <div class="feature-card fade-in">
-                            <div class="feature-icon">⚔</div>
-                            <h3 class="feature-title">PvP & Arène</h3>
+                            <div class="feature-icon">⚔️</div>
+                            <h3 class="feature-title">PvP & Arène des Boss</h3>
                             <p class="feature-desc">
-                                Défiez d'autres joueurs en duel, invocez des
-                                boss légendaires dans l'arène et réclamez les
-                                reliques les plus puissantes du serveur.
+                                Défiez d'autres joueurs en duel ou entrez dans l'arène des Boss Légendaires avec <strong>KeepInventory garanti</strong> pour décrocher des reliques mythiques.
                             </p>
                             <div class="feature-tags">
-                                <span class="feature-tag">Duels</span>
                                 <span class="feature-tag">Boss x5</span>
                                 <span class="feature-tag">Reliques</span>
-                                <span class="feature-tag">Arène dédiée</span>
+                                <span class="feature-tag">Arène KeepInventory</span>
+                                <span class="feature-tag">Duels /pvp</span>
+                            </div>
+                        </div>
+
+                        <div class="feature-card fade-in">
+                            <div class="feature-icon">⚰️</div>
+                            <h3 class="feature-title">Tombes & Reconnexion</h3>
+                            <p class="feature-desc">
+                                À votre mort, une tombe holographique sécurise vos items et votre XP pendant 5 minutes. À chaque connexion, une boussole magique vous ramène là où vous étiez.
+                            </p>
+                            <div class="feature-tags">
+                                <span class="feature-tag">Tombe 5 min</span>
+                                <span class="feature-tag">Sauvegarde XP</span>
+                                <span class="feature-tag">Boussole Reconnexion</span>
                             </div>
                         </div>
 
                         <div class="feature-card fade-in">
                             <div class="feature-icon">💰</div>
-                            <h3 class="feature-title">Économie Profonde</h3>
+                            <h3 class="feature-title">Économie Azur Cristal</h3>
                             <p class="feature-desc">
-                                Une monnaie unique — l'<strong style="color:var(--text)">Azur Cristal (AC)</strong> — guidée par la valeur des items, un marché joueur, une boutique admin et des lootboxes pondérées. Chaque ressource a un prix.
+                                L'Azur Cristal (AC) rythme les échanges. Vendez vos minerais, achetez aux enchères joueur, découvrez la boutique admin et ouvrez des coffres mystères équilibrés.
                             </p>
                             <div class="feature-tags">
-                                <span class="feature-tag">Marché joueur</span>
-                                <span class="feature-tag">Boutique admin</span>
+                                <span class="feature-tag">Marché joueur /hdv</span>
+                                <span class="feature-tag">Boutique</span>
                                 <span class="feature-tag">Lootboxes</span>
-                                <span class="feature-tag"
-                                    >Équilibre réfléchi</span
-                                >
                             </div>
                         </div>
 
                         <div class="feature-card fade-in">
                             <div class="feature-icon">📜</div>
-                            <h3 class="feature-title">Quêtes & Histoire</h3>
+                            <h3 class="feature-title">Quêtes & Chroniques</h3>
                             <p class="feature-desc">
-                                Progressez dans les Chroniques d'Azuria,
-                                complétez des quêtes secondaires et relevez les
-                                défis journaliers pour des récompenses
-                                exclusives.
+                                Progressez dans les Chroniques d'Azuria, réalisez les quêtes journalières et débloquez des titres ainsi que des récompenses cosmétiques exclusives.
                             </p>
                             <div class="feature-tags">
-                                <span class="feature-tag"
-                                    >Quêtes principales</span
-                                >
-                                <span class="feature-tag"
-                                    >Quêtes secondaires</span
-                                >
-                                <span class="feature-tag"
-                                    >Défis journaliers</span
-                                >
+                                <span class="feature-tag">Quêtes scénarisées</span>
+                                <span class="feature-tag">Défis quotidiens</span>
+                                <span class="feature-tag">Titres rares</span>
                             </div>
                         </div>
 
                         <div class="feature-card fade-in">
                             <div class="feature-icon">⭐</div>
-                            <h3 class="feature-title">Métiers & Compétences ⭐</h3>
+                            <h3 class="feature-title">Métiers & Compétences</h3>
                             <p class="feature-desc">
-                                Choisissez votre voie : Mineur, Chasseur ou
-                                Fermier. Montez jusqu'au niveau 50, débloquez
-                                des passifs puissants et du gear exclusif à
-                                chaque palier.
+                                Mineur, Chasseur ou Fermier. Grimpez du niveau 1 au niveau 50 pour débloquer des talents passifs, du minage automatique et des armes de maître.
                             </p>
                             <div class="feature-tags">
                                 <span class="feature-tag">Nv. 1 → 50</span>
-                                <span class="feature-tag">Passifs uniques</span>
-                                <span class="feature-tag">Gear progressif</span>
+                                <span class="feature-tag">Talents passifs</span>
+                                <span class="feature-tag">Outils exclusifs</span>
                             </div>
                         </div>
 
                         <div class="feature-card fade-in">
-                            <div class="feature-icon">🛡</div>
-                            <h3 class="feature-title">
-                                60+ Items Personnalisés
-                            </h3>
+                            <div class="feature-icon">🛡️</div>
+                            <h3 class="feature-title">60+ Items Rituels</h3>
                             <p class="feature-desc">
-                                Pioches, épées, armures, arcs, outils et
-                                artefacts — 6 niveaux de rareté, des effets
-                                uniques et une valeur économique précise pour
-                                chaque item.
+                                Armures renforcées, pioches forgées dans l'Azurite, épées infusées et artefacts runiques avec 6 niveaux de rareté jusqu'au rang Mythique.
                             </p>
                             <div class="feature-tags">
-                                <span class="feature-tag"
-                                    >Commun → Mythique</span
-                                >
-                                <span class="feature-tag">Effets spéciaux</span>
-                                <span class="feature-tag">Sets complets</span>
-                            </div>
-                        </div>
-
-                        <div class="feature-card fade-in">
-                            <div class="feature-icon">👥</div>
-                            <h3 class="feature-title">Équipes & Social</h3>
-                            <p class="feature-desc">
-                                Créez ou rejoignez une équipe (team), gérez vos
-                                résidences (homes), et participez aux événements
-                                communautaires pour dominer le classement.
-                            </p>
-                            <div class="feature-tags">
-                                <span class="feature-tag">Teams</span>
-                                <span class="feature-tag">Homes</span>
-                                <span class="feature-tag">Leaderboard</span>
+                                <span class="feature-tag">Commun → Mythique</span>
+                                <span class="feature-tag">Effets actifs</span>
+                                <span class="feature-tag">Sets d'armure</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ══════════════════════════════════════════
-         GRIMOIRE CTA
-    ══════════════════════════════════════════ -->
-            <section class="grimoire-cta-section">
+            <!-- BLUEMAP CTA -->
+            <section class="bluemap-cta-section">
                 <div class="container">
-                    <div class="grimoire-cta-inner fade-in">
-                        <div class="grimoire-cta-text">
-                            <h2 class="grimoire-cta-title">
-                                📖 Tout savoir sur Azuria
+                    <div class="bluemap-cta-inner fade-in">
+                        <div class="bluemap-cta-text">
+                            <h2 class="bluemap-cta-title">
+                                🗺️ Carte Interactive 3D (BlueMap)
                             </h2>
-                            <p class="grimoire-cta-sub">
-                                Le Grimoire est le guide complet du serveur : 60+
-                                items détaillés, 5 boss avec leurs reliques,
-                                taux de drop précis, économie, lootboxes et bien
-                                plus. Tout ce que vous devez savoir avant de
-                                jouer.
+                            <p class="bluemap-cta-sub">
+                                Explorez le monde entier d'Azuria V4 en temps réel directement dans votre navigateur : admirez le relief des montagnes, découvrez l'emplacement des villes des joueurs et surveillez l'arène des boss en haute résolution.
                             </p>
                         </div>
-                        <a href="/grimoire" class="grimoire-cta-btn">
-                            <span>📖</span>
-                            <span>Ouvrir le Grimoire</span>
+                        <a href="/map" class="bluemap-cta-btn">
+                            <span>🗺️</span>
+                            <span>Explorer la Carte 3D →</span>
                         </a>
                     </div>
                 </div>
             </section>
 
-            <!-- ══════════════════════════════════════════
-         COMMENT REJOINDRE
-    ══════════════════════════════════════════ -->
+            <!-- COMMENT REJOINDRE -->
             <section class="join-section section">
                 <div class="container">
-                    <h2 class="section-title fade-in">Comment rejoindre ?</h2>
+                    <h2 class="section-title fade-in">Comment rejoindre Azuria V4 ?</h2>
                     <p class="section-sub fade-in">
-                        Azuria V3 est un serveur moddé. <strong>La connexion s'effectue exclusivement via le Launcher Azuria.</strong>
+                        Azuria V4 fonctionne sous <strong>NeoForge 1.21.1</strong>. Téléchargez simplement notre launcher officiel : il s'occupe de tout pour vous !
                     </p>
 
-                    <!-- OPTION LAUNCHER -->
-                    <div class="launcher-cta fade-in" style="background: linear-gradient(135deg, rgba(79,142,247,0.1), rgba(170,68,255,0.05)); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; margin-top: 40px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;">
-                        <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text);">🚀 Télécharger le Launcher Azuria</h3>
+                    <div class="steps fade-in">
+                        <div class="step-card">
+                            <div class="step-num">1</div>
+                            <h3>Télécharger le Launcher</h3>
+                            <p>Téléchargez <code style="font-family:var(--mono);font-size:0.8rem;background:var(--surface3);padding:2px 6px;border-radius:4px;color:var(--accent2)">AzuriaSetup.exe</code> sur notre page dédiée.</p>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-num">2</div>
+                            <h3>Choisir votre Compte</h3>
+                            <p>Connectez-vous avec votre compte Microsoft ou choisissez le <strong>Mode Hors-Ligne gratuit</strong>.</p>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-num">3</div>
+                            <h3>Lancer et Jouer</h3>
+                            <p>Cliquez sur <strong>Jouer</strong> ! Java 21, NeoForge et les mods se synchronisent automatiquement.</p>
+                        </div>
+                    </div>
+
+                    <div class="launcher-cta fade-in" style="background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(168,85,247,0.06)); border: 1px solid var(--border); border-radius: var(--radius); padding: 36px; margin-top: 40px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                        <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text);">🚀 Téléchargez le Launcher Azuria V4</h3>
                         <p style="color: var(--text2); line-height: 1.6; font-size: 1rem; max-width: 600px;">
-                            Téléchargez notre launcher officiel pour rejoindre le serveur automatiquement. Tous les mods seront installés pour vous !
+                            Installation en un clic, mises à jour automatiques, optimisation Embeddium pour un taux de rafraîchissement élevé et support manette inclus.
                         </p>
-                        <a href="/download" class="grimoire-cta-btn" style="margin-top: 8px; border-radius: var(--radius-sm); font-size: 1.1rem; padding: 16px 32px;">
+                        <a href="/download" class="bluemap-cta-btn" style="margin-top: 8px;">
                             <span>⬇️</span>
                             <span>Télécharger pour Windows</span>
                         </a>
@@ -507,19 +419,14 @@
                 </div>
             </section>
 
-            <!-- ══════════════════════════════════════════
-         DISCORD
-    ══════════════════════════════════════════ -->
+            <!-- DISCORD -->
             <section class="discord-section section">
                 <div class="container">
                     <div class="discord-card fade-in">
                         <div class="discord-icon">💬</div>
                         <div class="discord-text">
-                            <strong>Rejoignez la communauté Discord</strong>
-                            <span
-                                >Actualités, support, événements et discussions
-                                — tout se passe ici.</span
-                            >
+                            <strong>Rejoignez la communauté Discord Azuria</strong>
+                            <span>Annonces exclusives, patchs, aide technique avec Evan AI et discussions entre joueurs.</span>
                         </div>
                         <a href="/discord" class="discord-btn">
                             Rejoindre le Discord →
@@ -529,20 +436,19 @@
             </section>
         </main>
 
-        <!-- ══════════════════════════════════════════
-       FOOTER
-  ══════════════════════════════════════════ -->
+        <!-- FOOTER -->
         <footer class="footer">
             <div class="footer-inner">
                 <div class="footer-links">
                     <a href="/" class="footer-link">Accueil</a>
-                    <a href="/grimoire" class="footer-link">Grimoire</a>
+                    <a href="/map" class="footer-link">Carte 3D</a>
                     <a href="/discord" class="footer-link">Discord</a>
                     <a href="/support" class="footer-link">Support</a>
+                    <a href="/download" class="footer-link">Télécharger</a>
                 </div>
                 <p class="footer-copy">
-                    © 2026 Astral Technologie — Azuria V3 •
-                    playazuria.astraltechnologie.fr
+                    © 2026 Astral Technologie — Azuria V4 (1.21.1 NeoForge · Ryzen 9) •
+                    playazuria.astraltechnologie.fr:25570
                 </p>
             </div>
         </footer>

@@ -3,8 +3,8 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Télécharger le Launcher — Azuria V3</title>
-        <meta name="description" content="Téléchargez le launcher officiel Azuria V3 pour Windows. Installation automatique des mods, support Premium & Crack, mise à jour automatique." />
+        <title>Télécharger le Launcher — Azuria V4 (1.21.1 NeoForge)</title>
+        <meta name="description" content="Téléchargez le launcher officiel Azuria V4 pour Windows. Installation automatique de Java 21, NeoForge 1.21.1 et des mods. Mode Premium & Crack gratuit supportés." />
         <link rel="icon" type="image/png" href="assets/logo.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,46 +12,43 @@
         <link rel="stylesheet" href="style.css" />
         <style>
             .dl-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 100px 24px 60px; position: relative; overflow: hidden; }
-            .dl-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 30% 30%, rgba(79,142,247,0.1) 0%, transparent 65%), radial-gradient(ellipse 50% 40% at 75% 75%, rgba(170,68,255,0.08) 0%, transparent 60%); pointer-events: none; }
+            .dl-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 50% at 30% 30%, rgba(56,189,248,0.12) 0%, transparent 65%), radial-gradient(ellipse 50% 40% at 75% 75%, rgba(168,85,247,0.08) 0%, transparent 60%); pointer-events: none; }
             .dl-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; opacity: 0.5; }
-            .dl-wrap { position: relative; z-index: 1; width: 100%; max-width: 720px; }
+            .dl-wrap { position: relative; z-index: 1; width: 100%; max-width: 760px; }
             .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text3); margin-bottom: 32px; transition: color var(--trans); }
             .back-link:hover { color: var(--text2); }
-            .dl-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 48px rgba(0,0,0,0.5); }
-            .dl-header { background: linear-gradient(135deg, #1a2a4a 0%, #2a4080 50%, #1a2a4a 100%); padding: 40px; position: relative; overflow: hidden; }
-            .dl-header::before { content: ""; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; border-radius: 50%; background: rgba(79,142,247,0.1); }
+            .dl-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; box-shadow: 0 12px 64px rgba(0,0,0,0.6); }
+            .dl-header { background: linear-gradient(135deg, #0b1a30 0%, #1e3a8a 50%, #0b1a30 100%); padding: 40px; position: relative; overflow: hidden; }
+            .dl-header::before { content: ""; position: absolute; top: -40px; right: -40px; width: 220px; height: 220px; border-radius: 50%; background: rgba(56,189,248,0.12); }
             .dl-header-row { display: flex; align-items: center; gap: 20px; position: relative; z-index: 1; }
-            .dl-logo { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(79,142,247,0.5)); }
-            .dl-header-text h1 { font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
-            .dl-header-text p { font-size: 0.85rem; color: rgba(255,255,255,0.6); }
+            .dl-logo { width: 68px; height: 68px; object-fit: contain; filter: drop-shadow(0 0 24px rgba(56,189,248,0.6)); }
+            .dl-header-text h1 { font-size: 1.7rem; font-weight: 900; color: #fff; margin-bottom: 4px; }
+            .dl-header-text p { font-size: 0.88rem; color: rgba(255,255,255,0.75); }
             .dl-body { padding: 40px; }
-            .dl-section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 16px; }
-            .dl-main-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 18px 28px; border-radius: var(--radius); background: linear-gradient(135deg, #4f8ef7 0%, #6ba3ff 100%); color: #fff; font-size: 1.1rem; font-weight: 800; transition: all var(--trans); box-shadow: 0 4px 24px rgba(79,142,247,0.4); margin-bottom: 12px; cursor: pointer; }
-            .dl-main-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,142,247,0.6); }
-            .dl-main-btn.loading { opacity: 0.7; cursor: wait; pointer-events: none; }
-            .dl-main-btn.unavailable { background: var(--surface2); box-shadow: none; cursor: not-allowed; pointer-events: none; color: var(--text3); }
-            .dl-version-badge { display: inline-block; margin-left: 8px; font-size: 0.72rem; font-weight: 600; opacity: 0.75; letter-spacing: 0.5px; }
+            .dl-section-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 16px; }
+            .dl-main-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 18px 28px; border-radius: var(--radius); background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: #fff; font-size: 1.15rem; font-weight: 800; transition: all var(--trans); box-shadow: 0 6px 28px rgba(34,197,94,0.45); margin-bottom: 12px; cursor: pointer; text-decoration: none; }
+            .dl-main-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(34,197,94,0.65); }
+            .dl-version-badge { display: inline-block; margin-left: 8px; font-size: 0.75rem; font-weight: 700; background: rgba(0,0,0,0.25); padding: 3px 8px; border-radius: 6px; }
             .dl-mobile-note { display: none; }
-            .dl-note { font-size: 0.8rem; color: var(--text3); text-align: center; }
+            .dl-note { font-size: 0.82rem; color: var(--text3); text-align: center; }
             .dl-divider { height: 1px; background: var(--border); margin: 28px 0; }
-            .dl-features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+            .dl-features { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
             .dl-feature { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; display: flex; align-items: flex-start; gap: 12px; }
-            .dl-feature-icon { font-size: 1.4rem; flex-shrink: 0; }
-            .dl-feature-text strong { display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 2px; }
-            .dl-feature-text span { font-size: 0.78rem; color: var(--text2); line-height: 1.5; }
+            .dl-feature-icon { font-size: 1.5rem; flex-shrink: 0; }
+            .dl-feature-text strong { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; color: var(--text); }
+            .dl-feature-text span { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
             .dl-steps { display: flex; flex-direction: column; gap: 16px; }
             .dl-step { display: flex; gap: 16px; align-items: flex-start; }
-            .dl-step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; flex-shrink: 0; margin-top: 2px; }
-            .dl-step-body strong { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
-            .dl-step-body p { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+            .dl-step-num { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; font-weight: 800; flex-shrink: 0; margin-top: 2px; }
+            .dl-step-body strong { display: block; font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; }
+            .dl-step-body p { font-size: 0.84rem; color: var(--text2); line-height: 1.6; }
             .dl-step-body p strong { display: inline; font-size: inherit; color: var(--text); }
 
-            @media (max-width: 540px) {
+            @media (max-width: 600px) {
                 .dl-header { padding: 28px 24px; }
                 .dl-body { padding: 28px 24px; }
                 .dl-features { grid-template-columns: 1fr; }
                 .dl-mobile-note { display: block; text-align: center; padding: 16px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 0.85rem; color: var(--text2); }
-                .dl-main-btn { display: none; }
             }
         </style>
     </head>
@@ -60,17 +57,17 @@
         <header class="navbar" id="navbar">
             <div class="nav-container">
                 <a href="/" class="nav-logo">
-                    <img src="assets/logo.png" alt="Azuria" />
+                    <img src="assets/logo.png" alt="Azuria V4" />
                     <span>
                         <span class="logo-name">Azuria</span>
-                        <span class="logo-tag">Minecraft</span>
+                        <span class="logo-tag">V4</span>
                     </span>
                 </a>
                 <nav class="nav-links" id="nav-links">
                     <a href="/" class="nav-link">Accueil</a>
-                    <a href="/grimoire" class="nav-link">📖 Grimoire</a>
+                    <a href="/map" class="nav-link">🗺️ Carte 3D</a>
                     <a href="/discord" class="nav-link">Discord</a>
-                    <a href="/support" class="nav-link">🛟 Support</a>
+                    <a href="/support" class="nav-link">Support</a>
                     <a href="/download" class="nav-cta active">⬇ Télécharger →</a>
                 </nav>
                 <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
@@ -89,46 +86,45 @@
                     <!-- Header -->
                     <div class="dl-header">
                         <div class="dl-header-row">
-                            <img src="assets/logo.png" alt="Azuria" class="dl-logo" />
+                            <img src="assets/logo.png" alt="Azuria V4" class="dl-logo" />
                             <div class="dl-header-text">
-                                <h1>Launcher Azuria V3</h1>
-                                <p>Installation automatique · Mods intégrés · Windows</p>
+                                <h1>Launcher Azuria V4</h1>
+                                <p>Installation automatique · NeoForge 1.21.1 · Ryzen 9 Edition</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Body -->
                     <div class="dl-body">
-
                         <!-- Fonctionnalités -->
                         <div class="dl-section-label">Ce que le launcher inclut</div>
                         <div class="dl-features">
                             <div class="dl-feature">
-                                <div class="dl-feature-icon">🔄</div>
+                                <div class="dl-feature-icon">🚀</div>
                                 <div class="dl-feature-text">
-                                    <strong>Mises à jour auto</strong>
-                                    <span>Mods et launcher se mettent à jour tout seuls à chaque lancement.</span>
+                                    <strong>Installation Zéro Tracas</strong>
+                                    <span>Java 21, NeoForge et les mods V4 s'installent en 1 clic sans aucune manipulation de dossier.</span>
                                 </div>
                             </div>
                             <div class="dl-feature">
                                 <div class="dl-feature-icon">🎮</div>
                                 <div class="dl-feature-text">
-                                    <strong>Support Manette</strong>
-                                    <span>Jouez depuis le canapé grâce au mod Controllable intégré.</span>
+                                    <strong>Support Manettes & Chat Vocal</strong>
+                                    <span>Jouez à la manette (PS4/PS5, Xbox, Switch) et parlez en jeu grâce à Simple Voice Chat.</span>
                                 </div>
                             </div>
                             <div class="dl-feature">
                                 <div class="dl-feature-icon">⚡</div>
                                 <div class="dl-feature-text">
-                                    <strong>Optimisé FPS</strong>
-                                    <span>Embeddium et nos réglages sur-mesure pour une fluidité maximale.</span>
+                                    <strong>Optimisé FPS (Embeddium)</strong>
+                                    <span>Moteur graphique haute performance inclus pour un affichage fluide même avec des graphismes poussés.</span>
                                 </div>
                             </div>
                             <div class="dl-feature">
-                                <div class="dl-feature-icon">🔐</div>
+                                <div class="dl-feature-icon">🆓</div>
                                 <div class="dl-feature-text">
-                                    <strong>Premium & Crack</strong>
-                                    <span>Connexion Microsoft officielle ou compte sans licence supporté.</span>
+                                    <strong>Comptes Officiels & Gratuit</strong>
+                                    <span>Connectez-vous via Microsoft ou utilisez le mode Hors-Ligne pour jouer gratuitement.</span>
                                 </div>
                             </div>
                         </div>
@@ -136,52 +132,52 @@
                         <div class="dl-divider"></div>
 
                         <!-- Bouton téléchargement -->
-                        <div class="dl-section-label">Téléchargement</div>
+                        <div class="dl-section-label">Téléchargement Officiel Windows</div>
 
                         <!-- Message mobile -->
                         <div class="dl-mobile-note">
-                            💻 Le launcher est disponible <strong>uniquement sur Windows</strong>.<br>
-                            Rendez-vous sur cette page depuis votre PC pour télécharger.
+                            💻 Le launcher est disponible <strong>sur Windows 10 & 11 (64-bit)</strong>.<br>
+                            Rendez-vous sur cette page depuis votre ordinateur pour le télécharger.
                         </div>
 
-                        <!-- Bouton dynamique -->
-                        <a id="dl-btn" href="#" class="dl-main-btn loading">
-                            <span>⏳</span>
-                            <span id="dl-btn-text">Chargement de la dernière version...</span>
+                        <!-- Bouton téléchargement direct avec fallback garanti -->
+                        <a id="dl-btn" href="https://github.com/urnova/azuria-launcher/releases/download/v4.0.33/AzuriaSetup-4.0.33.exe" class="dl-main-btn">
+                            <span>⬇️</span>
+                            <span id="dl-btn-text">Télécharger AzuriaSetup.exe <span class="dl-version-badge">v4.0.33</span></span>
                         </a>
-                        <p class="dl-note" id="dl-note">Récupération de la version depuis GitHub...</p>
+                        <p class="dl-note" id="dl-note">Dernière version stable · Windows 10 / 11 64-bit (~112 MB)</p>
 
                         <div class="dl-divider"></div>
 
                         <!-- Guide d'installation -->
-                        <div class="dl-section-label">Guide d'installation</div>
+                        <div class="dl-section-label">Guide d'installation rapide</div>
                         <div class="dl-steps">
                             <div class="dl-step">
                                 <div class="dl-step-num">1</div>
                                 <div class="dl-step-body">
-                                    <strong>Téléchargez et lancez l'installeur</strong>
-                                    <p>Cliquez sur le bouton ci-dessus pour télécharger <code style="font-family:var(--mono);font-size:0.8rem;background:var(--surface3);padding:2px 6px;border-radius:4px;color:var(--accent2)">AzuriaSetup.exe</code>.</p>
+                                    <strong>Téléchargez et lancez l'installateur</strong>
+                                    <p>Cliquez sur le bouton vert ci-dessus pour télécharger <code style="font-family:var(--mono);font-size:0.8rem;background:var(--surface3);padding:2px 6px;border-radius:4px;color:var(--accent2)">AzuriaSetup.exe</code>.</p>
                                 </div>
                             </div>
                             <div class="dl-step">
                                 <div class="dl-step-num">2</div>
                                 <div class="dl-step-body">
-                                    <strong>Windows SmartScreen — Ne pas paniquer !</strong>
-                                    <p>Windows affichera peut-être un écran bleu "Windows a protégé votre ordinateur". Cliquez sur <strong>"Informations complémentaires"</strong> puis <strong>"Exécuter quand même"</strong>. C'est normal pour un nouveau logiciel non signé.</p>
+                                    <strong>Écran Windows SmartScreen (Sécurité Windows)</strong>
+                                    <p>Si Windows affiche un écran de protection "Windows a protégé votre ordinateur", cliquez simplement sur <strong>"Informations complémentaires"</strong> puis sur <strong>"Exécuter quand même"</strong>.</p>
                                 </div>
                             </div>
                             <div class="dl-step">
                                 <div class="dl-step-num">3</div>
                                 <div class="dl-step-body">
-                                    <strong>Connectez-vous</strong>
-                                    <p>Ouvrez le Launcher Azuria. Connectez-vous avec votre <strong>compte Microsoft Premium</strong> ou créez un <strong>compte Hors-ligne</strong> directement dans le launcher.</p>
+                                    <strong>Choisissez votre compte</strong>
+                                    <p>Ouvrez le Launcher Azuria. Connectez-vous avec votre <strong>compte Microsoft</strong> ou entrez simplement un pseudo en <strong>mode Hors-Ligne gratuit</strong>.</p>
                                 </div>
                             </div>
                             <div class="dl-step">
                                 <div class="dl-step-num">4</div>
                                 <div class="dl-step-body">
-                                    <strong>Jouez !</strong>
-                                    <p>Cliquez sur <strong>Jouer</strong>. Les mods se téléchargent automatiquement. En jeu, tapez <code style="font-family:var(--mono);font-size:0.8rem;background:var(--surface3);padding:2px 6px;border-radius:4px;color:var(--accent2)">/menu</code> pour commencer votre aventure.</p>
+                                    <strong>Cliquez sur Jouer !</strong>
+                                    <p>Le launcher prépare les composants NeoForge et lance le jeu directement sur le serveur Azuria V4.</p>
                                 </div>
                             </div>
                         </div>
@@ -195,19 +191,19 @@
             <div class="footer-inner">
                 <div class="footer-links">
                     <a href="/" class="footer-link">Accueil</a>
-                    <a href="/grimoire" class="footer-link">Grimoire</a>
-                    <a href="/download" class="footer-link">Télécharger</a>
+                    <a href="/map" class="footer-link">Carte 3D</a>
                     <a href="/discord" class="footer-link">Discord</a>
                     <a href="/support" class="footer-link">Support</a>
+                    <a href="/download" class="footer-link">Télécharger</a>
                 </div>
-                <p class="footer-copy">© 2026 Astral Technologie — Azuria V3 • playazuria.astraltechnologie.fr</p>
+                <p class="footer-copy">© 2026 Astral Technologie — Azuria V4 (1.21.1 NeoForge · Ryzen 9) • playazuria.astraltechnologie.fr:25570</p>
             </div>
         </footer>
 
         <div class="toast" role="status"></div>
         <script src="script.js"></script>
         <script>
-            // Récupération dynamique de la dernière release GitHub
+            // Mise à jour dynamique de la release depuis GitHub avec fallback sécurisé
             const btn = document.getElementById('dl-btn');
             const btnText = document.getElementById('dl-btn-text');
             const note = document.getElementById('dl-note');
@@ -215,23 +211,20 @@
             fetch('https://api.github.com/repos/urnova/azuria-launcher/releases/latest')
                 .then(r => r.json())
                 .then(data => {
-                    if (data && data.assets) {
+                    if (data && data.assets && Array.isArray(data.assets)) {
                         const exe = data.assets.find(a => a.name.endsWith('.exe'));
-                        if (exe) {
+                        if (exe && exe.browser_download_url) {
                             btn.href = exe.browser_download_url;
-                            btn.classList.remove('loading');
-                            btn.innerHTML = '<span>⬇</span><span>Télécharger pour Windows <span class="dl-version-badge">' + (data.tag_name || '') + '</span></span>';
-                            note.textContent = 'Taille : ' + (exe.size ? (exe.size / 1024 / 1024).toFixed(1) + ' MB' : '~') + ' — Windows 10/11 64-bit';
-                            return;
+                            btn.innerHTML = '<span>⬇️</span><span>Télécharger AzuriaSetup.exe <span class="dl-version-badge">' + (data.tag_name || 'v4.0.33') + '</span></span>';
+                            if (exe.size) {
+                                note.textContent = 'Version officielle ' + (data.tag_name || '') + ' · ' + (exe.size / 1024 / 1024).toFixed(1) + ' MB · Windows 10/11 64-bit';
+                            }
                         }
                     }
-                    throw new Error('no exe');
                 })
-                .catch(() => {
-                    btn.classList.remove('loading');
-                    btn.classList.add('unavailable');
-                    btn.innerHTML = '<span>🔒</span><span>Téléchargement indisponible</span>';
-                    note.textContent = 'Le dépôt GitHub doit être public pour activer le téléchargement.';
+                .catch(err => {
+                    // Fallback to release 4.0.33 link without disabling the button!
+                    console.log('GitHub API info:', err);
                 });
         </script>
     </body>

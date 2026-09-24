@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Carte Interactive 3D (BlueMap) — Azuria V4</title>
+<meta name="description" content="Explorez la carte 3D temps réel du serveur Azuria V4. Visualisez le spawn, l'arène des boss, les territoires et constructions des joueurs."/>
+<link rel="icon" type="image/png" href="assets/logo.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+<style>
+.map-page{display:flex;flex-direction:column;min-height:100vh}
+.map-header-section{padding:90px 24px 20px;background:var(--surface);border-bottom:1px solid var(--border)}
+.map-top-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;max-width:1400px;margin:0 auto}
+.map-title-area h1{font-size:1.6rem;font-weight:900;color:var(--text);display:flex;align-items:center;gap:10px}
+.map-title-area p{font-size:.86rem;color:var(--text2);margin-top:2px}
+.map-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.map-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:10px;font-size:.85rem;font-weight:700;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;transition:all var(--trans);text-decoration:none}
+.map-btn:hover{background:var(--surface3);border-color:var(--accent);color:#38bdf8}
+.map-btn.primary{background:linear-gradient(135deg,#38bdf8,#2563eb);border:none;color:#fff;box-shadow:0 4px 16px rgba(56,189,248,.3)}
+.map-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(56,189,248,.45)}
+
+.map-controls-hint{display:flex;align-items:center;gap:16px;padding:8px 16px;background:rgba(0,0,0,.25);border-radius:8px;font-size:.8rem;color:var(--text3);margin-top:14px;overflow-x:auto}
+.map-controls-hint span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.map-controls-hint kbd{background:var(--surface3);padding:2px 6px;border-radius:4px;border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:.75rem}
+
+.map-container{flex:1;position:relative;width:100%;min-height:75vh;background:#050c18}
+.map-iframe{width:100%;height:100%;min-height:75vh;border:none;display:block}
+
+/* Mixed content or fallback banner */
+.map-fallback-banner{background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);border-radius:12px;padding:12px 18px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.map-fallback-banner p{font-size:.82rem;color:var(--text2);margin:0}
+.map-fallback-banner strong{color:#38bdf8}
+
+/* Points of interest */
+.map-poi-section{padding:50px 24px;background:var(--bg)}
+.poi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:20px}
+.poi-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;transition:all var(--trans)}
+.poi-card:hover{border-color:rgba(56,189,248,.4);transform:translateY(-2px)}
+.poi-card h3{font-size:1rem;font-weight:800;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.poi-card p{font-size:.84rem;color:var(--text2);line-height:1.55}
+.poi-coords{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:.78rem;color:#38bdf8;background:rgba(56,189,248,.1);padding:3px 8px;border-radius:6px;border:1px solid rgba(56,189,248,.2)}
+</style>
+</head>
+<body class="map-page">
+<!-- NAVBAR -->
+<header class="navbar" id="navbar">
+<div class="nav-container">
+<a href="/" class="nav-logo">
+<img src="assets/logo.png" alt="Azuria V4"/>
+<span><span class="logo-name">Azuria</span><span class="logo-tag">V4</span></span>
+</a>
+<nav class="nav-links" id="nav-links">
+<a href="/" class="nav-link">Accueil</a>
+<a href="/map" class="nav-link active">🗺️ Carte 3D</a>
+<a href="/discord" class="nav-link">Discord</a>
+<a href="/support" class="nav-link">Support</a>
+<a href="/download" class="nav-cta">⬇ Télécharger</a>
+</nav>
+<button class="nav-toggle" id="nav-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+</div>
+</header>
+
+<main style="flex:1;display:flex;flex-direction:column">
+<div class="map-header-section">
+<div class="map-top-bar">
+<div class="map-title-area">
+<h1><span>🗺️</span> Carte 3D Interactive (BlueMap)</h1>
+<p>Monde officiel d'Azuria V4 en haute définition · Rendu 3D en temps réel</p>
+</div>
+<div class="map-actions">
+<button class="map-btn" onclick="toggleFullScreen()">⛶ Plein écran</button>
+<button class="map-btn" onclick="reloadMap()">🔄 Actualiser</button>
+<a href="http://playazuria.astraltechnologie.fr:8100/" target="_blank" rel="noopener" class="map-btn primary">
+<span>Ouvrir dans un nouvel onglet ↗</span>
+</a>
+</div>
+</div>
+
+<div class="map-fallback-banner">
+<p>
+ℹ️ <strong>Astuce d'affichage :</strong> Si votre navigateur restreint l'affichage direct dans cette page, cliquez sur <strong>"Ouvrir dans un nouvel onglet"</strong> pour profiter d'une vue 3D fluide à 60 FPS sans restriction de sécurité.
+</p>
+<a href="http://playazuria.astraltechnologie.fr:8100/" target="_blank" rel="noopener" class="map-btn" style="padding:6px 14px;font-size:.78rem">
+Accès direct BlueMap ➔
+</a>
+</div>
+
+<div class="map-controls-hint">
+<span>🖱️ <strong>Navigation :</strong> Clic gauche + glisser pour pivoter</span>
+<span>🔍 Molette pour zoomer / dézoomer</span>
+<span>⌨️ Touches <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> pour vous déplacer</span>
+<span>🖱️ Clic droit pour changer l'angle de caméra</span>
+</div>
+</div>
+
+<div class="map-container" id="map-frame-wrapper">
+<iframe
+id="bluemap-frame"
+class="map-iframe"
+src="http://playazuria.astraltechnologie.fr:8100/"
+title="Azuria V4 BlueMap"
+loading="lazy"
+allowfullscreen
+></iframe>
+</div>
+
+<!-- POINTS D'INTÉRÊT -->
+<section class="map-poi-section">
+<div class="container" style="max-width:1400px;margin:0 auto">
+<h2 class="section-title" style="text-align:left;margin-bottom:6px">Points d'Intérêt Clés du Monde</h2>
+<p style="color:var(--text2);margin-bottom:0">Retrouvez les zones stratégiques d'Azuria V4 sur la carte.</p>
+
+<div class="poi-grid">
+<div class="poi-card">
+<h3>🏰 Cité Royale & Spawn</h3>
+<p>Le point de départ de chaque aventurier. Zone marchande, PNJ de quêtes, banquiers et téléporteurs vers le monde ouvert.</p>
+<div class="poi-coords">X: 0 · Y: 70 · Z: 0</div>
+</div>
+
+<div class="poi-card">
+<h3>⚔️ L'Arène des Boss Légendaires</h3>
+<p>Zone de combat sécurisée avec KeepInventory activé. Invoquez les seigneurs élémentaires et combattez pour les reliques mythiques.</p>
+<div class="poi-coords">Accès via /boss ou PNJ Arène</div>
+</div>
+
+<div class="poi-card">
+<h3>🛡️ Territoires des Factions</h3>
+<p>Zones protégées par les joueurs. Bâtissez des châteaux imprenables, créez vos avant-postes et sécurisez vos coffres.</p>
+<div class="poi-coords">Claims actifs en monde Survie</div>
+</div>
+
+<div class="poi-card">
+<h3>🌾 Monde Récolte & Mines Ancestrales</h3>
+<p>Ressources abondantes et filons rares d'Azurite. Parfait pour monter vos métiers de Mineur et Fermier au niveau maximum.</p>
+<div class="poi-coords">Génération continue</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<footer class="footer">
+<div class="footer-inner">
+<div class="footer-links">
+<a href="/" class="footer-link">Accueil</a>
+<a href="/map" class="footer-link">Carte 3D</a>
+<a href="/discord" class="footer-link">Discord</a>
+<a href="/support" class="footer-link">Support</a>
+<a href="/download" class="footer-link">Télécharger</a>
+</div>
+<p class="footer-copy">© 2026 Astral Technologie — Azuria V4 (1.21.1 NeoForge · Ryzen 9) • playazuria.astraltechnologie.fr:25570</p>
+</div>
+</footer>
+
+<div class="toast" role="status"></div>
+<script src="script.js"></script>
+<script>
+function toggleFullScreen() {
+  const elem = document.getElementById("map-frame-wrapper");
+  if (!document.fullscreenElement) {
+    elem.requestFullscreen().catch(err => {
+      console.warn("Fullscreen request error:", err);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function reloadMap() {
+  const frame = document.getElementById("bluemap-frame");
+  if (frame) {
+    frame.src = frame.src;
+  }
+}
+</script>
+</body>
+</html>

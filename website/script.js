@@ -1,7 +1,7 @@
 /* ============================================================
-   AZURIA — script.js
-   Gestion : onglets grimoire, filtres items, recherche,
-             navbar scroll, copier IP, toast
+   AZURIA V4 — script.js
+   Gestion : Navigation, Statut serveur, Copier IP,
+             Animations d'entrée, Particules, Toast
    ============================================================ */
 
 (function () {
@@ -41,7 +41,7 @@
       links.classList.toggle("open");
     });
     // Fermer si on clique sur un lien
-    $$(".nav-link", links).forEach(function (a) {
+    $$(".nav-link, .nav-cta", links).forEach(function (a) {
       a.addEventListener("click", function () {
         links.classList.remove("open");
       });
@@ -49,7 +49,7 @@
   }
 
   /* ============================================================
-     TOAST
+     TOAST NOTIFICATIONS
      ============================================================ */
   var toastTimer = null;
   function showToast(msg, duration) {
@@ -64,166 +64,56 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
       toast.classList.remove("show");
-    }, duration || 2200);
+    }, duration || 2400);
   }
 
   /* ============================================================
-     COPIER IP
+     COPIER IP SERVEUR
      ============================================================ */
   function initCopyIP() {
-    $$(".ip-block, .btn-copy-ip, [data-copy-ip]").forEach(function (el) {
+    $$(".ip-block, .btn-copy-ip, [data-copy-ip], .server-status-pill, #server-status-container").forEach(function (el) {
       el.addEventListener("click", function () {
         var ip =
           el.dataset.ip ||
           el.querySelector(".ip-value")?.textContent?.trim() ||
-          "node2.northhost.fr:26132";
-        navigator.clipboard
-          .writeText(ip)
-          .then(function () {
-            var copySpan = el.querySelector(".ip-copy");
-            if (copySpan) {
-              var old = copySpan.textContent;
-              copySpan.textContent = "✓ Copié !";
-              el.classList.add("copied");
-              setTimeout(function () {
-                copySpan.textContent = old;
-                el.classList.remove("copied");
-              }, 2000);
-            }
-            showToast("✓ IP copiée : " + ip);
-          })
-          .catch(function () {
-            showToast("Copiez : " + ip, 3500);
-          });
+          "playazuria.astraltechnologie.fr:25570";
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(ip)
+            .then(function () {
+              var copySpan = el.querySelector(".ip-copy");
+              if (copySpan) {
+                var old = copySpan.textContent;
+                copySpan.textContent = "✓ IP Copiée !";
+                el.classList.add("copied");
+                setTimeout(function () {
+                  copySpan.textContent = old;
+                  el.classList.remove("copied");
+                }, 2000);
+              }
+              showToast("✓ IP copiée : " + ip);
+            })
+            .catch(function () {
+              showToast("IP : " + ip, 3500);
+            });
+        } else {
+          showToast("IP : " + ip, 3500);
+        }
       });
     });
-  }
-
-  /* ============================================================
-     GRIMOIRE — ONGLETS
-     ============================================================ */
-  function initGrimoireTabs() {
-    var tabs = $$(".gnav-tab");
-    var sections = $$(".gsection");
-    if (!tabs.length || !sections.length) return;
-
-    function activateTab(target) {
-      tabs.forEach(function (t) {
-        t.classList.toggle("active", t.dataset.tab === target);
-      });
-      sections.forEach(function (s) {
-        s.classList.toggle("active", s.id === target);
-      });
-      // Scroll to top of grimoire nav
-      var nav = $(".grimoire-nav");
-      if (nav) {
-        var offset = nav.getBoundingClientRect().top + window.scrollY - 10;
-        window.scrollTo({ top: offset, behavior: "smooth" });
-      }
-    }
-
-    tabs.forEach(function (tab) {
-      tab.addEventListener("click", function () {
-        activateTab(tab.dataset.tab);
-        // Update hash sans provoquer un saut de page
-        history.replaceState(null, "", "#" + tab.dataset.tab);
-      });
-    });
-
-    // Activer depuis l'URL hash
-    var hash = location.hash.replace("#", "");
-    var validIds = sections.map(function (s) {
-      return s.id;
-    });
-    if (hash && validIds.indexOf(hash) !== -1) {
-      activateTab(hash);
-    } else if (tabs.length) {
-      // Premier onglet par défaut
-      tabs[0].classList.add("active");
-      if (sections[0]) sections[0].classList.add("active");
-    }
-  }
-
-  /* ============================================================
-     GRIMOIRE — FILTRES & RECHERCHE ITEMS
-     ============================================================ */
-  function initItemFilters() {
-    var grid = $(".items-grid");
-    if (!grid) return;
-
-    var searchInput = $(".search-input");
-    var catBtns = $$(".filter-btn[data-cat]");
-    var rarBtns = $$(".filter-btn[data-rarity]");
-
-    var activeCat = "all";
-    var activeRar = "all";
-
-    function normalize(str) {
-      return (str || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-    }
-
-    function filterItems() {
-      var query = normalize(searchInput ? searchInput.value : "");
-      var cards = $$(".item-card", grid);
-      var visible = 0;
-
-      cards.forEach(function (card) {
-        var cat = card.dataset.cat || "";
-        var rar = card.dataset.rarity || "";
-        var text = normalize(card.textContent);
-
-        var matchCat = activeCat === "all" || cat === activeCat;
-        var matchRar = activeRar === "all" || rar === activeRar;
-        var matchSearch = !query || text.indexOf(query) !== -1;
-
-        var show = matchCat && matchRar && matchSearch;
-        card.style.display = show ? "" : "none";
-        if (show) visible++;
-      });
-
-      // Message "aucun résultat"
-      var noRes = $(".no-results", grid);
-      if (noRes) {
-        noRes.style.display = visible === 0 ? "" : "none";
-      }
-    }
-
-    catBtns.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        activeCat = btn.dataset.cat;
-        catBtns.forEach(function (b) {
-          b.classList.toggle("active", b.dataset.cat === activeCat);
-        });
-        filterItems();
-      });
-    });
-
-    rarBtns.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        activeRar = btn.dataset.rarity;
-        rarBtns.forEach(function (b) {
-          b.classList.toggle("active", b.dataset.rarity === activeRar);
-        });
-        filterItems();
-      });
-    });
-
-    if (searchInput) {
-      searchInput.addEventListener("input", filterItems);
-    }
-
-    // État initial
-    filterItems();
   }
 
   /* ============================================================
      ANIMATIONS D'ENTRÉE (Intersection Observer)
      ============================================================ */
   function initFadeIn() {
-    if (!("IntersectionObserver" in window)) return;
+    if (!("IntersectionObserver" in window)) {
+      $$(".fade-in").forEach(function (el) {
+        el.classList.add("visible");
+      });
+      return;
+    }
 
     var observer = new IntersectionObserver(
       function (entries) {
@@ -234,7 +124,7 @@
           }
         });
       },
-      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
+      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
     );
 
     $$(".fade-in").forEach(function (el) {
@@ -243,42 +133,7 @@
   }
 
   /* ============================================================
-     BARRES DE PROGRESSION (drop rates)
-     Anime la largeur des .dr-fill et .lb-bar-fill au chargement
-     ============================================================ */
-  function initProgressBars() {
-    if (!("IntersectionObserver" in window)) {
-      // fallback : appliquer directement
-      $$("[data-width]").forEach(function (el) {
-        el.style.width = el.dataset.width;
-      });
-      return;
-    }
-
-    var bars = $$("[data-width]");
-    if (!bars.length) return;
-
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting) {
-            e.target.style.width = e.target.dataset.width;
-            observer.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.3 },
-    );
-
-    bars.forEach(function (bar) {
-      bar.style.width = "0%";
-      bar.style.transition = "width 0.8s cubic-bezier(0.22, 1, 0.36, 1)";
-      observer.observe(bar);
-    });
-  }
-
-  /* ============================================================
-     PARTICULES LÉGÈRES (hero uniquement)
+     PARTICULES DU HERO
      ============================================================ */
   function initParticles() {
     var container = $(".hero-particles");
@@ -293,7 +148,7 @@
         var x = Math.random() * 100;
         var delay = Math.random() * 8;
         var dur = Math.random() * 10 + 8;
-        var opacity = Math.random() * 0.5 + 0.1;
+        var opacity = Math.random() * 0.45 + 0.1;
         Object.assign(p.style, {
           position: "absolute",
           left: x + "%",
@@ -301,7 +156,7 @@
           width: size + "px",
           height: size + "px",
           borderRadius: "50%",
-          background: "rgba(79,142,247," + opacity + ")",
+          background: "rgba(56,189,248," + opacity + ")",
           animation: "particleRise " + dur + "s " + delay + "s linear infinite",
           pointerEvents: "none",
         });
@@ -309,7 +164,6 @@
       })();
     }
 
-    // Injecter le keyframe si absent
     if (!document.getElementById("particle-kf")) {
       var style = document.createElement("style");
       style.id = "particle-kf";
@@ -325,61 +179,71 @@
   }
 
   /* ============================================================
-     ACTIVE NAV LINK (page courante)
+     ACTIVE NAV LINK (Page actuelle)
      ============================================================ */
   function initActiveNavLink() {
-    var currentPage = location.pathname.split("/").pop() || "index.html";
-    $$(".nav-link[href]").forEach(function (a) {
-      var href = a.getAttribute("href").split("#")[0].split("/").pop();
-      if (href === currentPage) {
+    var currentPath = location.pathname.toLowerCase();
+    var cleanCurrent = currentPath.split("/").filter(Boolean).pop() || "index";
+    if (cleanCurrent.endsWith(".html")) {
+      cleanCurrent = cleanCurrent.replace(".html", "");
+    }
+
+    $$(".nav-link[href], .nav-cta[href]").forEach(function (a) {
+      var href = a.getAttribute("href").toLowerCase();
+      var cleanHref = href.split("#")[0].split("/").filter(Boolean).pop() || "index";
+      if (cleanHref.endsWith(".html")) {
+        cleanHref = cleanHref.replace(".html", "");
+      }
+
+      if (cleanHref === cleanCurrent || (cleanCurrent === "index" && cleanHref === "")) {
         a.classList.add("active");
       }
     });
   }
 
   /* ============================================================
-     STATUT SERVEUR
+     STATUT SERVEUR AZURIA V4
      ============================================================ */
   function initServerStatus() {
     var statusText = $("#server-status-text");
     var statusDot = $("#server-status-dot");
     if (!statusText || !statusDot) return;
 
-    fetch("https://api.mcsrvstat.us/3/playazuria.astraltechnologie.fr")
-      .then(function (res) { return res.json(); })
+    fetch("https://api.mcsrvstat.us/3/playazuria.astraltechnologie.fr:25570")
+      .then(function (res) {
+        return res.json();
+      })
       .then(function (data) {
         if (data.online) {
-          statusText.textContent = "En ligne";
-          statusText.style.color = "#2ecc71";
-          statusDot.style.background = "#2ecc71";
-          statusDot.style.boxShadow = "0 0 10px #2ecc71";
+          var playersCount = data.players && data.players.online !== undefined ? data.players.online : 0;
+          statusText.textContent = "En ligne · " + playersCount + " joueur" + (playersCount > 1 ? "s" : "");
+          statusText.style.color = "#4ade80";
+          statusDot.style.background = "#4ade80";
+          statusDot.style.boxShadow = "0 0 12px #4ade80";
         } else {
-          statusText.textContent = "Hors ligne";
-          statusText.style.color = "#e74c3c";
-          statusDot.style.background = "#e74c3c";
-          statusDot.style.boxShadow = "0 0 10px #e74c3c";
+          statusText.textContent = "Serveur en veille ou prêt";
+          statusText.style.color = "#38bdf8";
+          statusDot.style.background = "#38bdf8";
+          statusDot.style.boxShadow = "0 0 12px #38bdf8";
         }
       })
       .catch(function () {
-        statusText.textContent = "Erreur de connexion";
-        statusText.style.color = "#e74c3c";
-        statusDot.style.background = "#e74c3c";
-        statusDot.style.boxShadow = "0 0 10px #e74c3c";
+        statusText.textContent = "playazuria.astraltechnologie.fr:25570";
+        statusText.style.color = "#38bdf8";
+        statusDot.style.background = "#38bdf8";
+        statusDot.style.boxShadow = "0 0 12px #38bdf8";
       });
   }
 
   /* ============================================================
-     INIT
+     INITIALISATION
      ============================================================ */
   function init() {
     initNavbar();
     initNavToggle();
     initCopyIP();
     initActiveNavLink();
-    initGrimoireTabs();
-    initItemFilters();
     initFadeIn();
-    initProgressBars();
     initParticles();
     initServerStatus();
   }
