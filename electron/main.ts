@@ -490,7 +490,7 @@ function createWindow() {
     })
 
     // Launch Game
-    ipcMain.handle('launch-game', async (_e, profileId, serverHost?: string, serverPort?: number, mcVersion?: string) => {
+    ipcMain.handle('launch-game', async (_e, profileId, serverHost?: string, serverPort?: number, mcVersion?: string, serverRootDir?: string, modsAsset?: string) => {
       if (gameProcess) {
         win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Le jeu est déjà en cours...' })
         return
@@ -502,7 +502,7 @@ function createWindow() {
 
       const settings = store.get('settings') as any
       const v = mcVersion || '1.21.1'
-      const rootPath = path.join(app.getPath('appData'), '.azuria')
+      const rootPath = path.join(app.getPath('appData'), serverRootDir || '.azuria')
       const launchHost = serverHost || 'playazuria.astraltechnologie.fr'
       const launchPort = serverPort || 25570
       const fs = require('node:fs')
@@ -541,8 +541,12 @@ function createWindow() {
         try { modsExist = fs.readdirSync(modsDir).length > 0; } catch {}
 
         if (localModTag !== expectedModTag || !modsExist) {
-          const expectedAssetName = 'mods-v4.zip'
-          const asset = releaseInfo.assets?.find((a: any) => a.name === expectedAssetName)
+          const expectedAssetName = modsAsset || 'mods-v4.zip'
+          let asset = releaseInfo.assets?.find((a: any) => a.name === expectedAssetName)
+          if (!asset && expectedAssetName !== 'mods-v4.zip') {
+            console.log(`[Azuria] Asset ${expectedAssetName} introuvable dans la release, repli sur mods-v4.zip`)
+            asset = releaseInfo.assets?.find((a: any) => a.name === 'mods-v4.zip')
+          }
           if (asset) {
             win?.webContents.send('launch-progress', { state: 'SYNCING', percent: 10, task: 'Téléchargement des mods...' })
             const assetUrl = asset.browser_download_url || asset.url
@@ -1601,6 +1605,22 @@ streamingActivityUrl = "https://twitch.tv/twitch"
 buttons = [
 \t{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
 \t{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
+]
+
+[[entry]]
+ip = "91.197.6.19"
+[[entry.presence]]
+type = "PLAYING"
+description = "{{player.name}} • Test Event"
+state = "Serveur Test Event • ❤️ {{player.health.percent}}%"
+largeImageKey = ["azuria_logo"]
+largeImageText = "Azuria - Test Event"
+smallImageKey = ["{{images.player.head}}"]
+smallImageText = "{{player.name}}"
+streamingActivityUrl = "https://twitch.tv/twitch"
+buttons = [
+	{ label = "Rejoindre le Discord", url = "https://discord.gg/azuria" },
+	{ label = "Site Web", url = "https://azuria.astraltechnologie.fr" }
 ]
 `
         fs.writeFileSync(rpcServerConfig, AZURIA_SERVER_ENTRIES, 'utf-8')

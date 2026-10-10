@@ -8,7 +8,8 @@ import { SkinViewer, IdleAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
 
 const SERVERS = [
-  { id: 'main', category: 'SERVEUR PRINCIPAL', name: 'Azuria V4 (1.21.1)', host: 'game03.octoheberg.fr', port: 25570, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V4', mcVersion: '1.21.1', statusOverride: null as string | null }
+  { id: 'main',  category: 'SERVEUR PRINCIPAL',    name: 'Azuria V4 (1.21.1)',      host: 'game03.octoheberg.fr', port: 25570, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V4',          mcVersion: '1.21.1', rootDir: '.azuria',       modsAsset: 'mods-v4.zip',    statusOverride: null as string | null },
+  { id: 'event', category: 'SERVEUR TEST EVENT',   name: 'Test Event (1.21.1)',      host: '91.197.6.19',          port: 21453, displayHost: '91.197.6.19:21453',              desc: 'Serveur de test événements',   mcVersion: '1.21.1', rootDir: '.azuria-event', modsAsset: 'mods-event.zip', statusOverride: null as string | null },
 ]
 
 const SUPPORT_URL = 'https://azuria.astraltechnologie.fr/support'
@@ -173,7 +174,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
   const handleLaunch = async () => {
     setLastError(null)
     setProgress({ state: 'SYNCING', percent: 0, task: 'Initialisation...' })
-    const res = await window.ipcRenderer.invoke('launch-game', profile.id, server.host, server.port, server.mcVersion)
+    const res = await window.ipcRenderer.invoke('launch-game', profile.id, server.host, server.port, server.mcVersion, server.rootDir, server.modsAsset)
     if (res && res.error) {
       const errInfo = getErrorInfo(res.error)
       setLastError({ key: res.error, code: errInfo.code, label: errInfo.label, message: res.message || '' })
@@ -185,7 +186,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
           if (newProfile && !newProfile.error) {
             setLastError(null)
             setProgress({ state: 'SYNCING', percent: 0, task: 'Connexion réussie, lancement...' })
-            await window.ipcRenderer.invoke('launch-game', newProfile.id, server.host, server.port)
+            await window.ipcRenderer.invoke('launch-game', newProfile.id, server.host, server.port, server.mcVersion, server.rootDir, server.modsAsset)
             window.location.reload()
           } else if (newProfile?.error) {
             alert(newProfile.message || newProfile.error)

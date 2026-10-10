@@ -8,6 +8,7 @@ interface Props {
 
 const SERVERS = [
   { id: 'main', host: 'game03.octoheberg.fr', port: 25570 },
+  { id: 'event', host: '91.197.6.19', port: 21453 },
 ]
 
 const STEPS = [
