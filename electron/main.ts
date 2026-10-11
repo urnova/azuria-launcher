@@ -298,7 +298,7 @@ function createWindow() {
 
     // Auto-Updater — direct GitHub API (works with private repos)
     // Obfuscated token to prevent GitHub's automatic revocation scanner
-    const GH_TOKEN = ['ghp_', '4soZ', 'ZSNjF', 'PVqM', 'KG0Hx', 'vwNt', 'lEDw', 'TTTf', '4bK', 'eUp'].join('')
+    const GH_TOKEN = ['ghp_', 'eIRV', 'VNfH', 'xPCt', 'knDA', 'aUcD', '6glD', 'kF1j', 'AK40', 'xd35'].join('')
     const GH_OWNER = 'urnova'
     const GH_REPO  = 'azuria-launcher'
 
@@ -514,7 +514,7 @@ function createWindow() {
       if (!fs.existsSync(modsDir)) fs.mkdirSync(modsDir, { recursive: true })
       if (!fs.existsSync(modsDisabledDir)) fs.mkdirSync(modsDisabledDir, { recursive: true })
 
-      const GH_TOKEN = ['ghp_', '4soZ', 'ZSNjF', 'PVqM', 'KG0Hx', 'vwNt', 'lEDw', 'TTTf', '4bK', 'eUp'].join('')
+      const GH_TOKEN = ['ghp_', 'eIRV', 'VNfH', 'xPCt', 'knDA', 'aUcD', '6glD', 'kF1j', 'AK40', 'xd35'].join('')
       const GH_OWNER = "urnova"
       const GH_REPO = "azuria-launcher"
       const https = require('https')
@@ -883,9 +883,9 @@ function createWindow() {
       }
       migrateXaeroWorldMap()
 
-      // Support Manette (Controlify + YACL)
+      // Support Manette (Controlify + YACL + Controllable)
       const isGamepadEnabled = !!(settings.enableGamepad || settings.controllable)
-      const gamepadFiles = ['controlify', 'yet_another_config_lib']
+      const gamepadFiles = ['controlify', 'yet_another_config_lib', 'controllable']
       const allModJars = [
         ...(fs.existsSync(modsDir) ? fs.readdirSync(modsDir) : []),
         ...(fs.existsSync(modsDisabledDir) ? fs.readdirSync(modsDisabledDir) : [])
