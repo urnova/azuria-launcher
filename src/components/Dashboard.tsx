@@ -389,7 +389,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
                     return (
                       <button key={srv.id} onClick={() => !isBusy && !isRunning && setSelectedServer(srv.id)}
                         className="flex items-center gap-3 p-3 rounded-xl text-left transition-all w-full min-w-0 overflow-hidden"
-                        style={{ background: selectedServer === srv.id ? 'rgba(79,142,247,0.12)' : S.surface, border: `1px solid ${selectedServer === srv.id ? 'rgba(79,142,247,0.4)' : S.border}`, boxShadow: selectedServer === srv.id ? '0 0 20px rgba(79,142,247,0.15)' : 'none', opacity: isBusy && selectedServer !== srv.id ? 0.5 : 1 }}>
+                        style={{ background: selectedServer === srv.id ? 'rgba(79,142,247,0.12)' : 'rgba(17,17,24,0.45)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${selectedServer === srv.id ? 'rgba(79,142,247,0.4)' : 'rgba(255,255,255,0.07)'}`, boxShadow: selectedServer === srv.id ? '0 0 20px rgba(79,142,247,0.15)' : 'none', opacity: isBusy && selectedServer !== srv.id ? 0.5 : 1 }}>
                         {st?.favicon && !srv.statusOverride ? (
                           <img src={st.favicon} alt="" className="w-9 h-9 rounded" style={{ imageRendering: 'pixelated' }} />
                         ) : (
@@ -434,23 +434,46 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
                 </div>
               </div>
 
-              {/* News banner — responsive height */}
-              <div className="w-full max-w-md mt-3 rounded-xl overflow-hidden cursor-pointer group" style={{ border: `1px solid ${S.border}`, boxShadow: '0 4px 24px rgba(0,0,0,0.4)', flexShrink: 0 }}
-                onClick={() => window.ipcRenderer.invoke('open-external', 'https://azuria.astraltechnologie.fr')}>
-                <div style={{ position: 'relative', height: 85 }}>
-                  <img src={newsBanner} alt="Azuria V4" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.7)' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,10,20,0.88) 0%, rgba(10,10,20,0.15) 60%, transparent 100%)' }} />
-                  <div style={{ position: 'absolute', left: 12, bottom: 10, top: 10, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                    <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.accent, marginBottom: 2 }}>Nouvelle aventure</div>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Azuria V4 — L'Ère Mécanique</div>
-                    <div style={{ fontSize: 9, color: S.text2, marginTop: 2 }}>Aeronautics · Create · Ice and Fire Community</div>
-                  </div>
-                  <div style={{ position: 'absolute', right: 10, bottom: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <span style={{ fontSize: 8, color: S.accent, fontWeight: 700 }}>En savoir plus</span>
-                    <ChevronRight size={10} style={{ color: S.accent }} />
+              {/* News banner — dynamic based on selected server */}
+              {selectedServer === 'main' ? (
+                <div className="w-full max-w-md mt-3 rounded-xl overflow-hidden cursor-pointer group" style={{ border: `1px solid ${S.border}`, boxShadow: '0 4px 24px rgba(0,0,0,0.4)', flexShrink: 0 }}
+                  onClick={() => window.ipcRenderer.invoke('open-external', 'https://azuria.astraltechnologie.fr')}>
+                  <div style={{ position: 'relative', height: 85 }}>
+                    <img src={newsBanner} alt="Azuria V4" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.7)' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,10,20,0.88) 0%, rgba(10,10,20,0.15) 60%, transparent 100%)' }} />
+                    <div style={{ position: 'absolute', left: 12, bottom: 10, top: 10, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                      <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: S.accent, marginBottom: 2 }}>Nouvelle aventure</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Azuria V4 — L'Ère Mécanique</div>
+                      <div style={{ fontSize: 9, color: S.text2, marginTop: 2 }}>Aeronautics · Create · Ice and Fire Community</div>
+                    </div>
+                    <div style={{ position: 'absolute', right: 10, bottom: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <span style={{ fontSize: 8, color: S.accent, fontWeight: 700 }}>En savoir plus</span>
+                      <ChevronRight size={10} style={{ color: S.accent }} />
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="w-full max-w-md mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,140,0,0.35)', boxShadow: '0 4px 24px rgba(255,140,0,0.15)', flexShrink: 0 }}>
+                  <div style={{ position: 'relative', height: 85, background: 'linear-gradient(135deg, #1a0a00 0%, #2d1500 40%, #1a0010 100%)' }}>
+                    <div style={{ position: 'absolute', top: -20, right: 40, width: 80, height: 80, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,200,0,0.25) 0%, transparent 70%)', filter: 'blur(8px)' }} />
+                    <div style={{ position: 'absolute', bottom: -10, right: 80, width: 60, height: 60, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,60,0,0.2) 0%, transparent 70%)', filter: 'blur(6px)' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,5,0,0.92) 0%, rgba(10,5,0,0.3) 55%, transparent 100%)' }} />
+                    <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 8px rgba(255,200,0,0.8))' }}>🍀</span>
+                      <span style={{ fontSize: 18, filter: 'drop-shadow(0 0 6px rgba(255,80,0,0.8))' }}>⚔️</span>
+                    </div>
+                    <div style={{ position: 'absolute', left: 12, bottom: 10, top: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#ff8c00', marginBottom: 3 }}>⚡ Événement spécial</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: 4 }}>Lucky Block Manhunt</div>
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,200,0,0.2)', border: '1px solid rgba(255,200,0,0.4)', color: '#ffd700' }}>🍀 Lucky Block</span>
+                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,60,0,0.2)', border: '1px solid rgba(255,80,0,0.4)', color: '#ff6030' }}>⚔️ Man Hunt</span>
+                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(100,200,100,0.15)', border: '1px solid rgba(100,200,100,0.3)', color: '#80d080' }}>NeoForge 1.21.1</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
