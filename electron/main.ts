@@ -632,8 +632,8 @@ function createWindow() {
                 }
 
                 // Deplacer les dossiers speciaux vers la racine s'ils sont dans le zip
-                // shaderpacks + resourcepacks: toujours remplacés (assets du jeu)
-                for (const d of ['shaderpacks', 'resourcepacks']) {
+                // shaderpacks + resourcepacks + addons: toujours remplacés (assets du jeu / addons mods)
+                for (const d of ['shaderpacks', 'resourcepacks', 'addons']) {
                   const src = path.join(modsDir, d)
                   const dst = path.join(rootPath, d)
                   if (fs.existsSync(src)) {
