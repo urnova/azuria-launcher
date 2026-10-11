@@ -490,7 +490,7 @@ function createWindow() {
     })
 
     // Launch Game
-    ipcMain.handle('launch-game', async (_e, profileId, serverHost?: string, serverPort?: number, mcVersion?: string, serverRootDir?: string, modsAsset?: string) => {
+    ipcMain.handle('launch-game', async (_e, profileId, serverHost?: string, serverPort?: number, mcVersion?: string, serverRootDir?: string, modsAsset?: string, targetNeoForge?: string) => {
       if (gameProcess) {
         win?.webContents.send('launch-progress', { state: 'RUNNING', percent: 100, task: 'Le jeu est déjà en cours...' })
         return
@@ -1085,7 +1085,7 @@ function createWindow() {
       const qpIdentifier = `${launchHost}:${launchPort}`
 
       // --- Installation & Vérification NeoForge 1.21.1 ---
-      const NEOFORGE_VER = '21.1.230'
+      const NEOFORGE_VER = targetNeoForge || '21.1.230'
       const forgeInstallerTargetToRun = path.join(rootPath, `neoforge-installer-${NEOFORGE_VER}.jar`)
 
       if (!fs.existsSync(forgeInstallerTargetToRun)) {

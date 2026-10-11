@@ -4,12 +4,13 @@ import logo from '../assets/logo.png'
 import astralLogo from '../assets/astral-logo.png'
 import heroBg from '../assets/hero-bg.jpg'
 import newsBanner from '../assets/news-banner.jpg'
+import eventBanner from '../assets/event-banner.jpg'
 import { SkinViewer, IdleAnimation } from 'skinview3d'
 import UpdateModal from './UpdateModal'
 
 const SERVERS = [
-  { id: 'main',  category: 'SERVEUR PRINCIPAL',    name: 'Azuria V4 (1.21.1)',      host: 'game03.octoheberg.fr', port: 25570, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V4',          mcVersion: '1.21.1', rootDir: '.azuria',       modsAsset: 'mods-v4.zip',    statusOverride: null as string | null },
-  { id: 'event', category: 'SERVEUR TEST EVENT',   name: 'Test Event (1.21.1)',      host: '91.197.6.19',          port: 21453, displayHost: '91.197.6.19:21453',              desc: 'Serveur de test événements',   mcVersion: '1.21.1', rootDir: '.azuria-event', modsAsset: 'mods-event.zip', statusOverride: null as string | null },
+  { id: 'main',  category: 'SERVEUR PRINCIPAL',    name: 'Azuria V4 (1.21.1)',      host: 'game03.octoheberg.fr', port: 25570, displayHost: 'playazuria.astraltechnologie.fr', desc: 'Serveur principal V4',          mcVersion: '1.21.1', neoForgeVersion: '21.1.230', rootDir: '.azuria',       modsAsset: 'mods-v4.zip',    statusOverride: null as string | null },
+  { id: 'event', category: 'SERVEUR TEST EVENT',   name: 'Test Event (1.21.1)',      host: '91.197.6.19',          port: 21453, displayHost: '91.197.6.19:21453',              desc: 'Serveur de test événements',   mcVersion: '1.21.1', neoForgeVersion: '21.1.192', rootDir: '.azuria-event', modsAsset: 'mods-event.zip', statusOverride: null as string | null },
 ]
 
 const SUPPORT_URL = 'https://azuria.astraltechnologie.fr/support'
@@ -174,7 +175,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
   const handleLaunch = async () => {
     setLastError(null)
     setProgress({ state: 'SYNCING', percent: 0, task: 'Initialisation...' })
-    const res = await window.ipcRenderer.invoke('launch-game', profile.id, server.host, server.port, server.mcVersion, server.rootDir, server.modsAsset)
+    const res = await window.ipcRenderer.invoke('launch-game', profile.id, server.host, server.port, server.mcVersion, server.rootDir, server.modsAsset, server.neoForgeVersion)
     if (res && res.error) {
       const errInfo = getErrorInfo(res.error)
       setLastError({ key: res.error, code: errInfo.code, label: errInfo.label, message: res.message || '' })
@@ -186,7 +187,7 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
           if (newProfile && !newProfile.error) {
             setLastError(null)
             setProgress({ state: 'SYNCING', percent: 0, task: 'Connexion réussie, lancement...' })
-            await window.ipcRenderer.invoke('launch-game', newProfile.id, server.host, server.port, server.mcVersion, server.rootDir, server.modsAsset)
+            await window.ipcRenderer.invoke('launch-game', newProfile.id, server.host, server.port, server.mcVersion, server.rootDir, server.modsAsset, server.neoForgeVersion)
             window.location.reload()
           } else if (newProfile?.error) {
             alert(newProfile.message || newProfile.error)
@@ -453,23 +454,18 @@ export default function Dashboard({ profile, onLogout, onProfileSwitch, initialS
                   </div>
                 </div>
               ) : (
-                <div className="w-full max-w-md mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,140,0,0.35)', boxShadow: '0 4px 24px rgba(255,140,0,0.15)', flexShrink: 0 }}>
-                  <div style={{ position: 'relative', height: 85, background: 'linear-gradient(135deg, #1a0a00 0%, #2d1500 40%, #1a0010 100%)' }}>
-                    <div style={{ position: 'absolute', top: -20, right: 40, width: 80, height: 80, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,200,0,0.25) 0%, transparent 70%)', filter: 'blur(8px)' }} />
-                    <div style={{ position: 'absolute', bottom: -10, right: 80, width: 60, height: 60, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,60,0,0.2) 0%, transparent 70%)', filter: 'blur(6px)' }} />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,5,0,0.92) 0%, rgba(10,5,0,0.3) 55%, transparent 100%)' }} />
-                    <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                      <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 8px rgba(255,200,0,0.8))' }}>🍀</span>
-                      <span style={{ fontSize: 18, filter: 'drop-shadow(0 0 6px rgba(255,80,0,0.8))' }}>⚔️</span>
+                <div className="w-full max-w-md mt-3 rounded-xl overflow-hidden cursor-pointer group" style={{ border: `1px solid ${S.border}`, boxShadow: '0 4px 24px rgba(0,0,0,0.4)', flexShrink: 0 }}>
+                  <div style={{ position: 'relative', height: 85 }}>
+                    <img src={eventBanner} alt="Lucky Block Manhunt" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 60%', filter: 'brightness(0.75)' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,10,20,0.88) 0%, rgba(10,10,20,0.2) 60%, transparent 100%)' }} />
+                    <div style={{ position: 'absolute', left: 12, bottom: 10, top: 10, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                      <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#ffaa00', marginBottom: 2 }}>Événement Spécial</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Lucky Block — Manhunt</div>
+                      <div style={{ fontSize: 9, color: S.text2, marginTop: 2 }}>Traque · Survie · Lucky Blocks Déchaînés</div>
                     </div>
-                    <div style={{ position: 'absolute', left: 12, bottom: 10, top: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#ff8c00', marginBottom: 3 }}>⚡ Événement spécial</div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: 4 }}>Lucky Block Manhunt</div>
-                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,200,0,0.2)', border: '1px solid rgba(255,200,0,0.4)', color: '#ffd700' }}>🍀 Lucky Block</span>
-                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,60,0,0.2)', border: '1px solid rgba(255,80,0,0.4)', color: '#ff6030' }}>⚔️ Man Hunt</span>
-                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(100,200,100,0.15)', border: '1px solid rgba(100,200,100,0.3)', color: '#80d080' }}>NeoForge 1.21.1</span>
-                      </div>
+                    <div style={{ position: 'absolute', right: 10, bottom: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <span style={{ fontSize: 8, color: '#ffaa00', fontWeight: 700 }}>Événement en cours</span>
+                      <ChevronRight size={10} style={{ color: '#ffaa00' }} />
                     </div>
                   </div>
                 </div>
